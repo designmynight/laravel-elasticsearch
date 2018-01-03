@@ -543,8 +543,14 @@ class QueryGrammar extends BaseGrammar
 
         $filter = $this->compileWheres($aggregation['args']);
 
+        $filters = $filter['filter'] ?? [];
+
+        $query = $filter['query'] ?? [];
+
+        $allFilters = array_merge($query, $filters);
+
         $compiled = [
-            'filter' => $filter['filter'] ?: (object) []
+            'filter' => $allFilters ?: (object) []
         ];
 
         return $compiled;
