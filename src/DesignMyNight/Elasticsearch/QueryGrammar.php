@@ -656,7 +656,10 @@ class QueryGrammar extends BaseGrammar
             switch ($type) {
                 case 'geoDistance' :
                     $orderSettings = [
-                        $column         => $order['options']['coordinates'],
+                        $column         => [
+                            'lat' =>  (float) $order['options']['coordinates'][0],
+                            'lon' =>  (float) $order['options']['coordinates'][1],
+                        ],
                         'order'         => $order['direction'] < 0 ? 'desc' : 'asc',
                         'unit'          => $order['options']['unit'] ?? 'km',
                         'distance_type' => $order['options']['distanceType'] ?? 'plane',
