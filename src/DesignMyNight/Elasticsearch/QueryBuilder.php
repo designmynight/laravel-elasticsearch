@@ -392,7 +392,7 @@ class QueryBuilder extends BaseBuilder
     }
 
     /**
-     * Index a document
+     * @inheritdoc
      */
     public function insert(array $values)
     {
@@ -416,6 +416,23 @@ class QueryBuilder extends BaseBuilder
         $result = $this->connection->insert($this->grammar->compileInsert($this, $values));
 
         return empty($result['errors']);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function delete($id = null)
+    {
+        // If an ID is passed to the method, we will set the where clause to check the
+        // ID to let developers to simply and quickly remove a single row from this
+        // database without manually specifying the "where" clauses on the query.
+        if (! is_null($id)) {
+            $this->where($this->getKeyName(), '=', $id);
+        }
+
+        $result = $this->connection->delete($this->grammar->compileDelete($this));
+
+        return !empty($result['found']);
     }
 
     public function __call($method, $parameters)
