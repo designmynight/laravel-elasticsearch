@@ -544,7 +544,7 @@ class QueryGrammar extends BaseGrammar
         $filter = $this->compileWheres($aggregation['args']);
 
         $compiled = [
-            'filter' => $filter['filter'] ?: (object) []
+            'filter' => $filter['query'] ?: (object) []
         ];
 
         return $compiled;
