@@ -699,33 +699,29 @@ class QueryGrammar extends BaseGrammar
         $params = [];
 
         foreach ($values as $doc) {
-            if (isset($doc['child_documents'])) {
-                foreach ($doc['child_documents']['documents'] as $childDoc) {
-                    $params['body'][] = [
-                        'index' => [
-                            '_index' => $builder->from . $this->indexSuffix,
-                            '_type'  => isset($doc['child_documents']['type']) ? $doc['child_documents']['type'] : $builder->type,
-                            '_id'    => $childDoc['id'],
-                            'parent' => $doc['id'],
-                        ],
-                    ];
-
-                    $params['body'][] = $childDoc;
-                }
-
-                unset($doc['child_documents']);
-            }
-
             $params['body'][] = [
                 'index' => [
                     '_index' => $builder->from . $this->indexSuffix,
                     '_type'  => $builder->type,
-                    '_id'    => $doc['id'],
+                    '_id'    => $doc['_id'],
                 ],
             ];
 
+            unset($doc['_id']);
+
             $params['body'][] = $doc;
         }
+
+        return $params;
+    }
+
+    public function compileDelete(Builder $builder)
+    {
+        $params = [
+            'index' => $builder->from . $this->indexSuffix,
+            'type'  => $builder->type,
+            'id'    => (string) $builder->wheres[0]['value']
+        ];
 
         return $params;
     }

@@ -391,6 +391,33 @@ class QueryBuilder extends BaseBuilder
         return $this->toSql();
     }
 
+    /**
+     * Index a document
+     */
+    public function insert(array $values)
+    {
+        // Since every insert gets treated like a batch insert, we will have to detect
+        // if the user is inserting a single document or an array of documents.
+        $batch = true;
+
+        foreach ($values as $value) {
+            // As soon as we find a value that is not an array we assume the user is
+            // inserting a single document.
+            if (!is_array($value)) {
+                $batch = false;
+                break;
+            }
+        }
+
+        if (!$batch) {
+            $values = [$values];
+        }
+
+        $result = $this->connection->insert($this->grammar->compileInsert($this, $values));
+
+        return empty($result['errors']);
+    }
+
     public function __call($method, $parameters)
     {
         if (Str::startsWith($method, 'filterWhere')) {
