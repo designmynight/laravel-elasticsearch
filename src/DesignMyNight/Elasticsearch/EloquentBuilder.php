@@ -53,7 +53,7 @@ class EloquentBuilder extends BaseBuilder
         // If we actually found models we will also eager load any relationships that
         // have been specified as needing to be eager loaded, which will solve the
         // n+1 query issue for the developers to avoid running a lot of queries.
-        else if (count($models) > 0) {
+        if (count($models) > 0) {
             $models = $builder->eagerLoadRelations($models);
         }
 
@@ -73,11 +73,10 @@ class EloquentBuilder extends BaseBuilder
         if ($results instanceof Generator){
             return $this->yieldResults($results);
         }
-        else {
-            return $this->model->hydrate(
-                $results->all()
-            )->all();
-        }
+
+        return $this->model->hydrate(
+            $results->all()
+        )->all();
     }
 
     /**

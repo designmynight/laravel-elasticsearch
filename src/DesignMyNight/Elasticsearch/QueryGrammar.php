@@ -179,9 +179,8 @@ class QueryGrammar extends BaseGrammar
 
             return $this->compileWhereBetween($builder, $where);
         }
-        else {
-            return $this->compileWhereBasic($builder, $where);
-        }
+
+        return $this->compileWhereBasic($builder, $where);
     }
 
     protected function compileWhereNested($builder, $where)
