@@ -29,15 +29,14 @@ class QueryProcessor extends BaseProcessor
         if (isset($results['_scroll_id'])){
             return $this->yieldResults($results);
         }
-        else {
-            $documents = [];
 
-            foreach ($results['hits']['hits'] as $result) {
-                $documents[] = $this->documentFromResult($result);
-            }
+        $documents = [];
 
-            return $documents;
+        foreach ($results['hits']['hits'] as $result) {
+            $documents[] = $this->documentFromResult($result);
         }
+
+        return $documents;
     }
 
     protected function yieldResults($results)
