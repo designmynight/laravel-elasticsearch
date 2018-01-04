@@ -324,12 +324,8 @@ class QueryBuilder extends BaseBuilder
      */
     protected function runSelect()
     {
-        if ($this->shouldUseScroll()){
-            $this->rawResponse = $this->connection->scrollSelect($this->toCompiledQuery());
-        }
-        else {
-            $this->rawResponse = $this->connection->select($this->toCompiledQuery());
-        }
+        $strategy = $this->shouldUseScroll() ? 'scollSelect' : 'select';
+        $this->rawResponse = $this->connection->$strategy($this->toCompiledQuery());
 
         return $this->rawResponse;
     }
