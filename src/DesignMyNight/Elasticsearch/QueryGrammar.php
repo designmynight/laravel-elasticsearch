@@ -16,7 +16,13 @@ class QueryGrammar extends BaseGrammar
      */
     protected $indexSuffix = '';
 
-    public function compileSelect(Builder $builder)
+    /**
+     * Compile a select statement
+     *
+     * @param  Builder  $builder
+     * @return array
+     */
+    public function compileSelect(Builder $builder): array
     {
         $query = $this->compileWheres($builder);
 
@@ -64,7 +70,13 @@ class QueryGrammar extends BaseGrammar
         return $params;
     }
 
-    protected function compileWheres(Builder $builder)
+    /**
+     * Compile where clauses for a query
+     *
+     * @param  Builder  $builder
+     * @return array
+     */
+    protected function compileWheres(Builder $builder): array
     {
         $queryParts = [
             'query' => 'wheres',
@@ -83,7 +95,14 @@ class QueryGrammar extends BaseGrammar
         return $compiled;
     }
 
-    protected function compileClauses(Builder $builder, array $clauses)
+    /**
+     * Compile general clauses for a query
+     *
+     * @param  Builder  $builder
+     * @param  array  $clauses
+     * @return array
+     */
+    protected function compileClauses(Builder $builder, array $clauses): array
     {
         $query = [];
         $isOr  = false;
@@ -121,7 +140,14 @@ class QueryGrammar extends BaseGrammar
         return $query;
     }
 
-    protected function compileWhereBasic(Builder $builder, $where)
+    /**
+     * Compile a general where clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return array
+     */
+    protected function compileWhereBasic(Builder $builder, array $where): array
     {
         $value = $this->getValueForWhere($builder, $where);
 
@@ -170,7 +196,14 @@ class QueryGrammar extends BaseGrammar
         return $query;
     }
 
-    protected function compileWhereDate($builder, $where)
+    /**
+     * Compile a date clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return array
+     */
+    protected function compileWhereDate(Builder $builder, array $where): array
     {
         if ( $where['operator'] == '=' ){
             $value = $this->getValueForWhere($builder, $where);
@@ -183,7 +216,14 @@ class QueryGrammar extends BaseGrammar
         return $this->compileWhereBasic($builder, $where);
     }
 
-    protected function compileWhereNested($builder, $where)
+    /**
+     * Compile a nested clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return array
+     */
+    protected function compileWhereNested(Builder $builder, array $where): array
     {
         $compiled = $this->compileWheres($where['query']);
 
@@ -202,7 +242,14 @@ class QueryGrammar extends BaseGrammar
         return reset($compiled);
     }
 
-    protected function applyWhereRelationship($builder, $where, $relationship)
+    /**
+     * Compile a relationship clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return array
+     */
+    protected function applyWhereRelationship(Builder $builder, array $where, string $relationship): array
     {
         $compiled = $this->compileWheres($where['value']);
 
@@ -220,17 +267,38 @@ class QueryGrammar extends BaseGrammar
         return $query;
     }
 
-    protected function compileWhereParent($builder, $where)
+    /**
+     * Compile a parent clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return array
+     */
+    protected function compileWhereParent(Builder $builder, array $where): array
     {
         return $this->applyWhereRelationship($builder, $where, 'parent');
     }
 
-    protected function compileWhereChild($builder, $where)
+    /**
+     * Compile a child clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return array
+     */
+    protected function compileWhereChild(Builder $builder, array $where): array
     {
         return $this->applyWhereRelationship($builder, $where, 'child');
     }
 
-    protected function compileWhereIn($builder, $where, $not = false)
+    /**
+     * Compile an in clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return array
+     */
+    protected function compileWhereIn(Builder $builder, array $where, $not = false): array
     {
         $column = $where['column'];
         $values = $this->getValueForWhere($builder, $where);
@@ -256,26 +324,55 @@ class QueryGrammar extends BaseGrammar
         return $query;
     }
 
-    protected function compileWhereNotIn($builder, $where)
+    /**
+     * Compile a not in clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return array
+     */
+    protected function compileWhereNotIn(Builder $builder, array $where): array
     {
         return $this->compileWhereIn($builder, $where, true);
     }
 
-    protected function compileWhereNull($builder, $where)
+    /**
+     * Compile a null clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return array
+     */
+    protected function compileWhereNull(Builder $builder, array $where): array
     {
         $where['operator'] = '=';
 
         return $this->compileWhereBasic($builder, $where);
     }
 
-    protected function compileWhereNotNull($builder, $where)
+    /**
+     * Compile a not null clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return array
+     */
+    protected function compileWhereNotNull(Builder $builder, array $where): array
     {
         $where['operator'] = '!=';
 
         return $this->compileWhereBasic($builder, $where);
     }
 
-    protected function compileWhereBetween($builder, $where)
+    /**
+     * Compile a where not exists clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @param  bool  $not
+     * @return array
+     */
+    protected function compileWhereBetween(Builder $builder, array $where): array
     {
         $column = $where['column'];
         $values = $this->getValueForWhere($builder, $where);
@@ -315,7 +412,15 @@ class QueryGrammar extends BaseGrammar
         return $query;
     }
 
-    protected function compileWhereExists($builder, $where, $not = false)
+    /**
+     * Compile a where not exists clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @param  bool  $not
+     * @return array
+     */
+    protected function compileWhereExists(Builder $builder, array $where, $not = false): array
     {
         $query = [
             'exists' => [
@@ -338,12 +443,26 @@ class QueryGrammar extends BaseGrammar
         return $query;
     }
 
-    protected function compileWhereNotExists($builder, $where)
+    /**
+     * Compile a where not exists clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return array
+     */
+    protected function compileWhereNotExists(Builder $builder, array $where): array
     {
         return $this->compileWhereExists($builder, $where, true);
     }
 
-    protected function compileWhereSearch($builder, $where)
+    /**
+     * Compile a where nested geo distance clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return array
+     */
+    protected function compileWhereSearch(Builder $builder, array $where): array
     {
         $fields = '_all';
 
@@ -392,7 +511,14 @@ class QueryGrammar extends BaseGrammar
         return $query;
     }
 
-    protected function compileWhereGeoDistance($builder, $where)
+    /**
+     * Compile a where nested geo distance clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return array
+     */
+    protected function compileWhereGeoDistance($builder, $where): array
     {
         $query = [
             'geo_distance' => [
@@ -404,7 +530,14 @@ class QueryGrammar extends BaseGrammar
         return $query;
     }
 
-    protected function compileWhereGeoBoundsIn($builder, $where)
+    /**
+     * Compile a where geo bounds clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return array
+     */
+    protected function compileWhereGeoBoundsIn(Builder $builder, array $where): array
     {
         $query = [
             'geo_bounding_box' => [
@@ -415,7 +548,14 @@ class QueryGrammar extends BaseGrammar
         return $query;
     }
 
-    protected function compileWhereNestedDoc($builder, $where)
+    /**
+     * Compile a where nested doc clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return array
+     */
+    protected function compileWhereNestedDoc(Builder $builder, $where): array
     {
         $wheres = $this->compileWheres($where['query']);
 
@@ -430,7 +570,14 @@ class QueryGrammar extends BaseGrammar
         return $query;
     }
 
-    protected function getValueForWhere($builder, $where)
+    /**
+     * Get value for the where
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return mixed
+     */
+    protected function getValueForWhere(Builder $builder, array $where)
     {
         switch ($where['type']) {
             case 'In':
@@ -451,9 +598,8 @@ class QueryGrammar extends BaseGrammar
         // Convert DateTime values to UTCDateTime.
         if ($value instanceof DateTime) {
             $value = $this->convertDateTime($value);
-        }
-        // Convert DateTime values to UTCDateTime.
-        else if ($value instanceof ObjectID) {
+        } else if ($value instanceof ObjectID) {
+            // Convert DateTime values to UTCDateTime.
             $value = $this->convertKey($value);
         } else if (is_array($value)) {
             foreach ($value as &$val) {
@@ -468,7 +614,14 @@ class QueryGrammar extends BaseGrammar
         return $value;
     }
 
-    protected function applyOptionsToClause($clause, $where)
+    /**
+     * Apply the given options from a where to a query clause
+     *
+     * @param  array  $clause
+     * @param  array  $where
+     * @return array
+     */
+    protected function applyOptionsToClause(array $clause, array $where)
     {
         if (!isset($where['options'])) {
             return $clause;
@@ -478,17 +631,24 @@ class QueryGrammar extends BaseGrammar
         $options        = array_intersect_key($where['options'], array_flip($optionsToApply));
 
         foreach ($options as $option => $value) {
-            $funcName = "apply" . ucfirst($option) . "Option";
+            $method = 'apply' . ucfirst($option) . 'Option';
 
-            if (method_exists($this, $funcName)){
-                $this->$funcName($clause, $value);
+            if (method_exists($this, $method)){
+                $this->$method($clause, $value);
             }
         }
 
         return $clause;
     }
 
-    protected function applyBoostOption($clause, $value)
+    /**
+     * Apply a boost option to the clause
+     *
+     * @param  array  $clause
+     * @param  mixed  $value
+     * @return array
+     */
+    protected function applyBoostOption(array $clause, $value): array
     {
         $firstKey = key($clause);
 
@@ -506,7 +666,13 @@ class QueryGrammar extends BaseGrammar
         return  $clause;
     }
 
-    protected function compileAggregations(Builder $builder)
+    /**
+     * Compile all aggregations
+     *
+     * @param  Builder  $builder
+     * @return array
+     */
+    protected function compileAggregations(Builder $builder): array
     {
         $aggregations = [];
 
@@ -519,7 +685,14 @@ class QueryGrammar extends BaseGrammar
         return $aggregations;
     }
 
-    protected function compileAggregation(Builder $builder, $aggregation)
+    /**
+     * Compile a single aggregation
+     *
+     * @param  Builder  $builder
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileAggregation(Builder $builder, array $aggregation): array
     {
         $key = $aggregation['key'];
 
@@ -536,7 +709,13 @@ class QueryGrammar extends BaseGrammar
         return $compiled;
     }
 
-    protected function compileFilterAggregation($aggregation)
+    /**
+     * Compile filter aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileFilterAggregation(array $aggregation): array
     {
         $compiled = [];
 
@@ -555,7 +734,13 @@ class QueryGrammar extends BaseGrammar
         return $compiled;
     }
 
-    protected function compileNestedAggregation($aggregation)
+    /**
+     * Compile nested aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileNestedAggregation(array $aggregation): array
     {
         $path = is_array($aggregation['args']) ? $aggregation['args']['path'] : $aggregation['args'];
 
@@ -566,7 +751,13 @@ class QueryGrammar extends BaseGrammar
         ];
     }
 
-    protected function compileTermsAggregation($aggregation)
+    /**
+     * Compile terms aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileTermsAggregation(array $aggregation): array
     {
         $field = is_array($aggregation['args']) ? $aggregation['args']['field'] : $aggregation['args'];
 
@@ -583,7 +774,13 @@ class QueryGrammar extends BaseGrammar
         return $compiled;
     }
 
-    protected function compileDateHistogramAggregation($aggregation)
+    /**
+     * Compile date histogram aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileDateHistogramAggregation(array $aggregation): array
     {
         $field = is_array($aggregation['args']) ? $aggregation['args']['field'] : $aggregation['args'];
 
@@ -600,7 +797,13 @@ class QueryGrammar extends BaseGrammar
         return $compiled;
     }
 
-    protected function compileExistsAggregation($aggregation)
+    /**
+     * Compile exists aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileExistsAggregation(array $aggregation): array
     {
         $field = is_array($aggregation['args']) ? $aggregation['args']['field'] : $aggregation['args'];
 
@@ -613,19 +816,37 @@ class QueryGrammar extends BaseGrammar
         return $compiled;
     }
 
-    protected function compileReverseNestedAggregation($aggregation)
+    /**
+     * Compile reverse nested aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileReverseNestedAggregation(array $aggregation): array
     {
         return [
             'reverse_nested' => (object) []
         ];
     }
 
-    protected function compileSumAggregation($aggregation)
+    /**
+     * Compile sum aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileSumAggregation(array $aggregation): array
     {
         return $this->compileMetricAggregation($aggregation);
     }
 
-    protected function compileMetricAggregation($aggregation)
+    /**
+     * Compile metric aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileMetricAggregation(array $aggregation): array
     {
         $metric = $aggregation['type'];
 
@@ -638,7 +859,13 @@ class QueryGrammar extends BaseGrammar
         ];
     }
 
-    protected function compileChildrenAggregation($aggregation)
+    /**
+     * Compile children aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileChildrenAggregation(array $aggregation): array
     {
         $type = is_array($aggregation['args']) ? $aggregation['args']['type'] : $aggregation['args'];
 
@@ -649,7 +876,14 @@ class QueryGrammar extends BaseGrammar
         ];
     }
 
-    protected function compileOrders(Builder $builder, $orders = [])
+    /**
+     * Compile the orders section of a query
+     *
+     * @param  Builder  $builder
+     * @param  array  $orders
+     * @return array
+     */
+    protected function compileOrders(Builder $builder, $orders = []): array
     {
         $compiledOrders = [];
 
@@ -661,10 +895,7 @@ class QueryGrammar extends BaseGrammar
             switch ($type) {
                 case 'geoDistance' :
                     $orderSettings = [
-                        $column         => [
-                            'lat' =>  (float) $order['options']['coordinates'][0],
-                            'lon' =>  (float) $order['options']['coordinates'][1],
-                        ],
+                        $column         => $order['options']['coordinates'],
                         'order'         => $order['direction'] < 0 ? 'desc' : 'asc',
                         'unit'          => $order['options']['unit'] ?? 'km',
                         'distance_type' => $order['options']['distanceType'] ?? 'plane',
@@ -693,23 +924,30 @@ class QueryGrammar extends BaseGrammar
         return $compiledOrders;
     }
 
-    public function compileInsert(Builder $builder, array $values)
+    /**
+     * Compile the given values to an Elasticsearch insert statement
+     *
+     * @param  Builder  $builder
+     * @param  array  $values
+     * @return array
+     */
+    public function compileInsert(Builder $builder, array $values): array
     {
         $params = [];
 
         foreach ($values as $doc) {
             if (isset($doc['child_documents'])) {
-                foreach ($doc['child_documents']['documents'] as $childDoc) {
+                foreach ($doc['child_documents'] as $childDoc) {
                     $params['body'][] = [
                         'index' => [
                             '_index' => $builder->from . $this->indexSuffix,
-                            '_type'  => isset($doc['child_documents']['type']) ? $doc['child_documents']['type'] : $builder->type,
+                            '_type'  => $childDoc['type'] ?? $builder->type,
                             '_id'    => $childDoc['id'],
                             'parent' => $doc['id'],
-                        ],
+                        ]
                     ];
 
-                    $params['body'][] = $childDoc;
+                    $params['body'][] = $childDoc['document'];
                 }
 
                 unset($doc['child_documents']);
@@ -723,18 +961,49 @@ class QueryGrammar extends BaseGrammar
                 ],
             ];
 
+            unset($doc['id']);
+
             $params['body'][] = $doc;
         }
 
         return $params;
     }
 
-    protected function convertKey($value)
+    /**
+     * Compile a delete query
+     *
+     * @param  Builder  $builder
+     * @return array
+     */
+    public function compileDelete(Builder $builder): array
+    {
+        $params = [
+            'index' => $builder->from . $this->indexSuffix,
+            'type'  => $builder->type,
+            'id'    => (string) $builder->wheres[0]['value']
+        ];
+
+        return $params;
+    }
+
+    /**
+     * Convert a key to an Elasticsearch-friendly format
+     *
+     * @param  mixed  $value
+     * @return string
+     */
+    protected function convertKey($value): string
     {
         return (string) $value;
     }
 
-    protected function convertDateTime($value)
+    /**
+     * Compile a delete query
+     *
+     * @param  Builder  $builder
+     * @return string
+     */
+    protected function convertDateTime($value): string
     {
         return $value->format('Y-m-d\TH:i:s');
     }
@@ -744,7 +1013,7 @@ class QueryGrammar extends BaseGrammar
      *
      * @return string
      */
-    public function getIndexSuffix()
+    public function getIndexSuffix(): string
     {
         return $this->indexSuffix;
     }
@@ -755,7 +1024,7 @@ class QueryGrammar extends BaseGrammar
      * @param  string  $suffix
      * @return $this
      */
-    public function setIndexSuffix($suffix)
+    public function setIndexSuffix(string $suffix): self
     {
         $this->indexSuffix = $suffix;
 

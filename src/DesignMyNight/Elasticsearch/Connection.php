@@ -244,11 +244,11 @@ class Connection extends BaseConnection
      *
      * @param  string  $query
      * @param  array   $bindings
-     * @return int
+     * @return array
      */
     public function update($query, $bindings = [])
     {
-        return $this->connection->index($params);
+        return $this->connection->index($query);
     }
 
     /**
@@ -256,11 +256,11 @@ class Connection extends BaseConnection
      *
      * @param  string  $query
      * @param  array   $bindings
-     * @return int
+     * @return array
      */
     public function delete($query, $bindings = [])
     {
-
+        return $this->connection->delete($query);
     }
 
     /**
