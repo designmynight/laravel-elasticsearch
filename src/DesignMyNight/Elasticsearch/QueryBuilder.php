@@ -16,6 +16,8 @@ class QueryBuilder extends BaseBuilder
 
     public $aggregations;
 
+    public $includeInnerHits;
+
     protected $rawResponse;
 
     protected $scrollSelect;
@@ -183,7 +185,8 @@ class QueryBuilder extends BaseBuilder
      * and capturing the added where as a filter
      * 
      * @param  string  $method
-     * @param 
+     * @param  array $args
+     * @return self
      */
     public function dynamicFilter(string $method, array $args): self
     {
@@ -223,18 +226,17 @@ class QueryBuilder extends BaseBuilder
     }
 
     /**
-     * Add a parent where statement to the query.
+     * Add a type clause to the query.
      *
-     * @param  \Closure $callback
-     * @param  string   $boolean
+     * @param  string  $documentType
+     * @param  string  $boolean
      * @return \Illuminate\Database\Query\Builder|static
      */
-    public function whereParent($documentType, $query, $boolean = 'and'): self
+    public function whereType($documentType, $boolean = 'and')
     {
         $this->wheres[] = [
-            'type' => 'Parent',
-            'documentType' => $documentType,
-            'value' => $query,
+            'type' => 'Type',
+            'value' => $documentType,
             'boolean' => $boolean
         ];
 
@@ -242,20 +244,53 @@ class QueryBuilder extends BaseBuilder
     }
 
     /**
-     * Add a child where statement to the query.
+     * Add a where parent statement to the query.
      *
+     * @param  string  $documentType
      * @param  \Closure $callback
-     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  array $options
+     * @param  string   $boolean
+     * @return \Illuminate\Database\Query\Builder|static
+     */
+    public function whereParent(string $documentType, Closure $callback, array $options = [], string $boolean = 'and'): self
+    {
+        return $this->whereRelationship('parent', $documentType, $callback, $options, $boolean);
+    }
+
+    /**
+     * Add a where child statement to the query.
+     *
+     * @param  string  $documentType
+     * @param  \Closure $callback
+     * @param  array $options
+     * @param  string   $boolean
+     * @return \Illuminate\Database\Query\Builder|static
+     */
+    public function whereChild(string $documentType, Closure $callback, array $options = [], string $boolean = 'and'): self
+    {
+        return $this->whereRelationship('child', $documentType, $callback, $options, $boolean);
+    }
+
+    /**
+     * Add a where relationship statement to the query.
+     *
+     * @param  string  $relationshipType
+     * @param  string  $documentType
+     * @param  \Closure $callback
+     * @param  array $options
      * @param  string   $boolean
      *
      * @return \Illuminate\Database\Query\Builder|static
      */
-    public function whereChild($documentType, $query, $boolean = 'and'): self
+    public function whereRelationship(string $relationshipType, string $documentType, Closure $callback, array $options = [], string $boolean = 'and'): self
     {
+        call_user_func($callback, $query = $this->newQuery());
+
         $this->wheres[] = [
-            'type' => 'Child',
+            'type' => ucfirst($relationshipType),
             'documentType' => $documentType,
             'value' => $query,
+            'options' => $options,
             'boolean' => $boolean
         ];
 
@@ -263,10 +298,10 @@ class QueryBuilder extends BaseBuilder
     }
 
     /**
-     * @param      $key
-     * @param      $type
-     * @param null $args
-     * @param null $aggregations
+     * @param  string $key
+     * @param  string $type
+     * @param  null $args
+     * @param  null $aggregations
      * @return self
      */
     public function aggregation($key, $type, $args = null, $aggregations = null): self
@@ -301,6 +336,18 @@ class QueryBuilder extends BaseBuilder
         $type = isset($options['type']) ? $options['type'] : 'basic';
 
         $this->orders[] = compact('column', 'direction', 'type', 'options');
+
+        return $this;
+    }
+
+    /**
+     * Whether to include inner hits in the response
+     * 
+     * @return  self
+     */
+    public function withInnerHits(): self
+    {
+        $this->includeInnerHits = true;
 
         return $this;
     }
@@ -403,9 +450,9 @@ class QueryBuilder extends BaseBuilder
     /**
      * Get the Elasticsearch representation of the query.
      *
-     * @return string
+     * @return array
      */
-    public function toCompiledQuery(): string
+    public function toCompiledQuery(): array
     {
         return $this->toSql();
     }
@@ -413,7 +460,7 @@ class QueryBuilder extends BaseBuilder
     /**
      * @inheritdoc
      */
-    public function insert(array $values)
+    public function insert(array $values): bool
     {
         // Since every insert gets treated like a batch insert, we will have to detect
         // if the user is inserting a single document or an array of documents.

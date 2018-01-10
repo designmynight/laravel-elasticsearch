@@ -268,6 +268,24 @@ class QueryGrammar extends BaseGrammar
     }
 
     /**
+     * Compile a type clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return array
+     */
+    protected function compileWhereType(Builder $builder, array $where): array
+    {
+        $query = [
+            'type' => [
+                'value' => $where['value']
+            ]
+        ];
+
+        return $query;
+    }
+
+    /**
      * Compile a parent clause
      *
      * @param  Builder  $builder
@@ -627,14 +645,14 @@ class QueryGrammar extends BaseGrammar
             return $clause;
         }
 
-        $optionsToApply = ['boost'];
+        $optionsToApply = ['boost', 'inner_hits'];
         $options        = array_intersect_key($where['options'], array_flip($optionsToApply));
 
         foreach ($options as $option => $value) {
-            $method = 'apply' . ucfirst($option) . 'Option';
+            $method = 'apply' . studly_case($option) . 'Option';
 
             if (method_exists($this, $method)){
-                $this->$method($clause, $value);
+                $clause = $this->$method($clause, $value, $where);
             }
         }
 
@@ -646,9 +664,10 @@ class QueryGrammar extends BaseGrammar
      *
      * @param  array  $clause
      * @param  mixed  $value
+     * @param  array  $where
      * @return array
      */
-    protected function applyBoostOption(array $clause, $value): array
+    protected function applyBoostOption(array $clause, $value, $where): array
     {
         $firstKey = key($clause);
 
@@ -664,6 +683,23 @@ class QueryGrammar extends BaseGrammar
         ];
 
         return  $clause;
+    }
+
+    /**
+     * Apply inner hits options to the clause
+     *
+     * @param  array $clause
+     * @param  mixed  $value
+     * @param  array  $where
+     * @return array
+     */
+    protected function applyInnerHitsOption(array $clause, $value, $where): array
+    {
+        $firstKey = key($clause);
+
+        $clause[$firstKey]['inner_hits'] = empty($value) || $value === true ? (object) [] : (array) $value;
+
+        return $clause;
     }
 
     /**
