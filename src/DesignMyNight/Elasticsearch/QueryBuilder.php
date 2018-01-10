@@ -282,7 +282,7 @@ class QueryBuilder extends BaseBuilder
      *
      * @return \Illuminate\Database\Query\Builder|static
      */
-    public function whereRelationship(string $relationshipType, string $documentType, Closure $callback, array $options = [], string $boolean = 'and'): self
+    protected function whereRelationship(string $relationshipType, string $documentType, Closure $callback, array $options = [], string $boolean = 'and'): self
     {
         call_user_func($callback, $query = $this->newQuery());
 
