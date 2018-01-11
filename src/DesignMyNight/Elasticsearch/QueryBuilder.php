@@ -23,6 +23,13 @@ class QueryBuilder extends BaseBuilder
     protected $scrollSelect;
 
     /**
+     * All of the supported clause operators.
+     *
+     * @var array
+     */
+    public $operators = ['=', '<', '>', '<=', '>=', '!=', 'exists'];
+
+    /**
      * Set the document type the search is targeting.
      *
      * @param string $type

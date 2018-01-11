@@ -158,13 +158,16 @@ class QueryGrammar extends BaseGrammar
             '<=' => 'lte',
         ];
 
-        if (is_null($value)) {
+        if (is_null($value) || $where['operator'] == 'exists') {
             $query = [
                 'exists' => [
                     'field' => $where['column'],
                 ],
             ];
-        } else if (in_array($where['operator'], array_keys($operatorsMap))) {
+
+            $where['not'] = !$value;
+        }
+        else if (in_array($where['operator'], array_keys($operatorsMap))) {
             $operator = $operatorsMap[$where['operator']];
             $query    = [
                 'range' => [
@@ -173,7 +176,8 @@ class QueryGrammar extends BaseGrammar
                     ],
                 ],
             ];
-        } else {
+        }
+        else {
             $query = [
                 'term' => [
                     $where['column'] => $value,
@@ -183,7 +187,7 @@ class QueryGrammar extends BaseGrammar
 
         $query = $this->applyOptionsToClause($query, $where);
 
-        if (($where['operator'] == '!=' && !is_null($value)) || ($where['operator'] == '=' && is_null($value))) {
+        if (!empty($where['not']) || ($where['operator'] == '!=' && !is_null($value)) || ($where['operator'] == '=' && is_null($value))) {
             $query = [
                 'bool' => [
                     'must_not' => [
@@ -383,7 +387,7 @@ class QueryGrammar extends BaseGrammar
     }
 
     /**
-     * Compile a where not exists clause
+     * Compile a where between clause
      *
      * @param  Builder  $builder
      * @param  array  $where
@@ -428,49 +432,6 @@ class QueryGrammar extends BaseGrammar
         }
 
         return $query;
-    }
-
-    /**
-     * Compile a where not exists clause
-     *
-     * @param  Builder  $builder
-     * @param  array  $where
-     * @param  bool  $not
-     * @return array
-     */
-    protected function compileWhereExists(Builder $builder, array $where, $not = false): array
-    {
-        $query = [
-            'exists' => [
-                'field' => $where['query']->columns[0],
-            ],
-        ];
-
-        $query = $this->applyOptionsToClause($query, $where);
-
-        if ($not) {
-            $query = [
-                'bool' => [
-                    'must_not' => [
-                        $query,
-                    ],
-                ],
-            ];
-        }
-
-        return $query;
-    }
-
-    /**
-     * Compile a where not exists clause
-     *
-     * @param  Builder  $builder
-     * @param  array  $where
-     * @return array
-     */
-    protected function compileWhereNotExists(Builder $builder, array $where): array
-    {
-        return $this->compileWhereExists($builder, $where, true);
     }
 
     /**
