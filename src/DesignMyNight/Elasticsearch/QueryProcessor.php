@@ -92,7 +92,9 @@ class QueryProcessor extends BaseProcessor
     protected function addInnerHitsToDocument($document, $innerHits): array
     {
         foreach ($innerHits as $documentType => $hitResults){
-            $document['inner_hits'][$documentType] = array_column($hitResults['hits']['hits'], '_source');
+            foreach ( $hitResults['hits']['hits'] as $result ){
+                $document['inner_hits'][$documentType][] = array_merge(['_id' => $result['_id']], $result['_source']);
+            }
         }
 
         return $document;
