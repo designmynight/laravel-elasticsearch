@@ -4,24 +4,6 @@ namespace DesignMyNight\Elasticsearch;
 
 trait Searchable {
     /**
-     * The Elasticsearch index this model should be added to
-     * @var string
-     */
-    protected $searchIndex;
-
-    /**
-     * The type of document this should be added as
-     * @var string
-     */
-    protected $searchType;
-
-    /**
-     * A list of embedded fields that should be indexed as child documents
-     * @var array
-     */
-    protected $indexAsChildDocuments;
-
-    /**
      * Get the index this model is to be added to
      *
      * @return string
