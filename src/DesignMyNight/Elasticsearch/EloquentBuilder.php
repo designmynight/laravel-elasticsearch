@@ -22,7 +22,7 @@ class EloquentBuilder extends BaseBuilder
     {
         $this->model = $model;
 
-        $this->query->from($model->getTable());
+        $this->query->from($model->getSearchIndex());
 
         $this->query->type($model->getSearchType());
 
