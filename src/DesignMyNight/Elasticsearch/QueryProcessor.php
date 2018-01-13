@@ -25,6 +25,8 @@ class QueryProcessor extends BaseProcessor
 
         $this->aggregations = $results['aggregations'] ?? [];
 
+        $this->query = $query;
+
         // Return a generator if we got a scroll cursor in the results
         if (isset($results['_scroll_id'])){
             return $this->yieldResults($results);
@@ -50,13 +52,13 @@ class QueryProcessor extends BaseProcessor
     {
         // First yield each result from the initial request
         foreach ($results['hits']['hits'] as $result){
-            yield $this->documentFromResult($query, $result);
+            yield $this->documentFromResult($this->query, $result);
         }
 
         // Then go through the scroll cursor getting one result at a time
         if (isset($results['scrollCursor'])){
             foreach ($results['scrollCursor'] as $result){
-                $document = $this->documentFromResult($query, $result);
+                $document = $this->documentFromResult($this->query, $result);
 
                 yield $document;
             }
