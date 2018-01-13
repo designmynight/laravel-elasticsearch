@@ -113,7 +113,7 @@ $aggregations = $myQuery->getQuery()->getAggregationResults();
 ## Geo queries
 You can filter search results by distance from a geo point or include only those results that fall within given bounds, passing arguments in the format you'd use if querying Elasticsearch directly.
 
-```
+```PHP
 $withinDistance = MyModel::on('elasticsearch')
                     ->whereGeoDistance('geo_field', [$lat, $lon], $distance);
 
