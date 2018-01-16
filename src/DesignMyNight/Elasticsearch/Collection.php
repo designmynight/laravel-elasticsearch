@@ -2,7 +2,7 @@
 
 namespace DesignMyNight\Elasticsearch;
 
-use Illuminate\Support\Collection as BaseCollection;
+use Illuminate\Database\Eloquent\Collection as BaseCollection;
 
 class Collection extends BaseCollection
 {
