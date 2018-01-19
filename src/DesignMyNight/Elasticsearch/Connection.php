@@ -30,7 +30,8 @@ class Connection extends BaseConnection
         $this->indexSuffix = isset($config['suffix']) ? $config['suffix'] : '';
 
         // Extract the hosts from config
-        $hosts = explode(',', $config['host']);
+        $hostsConfig = $config['hosts'] ?? $config['host'];
+        $hosts = explode(',', $hostsConfig);
 
         // You can pass options directly to the client
         $options = array_get($config, 'options', []);
