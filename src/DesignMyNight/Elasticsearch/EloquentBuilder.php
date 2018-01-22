@@ -64,8 +64,6 @@ class EloquentBuilder extends BaseBuilder
     public function getAggregations(string $collectionClass = ''): Collection
     {
         $collectionClass = $collectionClass ?: Collection::class;
-
-        $this->query->get([]);
         $aggregations = $this->query->getAggregationResults();
 
         return new $collectionClass($aggregations);
