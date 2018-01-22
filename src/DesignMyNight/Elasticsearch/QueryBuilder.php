@@ -18,6 +18,8 @@ class QueryBuilder extends BaseBuilder
 
     public $includeInnerHits;
 
+    protected $results;
+
     protected $rawResponse;
 
     protected $scrollSelect;
@@ -366,6 +368,8 @@ class QueryBuilder extends BaseBuilder
      */
     public function getAggregationResults(): array
     {
+        $this->getResultsOnce();
+
         return $this->processor->getAggregationResults();
     }
 
@@ -383,11 +387,20 @@ class QueryBuilder extends BaseBuilder
             $this->columns = $columns;
         }
 
-        $results = $this->processor->processSelect($this, $this->runSelect());
+        $results = $this->getResultsOnce();
 
         $this->columns = $original;
 
         return $this->shouldUseScroll() ? $results : collect($results);
+    }
+
+    protected function getResultsOnce(): array
+    {
+        if ($this->results === null) {
+            $this->results = $this->processor->processSelect($this, $this->runSelect());
+        }
+
+        return $this->results;
     }
 
     /**
