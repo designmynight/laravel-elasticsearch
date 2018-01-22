@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder as BaseBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Collection;
 
 class EloquentBuilder extends BaseBuilder
 {
@@ -58,6 +59,16 @@ class EloquentBuilder extends BaseBuilder
         }
 
         return $builder->getModel()->newCollection($models);
+    }
+
+    public function getAggregations(string $collectionClass = ''): Collection
+    {
+        $collectionClass = $collectionClass ?: Collection::class;
+
+        $this->query->get([]);
+        $aggregations = $this->query->getAggregationResults();
+
+        return new $collectionClass($aggregations);
     }
 
     /**
