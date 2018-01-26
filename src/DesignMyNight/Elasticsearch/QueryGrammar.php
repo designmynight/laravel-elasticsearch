@@ -787,8 +787,21 @@ class QueryGrammar extends BaseGrammar
             ]
         ];
 
-        if ( is_array($aggregation['args']) && isset($aggregation['args']['interval']) ){
-            $compiled['date_histogram']['interval'] = $aggregation['args']['interval'];
+        if ( is_array($aggregation['args']) ){
+            if ( isset($aggregation['args']['interval']) ){
+                $compiled['date_histogram']['interval'] = $aggregation['args']['interval'];
+            }
+
+            if ( isset($aggregation['args']['min_doc_count']) ){
+                $compiled['date_histogram']['min_doc_count'] = $aggregation['args']['min_doc_count'];
+            }
+
+            if ( isset($aggregation['args']['extended_bounds']) && is_array($aggregation['args']['extended_bounds']) ){
+                $compiled['date_histogram']['extended_bounds'] = [];
+                $compiled['date_histogram']['extended_bounds']['min'] = $this->convertDateTime($aggregation['args']['extended_bounds'][0]);
+                $compiled['date_histogram']['extended_bounds']['max'] = $this->convertDateTime($aggregation['args']['extended_bounds'][1]);
+            }
+
         }
 
         return $compiled;
