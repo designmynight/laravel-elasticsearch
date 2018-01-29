@@ -138,7 +138,7 @@ class QueryBuilder extends BaseBuilder
     {
         $type = 'NestedDoc';
 
-        if ( $query instanceof Closure ){
+        if ( is_callable($query) ){
             call_user_func($query, $query = $this->newQuery());
         }
 
@@ -315,11 +315,11 @@ class QueryBuilder extends BaseBuilder
      */
     public function aggregation($key, $type, $args = null, $aggregations = null): self
     {
-        if ( $args instanceof Closure ){
+        if ( is_callable($args) ){
             call_user_func($args, $args = $this->newQuery());
         }
 
-        if ( $aggregations instanceof Closure ){
+        if ( is_callable($aggregations) ){
             call_user_func($aggregations, $aggregations = $this->newQuery());
         }
 
