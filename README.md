@@ -35,7 +35,7 @@ Create or update your base Model.php class to override `newEloquentBuilder()` an
 public function newEloquentBuilder($query)
 {
     switch ($this->getConnectionName()) {
-        case 'elasticsearch':
+        case static::getElasticsearchConnectionName():
             $builder = new ElasticsearchEloquentBuilder($query);
             break;
 
@@ -56,7 +56,7 @@ protected function newBaseQueryBuilder()
     $connection = $this->getConnection();
 
     switch ($this->getConnectionName()) {
-        case 'elasticsearch':
+        case static::getElasticsearchConnectionName():
             $builder = new ElasticsearchQueryBuilder($connection, $connection->getQueryGrammar(), $connection->getPostProcessor());
             break;
 
@@ -72,7 +72,7 @@ protected function newBaseQueryBuilder()
 You're now ready to carry out searches on your data. The query will look for an Elasticsearch index with the same name as the database table that your models reside in.
 
 ```PHP
-$documents = MyModel::on('elasticsearch')
+$documents = MyModel::newElasticsearchQuery()
               ->where('date', '>', Carbon\Carbon::now())
               ->get();
 ```
@@ -85,7 +85,7 @@ Aggregations can be added to a query with an approach that's similar to querying
 4. (Optional) A function allowing you to provide further sub-aggregations 
 
 ```PHP
-$myQuery = MyModel::on('elasticsearch')
+$myQuery = MyModel::newElasticsearchQuery()
              ->aggregation(
                  // The key of the aggregation (used in the Elasticsearch response)
                  'my_filter_aggregation',
@@ -114,10 +114,10 @@ $aggregations = $myQuery->getQuery()->getAggregationResults();
 You can filter search results by distance from a geo point or include only those results that fall within given bounds, passing arguments in the format you'd use if querying Elasticsearch directly.
 
 ```PHP
-$withinDistance = MyModel::on('elasticsearch')
+$withinDistance = MyModel::newElasticsearchQuery()
                     ->whereGeoDistance('geo_field', [$lat, $lon], $distance);
 
-$withinBounds= MyModel::on('elasticsearch')
+$withinBounds= MyModel::newElasticsearchQuery()
                  ->whereGeoBoundsIn('geo_field', $boundingBox);
 ```
 
@@ -125,7 +125,7 @@ $withinBounds= MyModel::on('elasticsearch')
 You can use a scroll search to retrieve large numbers of results. Rather than returning a Collection, you'll get a PHP [Generator](http://php.net/manual/en/language.generators.overview.php) function that you can iterate over, where each value is a Model for a single result from Elasticsearch.
 
 ```PHP
-$documents = MyModel::on('elasticsearch')
+$documents = MyModel::newElasticsearchQuery()
                ->limit(100000)
                ->usingScroll()
                ->get();
