@@ -3,6 +3,11 @@
 namespace DesignMyNight\Elasticsearch;
 
 trait Searchable {
+    public static function getElasticsearchConnectionName(): string
+    {
+        return 'elasticsearch';
+    }
+
     /**
      * Get the index this model is to be added to
      *
@@ -33,7 +38,7 @@ trait Searchable {
     {
         $originalConnection = $this->getConnectionName();
 
-        $this->setConnection('elasticsearch');
+        $this->setConnection(static::getElasticsearchConnectionName());
 
         $result = $callback(...array_slice(func_get_args(), 1));
 
@@ -116,5 +121,12 @@ trait Searchable {
     public function newCollection(array $models = array())
     {
         return new Collection($models);
+    }
+
+    public static function newElasticsearchQuery(): EloquentBuilder
+    {
+        $model = new static();
+
+        return $model->on(static::getElasticsearchConnectionName())->setModel($model);
     }
 }
