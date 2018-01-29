@@ -123,7 +123,7 @@ trait Searchable {
         return new Collection($models);
     }
 
-    public static function newElasticSearchQuery(): EloquentBuilder
+    public static function newElasticsearchQuery(): EloquentBuilder
     {
         $model = new static();
 
