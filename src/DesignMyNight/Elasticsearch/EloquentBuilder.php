@@ -25,7 +25,7 @@ class EloquentBuilder extends BaseBuilder
 
         $this->query->from($model->getSearchIndex());
 
-        $this->query->whereType($model->getSearchType());
+        $this->query->type($model->getSearchType());
 
         return $this;
     }
