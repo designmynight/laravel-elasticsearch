@@ -3,6 +3,7 @@
 namespace DesignMyNight\Elasticsearch;
 
 trait Searchable {
+
     public static function getElasticsearchConnectionName(): string
     {
         return 'elasticsearch';
@@ -127,6 +128,8 @@ trait Searchable {
     {
         $model = new static();
 
-        return $model->on(static::getElasticsearchConnectionName())->setModel($model);
+        return $model
+            ->on(static::getElasticsearchConnectionName())
+            ->whereType($model->getSearchType());
     }
 }
