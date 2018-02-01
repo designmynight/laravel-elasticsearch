@@ -950,13 +950,18 @@ class QueryGrammar extends BaseGrammar
                 unset($doc['child_documents']);
             }
 
-            $params['body'][] = [
-                'index' => [
-                    '_index' => $builder->from . $this->indexSuffix,
-                    '_type'  => $builder->type,
-                    '_id'    => $doc['id'],
-                ],
+            $index = [
+                '_index' => $builder->from . $this->indexSuffix,
+                '_type'  => $builder->type,
+                '_id'    => $doc['id'],
             ];
+
+            if (isset($doc['_parent'])) {
+                $index['parent'] = $doc['_parent'];
+                unset($doc['_parent']);
+            }
+
+            $params['body'][] = ['index' => $index];
 
             unset($doc['id']);
 
