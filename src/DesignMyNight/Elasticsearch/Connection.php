@@ -171,10 +171,11 @@ class Connection extends BaseConnection
     public function scrollSelect($params, $bindings = [])
     {
         $scrollTimeout = '30s';
+        $limit = min($params['body']['size'] ?? 100000, 100000);
 
         $scrollParams = array(
             'scroll' => $scrollTimeout,
-            'size'   => min($params['body']['size'], 5000),
+            'size'   => 500,
             'index'  => $params['index'],
             'body'   => $params['body']
         );
@@ -187,8 +188,8 @@ class Connection extends BaseConnection
 
         $numResults = count($results['hits']['hits']);
 
-        if ( $params['body']['size'] > $numResults ){
-            $results['scrollCursor'] = $this->scroll($scrollId, $scrollTimeout, $params['body']['size'] - $numResults);
+        if ( $limit >= $numResults ){
+            $results['scrollCursor'] = $this->scroll($scrollId, $scrollTimeout, $limit - $numResults);
         }
 
         return $results;
