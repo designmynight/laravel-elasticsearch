@@ -394,7 +394,12 @@ class QueryBuilder extends BaseBuilder
         return $this->shouldUseScroll() ? $results : collect($results);
     }
 
-    protected function getResultsOnce(): array
+    /**
+     * Get results without re-fetching for subsequent calls.
+     *
+     * @return array|Generator
+     */
+    protected function getResultsOnce()
     {
         if ($this->results === null) {
             $this->results = $this->processor->processSelect($this, $this->runSelect());
