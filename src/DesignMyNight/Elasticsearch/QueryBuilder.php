@@ -138,7 +138,7 @@ class QueryBuilder extends BaseBuilder
     {
         $type = 'NestedDoc';
 
-        if ( is_callable($query) ){
+        if (!is_string($query) && is_callable($query)){
             call_user_func($query, $query = $this->newQuery());
         }
 
@@ -192,7 +192,7 @@ class QueryBuilder extends BaseBuilder
     /**
      * Add a filter query by calling the required 'where' method
      * and capturing the added where as a filter
-     * 
+     *
      * @param  string  $method
      * @param  array $args
      * @return self
@@ -315,11 +315,11 @@ class QueryBuilder extends BaseBuilder
      */
     public function aggregation($key, $type, $args = null, $aggregations = null): self
     {
-        if ( is_callable($args) ){
+        if (!is_string($args) && is_callable($args)){
             call_user_func($args, $args = $this->newQuery());
         }
 
-        if ( is_callable($aggregations) ){
+        if (!is_string($aggregations) && is_callable($aggregations)){
             call_user_func($aggregations, $aggregations = $this->newQuery());
         }
 
@@ -351,7 +351,7 @@ class QueryBuilder extends BaseBuilder
 
     /**
      * Whether to include inner hits in the response
-     * 
+     *
      * @return  self
      */
     public function withInnerHits(): self
@@ -363,7 +363,7 @@ class QueryBuilder extends BaseBuilder
 
     /**
      * Get the aggregations returned from query
-     * 
+     *
      * @return array
      */
     public function getAggregationResults(): array
