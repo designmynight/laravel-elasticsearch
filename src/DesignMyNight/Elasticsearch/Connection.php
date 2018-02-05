@@ -18,6 +18,8 @@ class Connection extends BaseConnection
 
     protected $indexSuffix = '';
 
+    protected $requestTimeout;
+
     /**
      * Create a new Elasticsearch connection instance.
      *
@@ -158,7 +160,7 @@ class Connection extends BaseConnection
      */
     public function select($params, $bindings = [])
     {
-        return $this->connection->search($params);
+        return $this->connection->search($this->addClientParams($params));
     }
 
     /**
@@ -232,13 +234,13 @@ class Connection extends BaseConnection
     /**
      * Run an insert statement against the database.
      *
-     * @param  array  $query
-     * @param  array   $bindings
+     * @param  array  $params
+     * @param  array  $bindings
      * @return bool
      */
     public function insert($params, $bindings = [])
     {
-        return $this->connection->bulk($params);
+        return $this->connection->bulk($this->addClientParams($params));
     }
 
     /**
@@ -374,6 +376,41 @@ class Connection extends BaseConnection
     public function pretend(Closure $callback)
     {
 
+    }
+
+    /**
+     * Get the timeout for the entire Elasticsearch request
+     * @return float
+     */
+    public function getRequestTimeout(): float
+    {
+        return $this->requestTimeout;
+    }
+
+    /**
+     * Get the timeout for the entire Elasticsearch request
+     * @param float $requestTimeout
+     * @return self
+     */
+    public function setRequestTimeout(float $requestTimeout): self
+    {
+        $this->requestTimeout = $requestTimeout;
+
+        return $this;
+    }
+
+    /**
+     * Add client-specific parameters to the request params
+     * @param array $params
+     * @return array
+     */
+    protected function addClientParams(array $params): array
+    {
+        if ($this->requestTimeout){
+            $params['client']['timeout'] = $this->requestTimeout;
+        }
+
+        return $params;
     }
 
     /**
