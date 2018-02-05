@@ -389,7 +389,7 @@ class Connection extends BaseConnection
 
     /**
      * Get the timeout for the entire Elasticsearch request
-     * @param float $requestTimeout
+     * @param float $requestTimeout seconds
      * @return self
      */
     public function setRequestTimeout(float $requestTimeout): self
