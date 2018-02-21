@@ -18,6 +18,8 @@ class Connection extends BaseConnection
 
     protected $indexSuffix = '';
 
+    protected $requestTimeout;
+
     /**
      * Create a new Elasticsearch connection instance.
      *
@@ -30,7 +32,8 @@ class Connection extends BaseConnection
         $this->indexSuffix = isset($config['suffix']) ? $config['suffix'] : '';
 
         // Extract the hosts from config
-        $hosts = explode(',', $config['host']);
+        $hostsConfig = $config['hosts'] ?? $config['host'];
+        $hosts = explode(',', $hostsConfig);
 
         // You can pass options directly to the client
         $options = array_get($config, 'options', []);
@@ -157,7 +160,7 @@ class Connection extends BaseConnection
      */
     public function select($params, $bindings = [])
     {
-        return $this->connection->search($params);
+        return $this->connection->search($this->addClientParams($params));
     }
 
     /**
@@ -170,10 +173,11 @@ class Connection extends BaseConnection
     public function scrollSelect($params, $bindings = [])
     {
         $scrollTimeout = '30s';
+        $limit = min($params['body']['size'] ?? 100000, 100000);
 
         $scrollParams = array(
             'scroll' => $scrollTimeout,
-            'size'   => min($params['body']['size'], 5000),
+            'size'   => 500,
             'index'  => $params['index'],
             'body'   => $params['body']
         );
@@ -186,8 +190,8 @@ class Connection extends BaseConnection
 
         $numResults = count($results['hits']['hits']);
 
-        if ( $params['body']['size'] > $numResults ){
-            $results['scrollCursor'] = $this->scroll($scrollId, $scrollTimeout, $params['body']['size'] - $numResults);
+        if ( $limit >= $numResults ){
+            $results['scrollCursor'] = $this->scroll($scrollId, $scrollTimeout, $limit - $numResults);
         }
 
         return $results;
@@ -230,13 +234,13 @@ class Connection extends BaseConnection
     /**
      * Run an insert statement against the database.
      *
-     * @param  array  $query
-     * @param  array   $bindings
+     * @param  array  $params
+     * @param  array  $bindings
      * @return bool
      */
     public function insert($params, $bindings = [])
     {
-        return $this->connection->bulk($params);
+        return $this->connection->bulk($this->addClientParams($params));
     }
 
     /**
@@ -244,11 +248,11 @@ class Connection extends BaseConnection
      *
      * @param  string  $query
      * @param  array   $bindings
-     * @return int
+     * @return array
      */
     public function update($query, $bindings = [])
     {
-        return $this->connection->index($params);
+        return $this->connection->index($query);
     }
 
     /**
@@ -256,11 +260,11 @@ class Connection extends BaseConnection
      *
      * @param  string  $query
      * @param  array   $bindings
-     * @return int
+     * @return array
      */
     public function delete($query, $bindings = [])
     {
-
+        return $this->connection->delete($query);
     }
 
     /**
@@ -372,6 +376,41 @@ class Connection extends BaseConnection
     public function pretend(Closure $callback)
     {
 
+    }
+
+    /**
+     * Get the timeout for the entire Elasticsearch request
+     * @return float
+     */
+    public function getRequestTimeout(): float
+    {
+        return $this->requestTimeout;
+    }
+
+    /**
+     * Get the timeout for the entire Elasticsearch request
+     * @param float $requestTimeout seconds
+     * @return self
+     */
+    public function setRequestTimeout(float $requestTimeout): self
+    {
+        $this->requestTimeout = $requestTimeout;
+
+        return $this;
+    }
+
+    /**
+     * Add client-specific parameters to the request params
+     * @param array $params
+     * @return array
+     */
+    protected function addClientParams(array $params): array
+    {
+        if ($this->requestTimeout){
+            $params['client']['timeout'] = $this->requestTimeout;
+        }
+
+        return $params;
     }
 
     /**

@@ -17,8 +17,8 @@
         "elasticsearch/elasticsearch": "^5.2"
     },
     "autoload": {
-        "psr-0": {
-            "DesignMyNight\\Elasticsearch": "src/"
+        "psr-4": {
+            "DesignMyNight\\Elasticsearch\\": "src/"
         }
     },
     "extra": {

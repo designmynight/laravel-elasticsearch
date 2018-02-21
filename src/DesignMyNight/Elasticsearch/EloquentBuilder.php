@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder as BaseBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Collection;
 
 class EloquentBuilder extends BaseBuilder
 {
@@ -22,7 +23,7 @@ class EloquentBuilder extends BaseBuilder
     {
         $this->model = $model;
 
-        $this->query->from($model->getTable());
+        $this->query->from($model->getSearchIndex());
 
         $this->query->type($model->getSearchType());
 
@@ -53,11 +54,19 @@ class EloquentBuilder extends BaseBuilder
         // If we actually found models we will also eager load any relationships that
         // have been specified as needing to be eager loaded, which will solve the
         // n+1 query issue for the developers to avoid running a lot of queries.
-        else if (count($models) > 0) {
+        if (count($models) > 0) {
             $models = $builder->eagerLoadRelations($models);
         }
 
         return $builder->getModel()->newCollection($models);
+    }
+
+    public function getAggregations(string $collectionClass = ''): Collection
+    {
+        $collectionClass = $collectionClass ?: Collection::class;
+        $aggregations = $this->query->getAggregationResults();
+
+        return new $collectionClass($aggregations);
     }
 
     /**
@@ -73,11 +82,10 @@ class EloquentBuilder extends BaseBuilder
         if ($results instanceof Generator){
             return $this->yieldResults($results);
         }
-        else {
-            return $this->model->hydrate(
-                $results->all()
-            )->all();
-        }
+
+        return $this->model->hydrate(
+            $results->all()
+        )->all();
     }
 
     /**

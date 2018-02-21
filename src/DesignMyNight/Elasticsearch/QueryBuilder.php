@@ -16,9 +16,20 @@ class QueryBuilder extends BaseBuilder
 
     public $aggregations;
 
+    public $includeInnerHits;
+
+    protected $results;
+
     protected $rawResponse;
 
     protected $scrollSelect;
+
+    /**
+     * All of the supported clause operators.
+     *
+     * @var array
+     */
+    public $operators = ['=', '<', '>', '<=', '>=', '!=', 'exists'];
 
     /**
      * Set the document type the search is targeting.
@@ -27,7 +38,7 @@ class QueryBuilder extends BaseBuilder
      *
      * @return Builder
      */
-    public function type($type)
+    public function type($type): self
     {
         $this->type = $type;
 
@@ -41,9 +52,9 @@ class QueryBuilder extends BaseBuilder
      * @param  array   $values
      * @param  string  $boolean
      * @param  bool  $not
-     * @return $this
+     * @return self
      */
-    public function whereBetween($column, array $values, $boolean = 'and', $not = false)
+    public function whereBetween($column, array $values, $boolean = 'and', $not = false): self
     {
         $type = 'Between';
 
@@ -60,9 +71,9 @@ class QueryBuilder extends BaseBuilder
      * @param  string  $distance
      * @param  string  $boolean
      * @param  bool  $not
-     * @return $this
+     * @return self
      */
-    public function whereGeoDistance($column, array $location, $distance, $boolean = 'and', $not = false)
+    public function whereGeoDistance($column, array $location, $distance, $boolean = 'and', bool $not = false): self
     {
         $type = 'GeoDistance';
 
@@ -76,9 +87,9 @@ class QueryBuilder extends BaseBuilder
      *
      * @param  string  $column
      * @param  array   $bounds
-     * @return $this
+     * @return self
      */
-    public function whereGeoBoundsIn($column, array $bounds)
+    public function whereGeoBoundsIn($column, array $bounds): self
     {
         $type = 'GeoBoundsIn';
 
@@ -102,7 +113,7 @@ class QueryBuilder extends BaseBuilder
      * @param  string  $boolean
      * @return \Illuminate\Database\Query\Builder|static
      */
-    public function whereDate($column, $operator, $value = null, $boolean = 'and', $not = false)
+    public function whereDate($column, $operator, $value = null, $boolean = 'and', $not = false): self
     {
         list($value, $operator) = $this->prepareValueAndOperator(
             $value, $operator, func_num_args() == 2
@@ -121,13 +132,13 @@ class QueryBuilder extends BaseBuilder
      * @param  string  $column
      * @param  \Illuminate\Database\Query\Builder|static $query
      * @param  string  $boolean
-     * @return $this
+     * @return self
      */
-    public function whereNestedDoc($column, $query, $boolean = 'and')
+    public function whereNestedDoc($column, $query, $boolean = 'and'): self
     {
         $type = 'NestedDoc';
 
-        if ( $query instanceof Closure ){
+        if (!is_string($query) && is_callable($query)){
             call_user_func($query, $query = $this->newQuery());
         }
 
@@ -141,9 +152,9 @@ class QueryBuilder extends BaseBuilder
      *
      * @param  \Illuminate\Database\Query\Builder|static $query
      * @param  string  $boolean
-     * @return $this
+     * @return self
      */
-    public function addNestedWhereQuery($query, $boolean = 'and')
+    public function addNestedWhereQuery($query, $boolean = 'and'): self
     {
         $type = 'Nested';
 
@@ -163,9 +174,9 @@ class QueryBuilder extends BaseBuilder
     /**
      * Add any where clause with given options.
      *
-     * @return $this
+     * @return self
      */
-    public function whereWithOptions(...$args)
+    public function whereWithOptions(...$args): self
     {
         $options = array_pop($args);
         $type = array_shift($args);
@@ -181,8 +192,13 @@ class QueryBuilder extends BaseBuilder
     /**
      * Add a filter query by calling the required 'where' method
      * and capturing the added where as a filter
+     *
+     * @param  string  $method
+     * @param  array $args
+     * @return self
      */
-    public function dynamicFilter($method, $args){
+    public function dynamicFilter(string $method, array $args): self
+    {
         $method = lcfirst(substr($method, 6));
 
         $numWheres = count($this->wheres);
@@ -204,9 +220,9 @@ class QueryBuilder extends BaseBuilder
      * @param  string  $query
      * @param  array  $options
      * @param  string  $boolean
-     * @return $this
+     * @return self
      */
-    public function search($query, $options = [], $boolean = 'and')
+    public function search($query, $options = [], $boolean = 'and'): self
     {
         $this->wheres[] = [
             'type'    => 'Search',
@@ -219,18 +235,17 @@ class QueryBuilder extends BaseBuilder
     }
 
     /**
-     * Add a parent where statement to the query.
+     * Add a type clause to the query.
      *
-     * @param  \Closure $callback
-     * @param  string   $boolean
+     * @param  string  $documentType
+     * @param  string  $boolean
      * @return \Illuminate\Database\Query\Builder|static
      */
-    public function whereParent($documentType, $query, $boolean = 'and')
+    public function whereType($documentType, $boolean = 'and')
     {
         $this->wheres[] = [
-            'type' => 'Parent',
-            'documentType' => $documentType,
-            'value' => $query,
+            'type' => 'Type',
+            'value' => $documentType,
             'boolean' => $boolean
         ];
 
@@ -238,20 +253,53 @@ class QueryBuilder extends BaseBuilder
     }
 
     /**
-     * Add a child where statement to the query.
+     * Add a where parent statement to the query.
      *
+     * @param  string  $documentType
      * @param  \Closure $callback
-     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  array $options
+     * @param  string   $boolean
+     * @return \Illuminate\Database\Query\Builder|static
+     */
+    public function whereParent(string $documentType, Closure $callback, array $options = [], string $boolean = 'and'): self
+    {
+        return $this->whereRelationship('parent', $documentType, $callback, $options, $boolean);
+    }
+
+    /**
+     * Add a where child statement to the query.
+     *
+     * @param  string  $documentType
+     * @param  \Closure $callback
+     * @param  array $options
+     * @param  string   $boolean
+     * @return \Illuminate\Database\Query\Builder|static
+     */
+    public function whereChild(string $documentType, Closure $callback, array $options = [], string $boolean = 'and'): self
+    {
+        return $this->whereRelationship('child', $documentType, $callback, $options, $boolean);
+    }
+
+    /**
+     * Add a where relationship statement to the query.
+     *
+     * @param  string  $relationshipType
+     * @param  string  $documentType
+     * @param  \Closure $callback
+     * @param  array $options
      * @param  string   $boolean
      *
      * @return \Illuminate\Database\Query\Builder|static
      */
-    public function whereChild($documentType, $query, $boolean = 'and')
+    protected function whereRelationship(string $relationshipType, string $documentType, Closure $callback, array $options = [], string $boolean = 'and'): self
     {
+        call_user_func($callback, $query = $this->newQuery());
+
         $this->wheres[] = [
-            'type' => 'Child',
+            'type' => ucfirst($relationshipType),
             'documentType' => $documentType,
             'value' => $query,
+            'options' => $options,
             'boolean' => $boolean
         ];
 
@@ -259,27 +307,36 @@ class QueryBuilder extends BaseBuilder
     }
 
     /**
-     * @param      $key
-     * @param      $type
-     * @param null $args
-     * @param null $aggregations
+     * @param  string $key
+     * @param  string $type
+     * @param  null $args
+     * @param  null $aggregations
+     * @return self
      */
-    public function aggregation($key, $type, $args = null, $aggregations = null)
+    public function aggregation($key, $type, $args = null, $aggregations = null): self
     {
-        if ( $args instanceof Closure ){
+        if (!is_string($args) && is_callable($args)){
             call_user_func($args, $args = $this->newQuery());
         }
 
-        if ( $aggregations instanceof Closure ){
+        if (!is_string($aggregations) && is_callable($aggregations)){
             call_user_func($aggregations, $aggregations = $this->newQuery());
         }
 
         $this->aggregations[] = compact(
             'key', 'type', 'args', 'aggregations'
         );
+
+        return $this;
     }
 
-    public function orderBy($column, $direction = 1, $options = null)
+    /**
+     * @param  string  $column
+     * @param  int  $direction
+     * @param  array  $options
+     * @return self
+     */
+    public function orderBy($column, $direction = 1, $options = null): self
     {
         if (is_string($direction)) {
             $direction = strtolower($direction) == 'asc' ? 1 : -1;
@@ -292,7 +349,27 @@ class QueryBuilder extends BaseBuilder
         return $this;
     }
 
-    public function getAggregationResults(){
+    /**
+     * Whether to include inner hits in the response
+     *
+     * @return  self
+     */
+    public function withInnerHits(): self
+    {
+        $this->includeInnerHits = true;
+
+        return $this;
+    }
+
+    /**
+     * Get the aggregations returned from query
+     *
+     * @return array
+     */
+    public function getAggregationResults(): array
+    {
+        $this->getResultsOnce();
+
         return $this->processor->getAggregationResults();
     }
 
@@ -310,7 +387,7 @@ class QueryBuilder extends BaseBuilder
             $this->columns = $columns;
         }
 
-        $results = $this->processor->processSelect($this, $this->runSelect());
+        $results = $this->getResultsOnce();
 
         $this->columns = $original;
 
@@ -318,9 +395,23 @@ class QueryBuilder extends BaseBuilder
     }
 
     /**
+     * Get results without re-fetching for subsequent calls.
+     *
+     * @return array|Generator
+     */
+    protected function getResultsOnce()
+    {
+        if ($this->results === null) {
+            $this->results = $this->processor->processSelect($this, $this->runSelect());
+        }
+
+        return $this->results;
+    }
+
+    /**
      * Run the query as a "select" statement against the connection.
      *
-     * @return array
+     * @return Iterable
      */
     protected function runSelect()
     {
@@ -384,11 +475,55 @@ class QueryBuilder extends BaseBuilder
     /**
      * Get the Elasticsearch representation of the query.
      *
-     * @return string
+     * @return array
      */
-    public function toCompiledQuery()
+    public function toCompiledQuery(): array
     {
         return $this->toSql();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function insert(array $values): bool
+    {
+        // Since every insert gets treated like a batch insert, we will have to detect
+        // if the user is inserting a single document or an array of documents.
+        $batch = true;
+
+        foreach ($values as $value) {
+            // As soon as we find a value that is not an array we assume the user is
+            // inserting a single document.
+            if (!is_array($value)) {
+                $batch = false;
+                break;
+            }
+        }
+
+        if (!$batch) {
+            $values = [$values];
+        }
+
+        $result = $this->connection->insert($this->grammar->compileInsert($this, $values));
+
+        return empty($result['errors']);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function delete($id = null): bool
+    {
+        // If an ID is passed to the method, we will set the where clause to check the
+        // ID to let developers to simply and quickly remove a single row from this
+        // database without manually specifying the "where" clauses on the query.
+        if (! is_null($id)) {
+            $this->where($this->getKeyName(), '=', $id);
+        }
+
+        $result = $this->connection->delete($this->grammar->compileDelete($this));
+
+        return !empty($result['found']);
     }
 
     public function __call($method, $parameters)
