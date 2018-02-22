@@ -489,7 +489,7 @@ class QueryGrammar extends BaseGrammar
 
         if (!empty($where['options']['fuzziness'])) {
             $firstKey = array_keys($query)[0];
-            $query[$firstKey]['fuzziness'] = (int) $where['options']['fuzziness'];
+            $query[$firstKey]['fuzziness'] = $where['options']['fuzziness'];
         }
 
         return $query;
