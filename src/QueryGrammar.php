@@ -641,9 +641,11 @@ class QueryGrammar extends BaseGrammar
             return $clause[$firstKey]['boost'] = $value;
         }
 
+        $key = key($clause['term']);
+
         $clause['term'] = [
-            'type' => [
-                'value' => $clause['term']['type'],
+            $key => [
+                'value' => $clause['term'][$key],
                 'boost' => $value
             ]
         ];
