@@ -362,6 +362,27 @@ class QueryBuilder extends BaseBuilder
     }
 
     /**
+     * Adds a function score of any type
+     *
+     * @param  string  $field
+     * @param  array  $options see elastic search docs for options
+     * @param  string  $boolean
+     * @return self
+     */
+    public function functionScore($functionType, $options = [], $boolean = 'and'): self
+    {
+        $where  = [
+            'type' => 'FunctionScore',
+            'function_type' => $functionType,
+            'boolean' => $boolean
+        ];
+
+        $this->wheres[]  = array_merge($where, $options);
+
+        return $this;
+    }
+
+    /**
      * Get the aggregations returned from query
      *
      * @return array
