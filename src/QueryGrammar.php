@@ -453,7 +453,7 @@ class QueryGrammar extends BaseGrammar
 
         $query = [
             'function_score' => [
-                $where['function_type']=> $cleanWhere
+                $where['function_type'] => $cleanWhere
             ]
         ];
 
