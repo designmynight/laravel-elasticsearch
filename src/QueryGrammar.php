@@ -434,6 +434,32 @@ class QueryGrammar extends BaseGrammar
         return $query;
     }
 
+     /**
+     * Compile where for function score
+     *
+     * @param Builder $builder
+     * @param array $where
+     * @return array
+     */
+    protected function compileWhereFunctionScore(Builder $builder, array $where): array
+    {
+        $cleanWhere = $where;
+
+        unset(
+            $cleanWhere['function_type'],
+            $cleanWhere['type'],
+            $cleanWhere['boolean']
+        );
+
+        $query = [
+            'function_score' => [
+                $where['function_type'] => $cleanWhere
+            ]
+        ];
+
+        return $query;
+    }
+
     /**
      * Compile a where nested geo distance clause
      *
