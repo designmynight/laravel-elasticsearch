@@ -313,8 +313,21 @@ class QueryBuilder extends BaseBuilder
      * @param  null $aggregations
      * @return self
      */
-    public function aggregation($key, $type, $args = null, $aggregations = null): self
+    public function aggregation($key, $type = null, $args = null, $aggregations = null): self
     {
+        if ($key instanceof Aggregation) {
+            $aggregation = $key;
+
+            $this->aggregations[] = [
+                'key' => $aggregation->getKey(),
+                'type' => $aggregation->getType(),
+                'args' => $aggregation->getArguments(),
+                'aggregations' => $aggregation($this->newQuery()),
+            ];
+
+            return $this;
+        }
+
         if (!is_string($args) && is_callable($args)){
             call_user_func($args, $args = $this->newQuery());
         }
