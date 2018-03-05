@@ -834,8 +834,22 @@ class QueryGrammar extends BaseGrammar
                 $compiled['date_histogram']['extended_bounds']['min'] = $this->convertDateTime($aggregation['args']['extended_bounds'][0]);
                 $compiled['date_histogram']['extended_bounds']['max'] = $this->convertDateTime($aggregation['args']['extended_bounds'][1]);
             }
-
         }
+
+        return $compiled;
+    }
+
+    /**
+     * Compile date range aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileDateRangeAggregation(array $aggregation): array
+    {
+        $compiled = [
+            'date_range' => $aggregation['args']
+        ];
 
         return $compiled;
     }
