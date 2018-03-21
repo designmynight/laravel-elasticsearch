@@ -160,7 +160,11 @@ class Connection extends BaseConnection
      */
     public function select($params, $bindings = [])
     {
-        return $this->connection->search($this->addClientParams($params));
+        return $this->run(
+            $this->addClientParams($params),
+            $bindings,
+            Closure::fromCallable([$this->connection, 'search'])
+        );
     }
 
     /**
@@ -240,7 +244,11 @@ class Connection extends BaseConnection
      */
     public function insert($params, $bindings = [])
     {
-        return $this->connection->bulk($this->addClientParams($params));
+        return $this->run(
+            $this->addClientParams($params),
+            $bindings,
+            Closure::fromCallable([$this->connection, 'bulk'])
+        );
     }
 
     /**
@@ -252,7 +260,11 @@ class Connection extends BaseConnection
      */
     public function update($query, $bindings = [])
     {
-        return $this->connection->index($query);
+        return $this->run(
+            $query,
+            $bindings,
+            Closure::fromCallable([$this->connection, 'index'])
+        );
     }
 
     /**
@@ -264,7 +276,11 @@ class Connection extends BaseConnection
      */
     public function delete($query, $bindings = [])
     {
-        return $this->connection->delete($query);
+        return $this->run(
+            $query,
+            $bindings,
+            Closure::fromCallable([$this->connection, 'delete'])
+        );
     }
 
     /**
