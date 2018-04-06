@@ -2,7 +2,7 @@
     "name": "designmynight/laravel-elasticsearch",
     "description": "Use Elasticsearch as a database in Laravel to retrieve Eloquent models and perform aggregations.",
     "keywords": ["laravel","eloquent","elasticsearch","database","model"],
-    "homepage": "https://github.com/jenssegers/laravel-mongodb",
+    "homepage": "https://github.com/designmynight/laravel-elasticsearch",
     "authors": [
         {
             "name": "DesignMyNight team",
