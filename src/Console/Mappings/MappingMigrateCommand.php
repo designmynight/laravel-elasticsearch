@@ -7,6 +7,7 @@ use GuzzleHttp\Client;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Artisan;
 
 /**
  * Class MappingMigrateCommand
@@ -24,8 +25,11 @@ class MappingMigrateCommand extends Command
     /** @var Filesystem $files */
     protected $files;
 
+    /** @var string $host */
+    protected $host;
+
     /** @var string $signature */
-    protected $signature = 'migrate:mapping {--S|swap : Automatically update alias.}';
+    protected $signature = 'migrate:mapping {command : Local Artisan indexing command.} {--S|swap : Automatically update alias.}';
 
     /**
      * MappingMigrateCommand constructor.
@@ -38,6 +42,7 @@ class MappingMigrateCommand extends Command
 
         $this->client = $client;
         $this->files = $files;
+        $this->host = config('database.elasticsearch.host');
     }
 
     /**
@@ -58,6 +63,35 @@ class MappingMigrateCommand extends Command
         $pendingMappings = $this->pendingMappings($mappings, $mappingMigrations);
 
         $this->runPending($pendingMappings);
+    }
+
+    /**
+     * @param string $alias
+     *
+     * @return string
+     */
+    protected function getActiveIndex(string $alias):string
+    {
+        try {
+            $body = $this->client->get("{$this->host}/{$alias}/_alias/*")->getBody();
+
+            return array_keys(json_decode($body))[0];
+        }
+        catch (\Exception $exception) {
+            $this->error("Failed to retrieve the current active index.");
+        }
+
+        return '';
+    }
+
+    /**
+     * @param string $mapping
+     *
+     * @return string
+     */
+    protected function getAlias(string $mapping):string
+    {
+        return preg_replace('/[0-9_]+/', '', $mapping, 1);
     }
 
     /**
@@ -103,16 +137,66 @@ class MappingMigrateCommand extends Command
         $batch = Mapping::max('batch') + 1;
 
         foreach ($pending as $mapping) {
-            $this->info("Migrating: {$mapping}");
+            $this->info("Migrating mapping: {$mapping}");
 
             Mapping::create([
                 'batch'   => $batch,
                 'mapping' => $mapping,
             ]);
 
-            // Begin indexing.
+            $this->info("Migrated mapping: {$mapping}");
+            $this->info("Indexing mapping: {$mapping}");
 
-            $this->info("Migrated: {$mapping}");
+            // Begin indexing.
+            Artisan::call($this->argument('command'));
+
+            $this->info("Indexed mapping: {$mapping}");
+
+            if ($this->option('swap')) {
+                $this->updateAliases($mapping);
+            }
         }
+    }
+
+    /**
+     * @return bool
+     */
+    protected function updateAliases(string $mapping):bool
+    {
+        $this->info("Updating mapping alias: {$mapping}");
+
+        $alias = $this->getAlias($mapping);
+        $body = [
+            'actions' => [
+                [
+                    'remove' => [
+                        'index' => $this->getActiveIndex($alias),
+                        'alias' => $alias
+                    ],
+                    'add'    => [
+                        'index' => $mapping,
+                        'alias' => $alias
+                    ]
+                ]
+            ]
+        ];
+
+        try {
+            $this->client->post("{$this->host}/_aliases", [
+                'headers' => [
+                    'Content-Type' => 'application/json'
+                ],
+                'body'    => json_encode($body)
+            ]);
+        }
+        catch (\Exception $exception) {
+            $this->error("Failed to update alias: {$mapping}");
+
+            return false;
+        }
+
+        $this->info("Updated mapping alias: {$mapping}");
+
+        return true;
     }
 }

@@ -73,7 +73,6 @@ class MappingMakeCommand extends Command
     protected function getStub():string
     {
         $name = $this->option('name');
-
         $timestamp = date('Y_m_d_His');
 
         return "{$timestamp}_{$name}";
