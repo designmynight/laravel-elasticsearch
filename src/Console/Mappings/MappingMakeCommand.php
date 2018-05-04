@@ -2,10 +2,8 @@
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
-use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
-use League\Flysystem\Config;
 
 /**
  * Class MappingMakeCommand
@@ -14,28 +12,24 @@ use League\Flysystem\Config;
  */
 class MappingMakeCommand extends Command
 {
-    /** @var string $signature */
-    protected $signature = 'make:mapping {name=mapping : Name of the mapping.}';
-
     /** @var string $description */
     protected $description = 'Create new mapping.';
 
-    /** @var Config $config */
-    protected $config;
-
     /** @var Filesystem $files */
     protected $files;
+
+    /** @var string $signature */
+    protected $signature = 'make:mapping {name=mapping : Name of the mapping.} {--U|use= : Optional name of existing mapping as template.}';
 
     /**
      * MappingMakeCommand constructor.
      *
      * @param Filesystem $files
      */
-    public function __construct(Config $config, Filesystem $files)
+    public function __construct(Filesystem $files)
     {
         parent::__construct();
 
-        $this->config = $config;
         $this->files = $files;
     }
 
@@ -44,17 +38,15 @@ class MappingMakeCommand extends Command
      */
     public function handle()
     {
-        $mappingsPath = 'base_path/database/mappings';
+        $mappingsPath = base_path('/database/mappings');
 
         try {
-            if (!$this->files->exists($mappingsPath)) {
-                $this->files->makeDirectory($mappingsPath, 0755, true);
-            }
+            $this->resolveMappingsDirectory($mappingsPath);
 
-            $mapping = $this->makeFileName();
-            $stub = $this->files->get('base_path/vendor/designmynight/laravel-elasticsearch/src/Console/Mappings/stubs/mapping.stub');
+            $mapping = $this->getPath($mappingsPath);
+            $stub = $this->files->get($this->getTemplate());
 
-            $this->files->put("{$mappingsPath}/{$mapping}.json", $this->files->get($stub));
+            $this->files->put($mapping, $this->files->get($stub));
         }
         catch (\Exception $exception) {
             $this->error($exception->getMessage());
@@ -68,16 +60,52 @@ class MappingMakeCommand extends Command
     /**
      * @return string
      */
-    protected function makeFileName():string
+    protected function getPath(string $path):string
+    {
+        $stub = $this->getStub();
+
+        return "{$path}/{$stub}.json";
+    }
+
+    /**
+     * @return string
+     */
+    protected function getStub():string
     {
         $name = $this->option('name');
 
-        if ($environment = $this->config->get('database.elasticsearch.suffix', null)) {
+        if ($environment = config('database.elasticsearch.suffix', null)) {
             $name .= "_{$environment}";
         }
 
-        $timestamp = Carbon::now()->getTimestamp();
+        $timestamp = date('Y_m_d_His');
 
-        return "{$name}_{$timestamp}";
+        return "{$timestamp}_{$name}";
+    }
+
+    /**
+     * @return string
+     */
+    protected function getTemplate():string
+    {
+        if ($template = $this->option('use')) {
+            if (!str_contains($template, '.json')) {
+                $template .= '.json';
+            }
+
+            return base_path('/database/mappings') . "/{$template}";
+        }
+
+        return base_path('/vendor/designmynight/laravel-elasticsearch/src/Console/Mappings/stubs/mapping.stub');
+    }
+
+    /**
+     * @param string $path
+     */
+    private function resolveMappingsDirectory(string $path)
+    {
+        if (!$this->files->exists($path)) {
+            $this->files->makeDirectory($path, 0755, true);
+        }
     }
 }
