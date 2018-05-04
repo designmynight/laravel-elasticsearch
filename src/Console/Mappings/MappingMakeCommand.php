@@ -74,10 +74,6 @@ class MappingMakeCommand extends Command
     {
         $name = $this->option('name');
 
-        if ($environment = config('database.elasticsearch.suffix', null)) {
-            $name .= "_{$environment}";
-        }
-
         $timestamp = date('Y_m_d_His');
 
         return "{$timestamp}_{$name}";
