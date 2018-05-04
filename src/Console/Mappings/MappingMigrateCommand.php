@@ -52,11 +52,6 @@ class MappingMigrateCommand extends Command
      */
     public function handle()
     {
-        /**
-         * TODO: Check existence of new mapping file (from "mappings" collection).
-         * TODO: Begin index of collection(s) (Which collections?) if new mapping file is found.
-         * TODO: Swap mapping alias.
-         */
         $mappings = $this->getMappingFiles();
         $mappingMigrations = Mapping::orderBy('mapping')->orderBy('batch')->pluck('mapping');
 
@@ -113,6 +108,9 @@ class MappingMigrateCommand extends Command
     }
 
     /**
+     * @param array $files
+     * @param array $migrations
+     *
      * @return array
      */
     protected function pendingMappings(array $files, array $migrations):array
@@ -159,6 +157,8 @@ class MappingMigrateCommand extends Command
     }
 
     /**
+     * @param string $mapping
+     *
      * @return bool
      */
     protected function updateAliases(string $mapping):bool
