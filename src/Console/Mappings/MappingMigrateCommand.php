@@ -29,7 +29,7 @@ class MappingMigrateCommand extends Command
     protected $host;
 
     /** @var string $signature */
-    protected $signature = 'migrate:mapping {command : Local Artisan indexing command.} {--S|swap : Automatically update alias.}';
+    protected $signature = 'migrate:mappings {command : Local Artisan indexing command.} {--S|swap : Automatically update alias.}';
 
     /**
      * MappingMigrateCommand constructor.
@@ -54,7 +54,6 @@ class MappingMigrateCommand extends Command
     {
         $mappings = $this->getMappingFiles();
         $mappingMigrations = Mapping::orderBy('mapping')->orderBy('batch')->pluck('mapping');
-
         $pendingMappings = $this->pendingMappings($mappings, $mappingMigrations);
 
         $this->runPending($pendingMappings);

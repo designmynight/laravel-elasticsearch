@@ -4,8 +4,14 @@ namespace DesignMyNight\Elasticsearch;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\MappingMakeCommand;
 use DesignMyNight\Elasticsearch\Console\Mappings\MappingMigrateCommand;
+use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * Class ElasticsearchServiceProvider
+ *
+ * @package DesignMyNight\Elasticsearch
+ */
 class ElasticsearchServiceProvider extends ServiceProvider
 {
     /** @var array $commands */
@@ -13,19 +19,6 @@ class ElasticsearchServiceProvider extends ServiceProvider
         MappingMakeCommand::class,
         MappingMigrateCommand::class
     ];
-
-    /**
-     * Register the service provider.
-     */
-    public function register()
-    {
-        // Add database driver.
-        $this->app->resolving('db', function ($db) {
-            $db->extend('elasticsearch', function ($config) {
-                return new Connection($config);
-            });
-        });
-    }
 
     /**
      * Boot the service provider.
@@ -37,5 +30,20 @@ class ElasticsearchServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands($this->commands);
         }
+    }
+
+    /**
+     * Register the service provider.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        // Add database driver.
+        $this->app->resolving('db', function (DatabaseManager $db) {
+            $db->extend('elasticsearch', function ($config) {
+                return new Connection($config);
+            });
+        });
     }
 }

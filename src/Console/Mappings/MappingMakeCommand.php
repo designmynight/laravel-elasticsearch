@@ -44,9 +44,9 @@ class MappingMakeCommand extends Command
             $this->resolveMappingsDirectory($mappingsPath);
 
             $mapping = $this->getPath($mappingsPath);
-            $stub = $this->files->get($this->getTemplate());
+            $template = $this->files->get($this->getTemplate());
 
-            $this->files->put($mapping, $this->files->get($stub));
+            $this->files->put($mapping, $this->files->get($template));
         }
         catch (\Exception $exception) {
             $this->error($exception->getMessage());
@@ -62,9 +62,7 @@ class MappingMakeCommand extends Command
      */
     protected function getPath(string $path):string
     {
-        $stub = $this->getStub();
-
-        return "{$path}/{$stub}.json";
+        return "{$path}/{$this->getStub()}.json";
     }
 
     /**
@@ -88,7 +86,7 @@ class MappingMakeCommand extends Command
                 $template .= '.json';
             }
 
-            return base_path('/database/mappings') . "/{$template}";
+            return base_path("/database/mappings/{$template}");
         }
 
         return base_path('/vendor/designmynight/laravel-elasticsearch/src/Console/Mappings/stubs/mapping.stub');
