@@ -119,7 +119,7 @@ class MappingMigrateCommand extends Command
      */
     protected function putMapping(SplFileInfo $mapping):void
     {
-        $index = $this->getMappingName($mapping->getFileName());
+        $index = $this->getMappingName($mapping->getFileName(), true);
 
         $this->client->put("{$this->host}/{$index}", [
             'headers' => [
@@ -173,7 +173,7 @@ class MappingMigrateCommand extends Command
             $this->info("Indexed mapping: {$index}");
 
             if ($this->option('swap')) {
-                $this->updateAlias($index);
+                $this->updateAlias($this->getMappingName($index, true));
             }
         }
     }
