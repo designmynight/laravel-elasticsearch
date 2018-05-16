@@ -49,9 +49,9 @@ trait UpdatesAlias
      * @param string|null $currentIndex
      * @param bool        $removeOldIndex
      */
-    protected function updateAlias(string $index, string $alias = null, string $currentIndex = null, bool $removeOldIndex = false):void
+    protected function updateAlias(string $index, string $alias = null, ?string $currentIndex = null, bool $removeOldIndex = false):void
     {
-        $this->info("Updating alias for mapping: {$index}");
+        $this->info("Updating alias with mapping: {$index}");
 
         $alias = $alias ?? $this->getAlias($index);
         $currentIndex = $currentIndex ?? $this->getActiveIndex($alias);

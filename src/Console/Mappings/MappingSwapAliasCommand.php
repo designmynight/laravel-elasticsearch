@@ -47,18 +47,8 @@ class MappingSwapAliasCommand extends Command
      */
     public function handle()
     {
-        ['alias' => $alias, 'index' => $index] = $this->arguments();
+        ['alias' => $alias, 'index' => $index, 'old_index' => $oldIndex] = $this->arguments();
 
-        $arguments = [$index, $alias];
-
-        if ($oldIndex = $this->argument('old_index')) {
-            $arguments[] = $oldIndex;
-        }
-
-        if ($this->option('remove_old_index')) {
-            $arguments[] = true;
-        }
-
-        $this->updateAlias(...$arguments);
+        $this->updateAlias($index, $alias, $oldIndex, $this->option('remove_old_index'));
     }
 }
