@@ -98,8 +98,10 @@ class MappingMakeCommand extends Command
      */
     private function resolveMappingsDirectory(string $path)
     {
-        if (!$this->files->exists($path)) {
-            $this->files->makeDirectory($path, 0755, true);
+        if ($this->files->exists($path)) {
+            return;
         }
+
+        $this->files->makeDirectory($path, 0755, true);
     }
 }
