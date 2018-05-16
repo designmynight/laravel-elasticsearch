@@ -59,35 +59,9 @@ class MappingSwapAliasCommand extends Command
         $this->updateAlias(...$arguments);
 
         if ($this->option('remove_old_index')) {
-            $this->removeIndex($oldIndex);
+            $this->call('index:remove', [
+                'index' => $oldIndex
+            ]);
         }
-    }
-
-    /**
-     * @param string $index
-     */
-    protected function removeIndex(string $index):void
-    {
-        if (app()->environment('production') && !$this->confirm("Are you sure you wish to delete the index {$index}?")) {
-            return;
-        }
-
-        $this->info("Deleting index: {$index}");
-
-        try {
-            $body = $this->client->delete("{$this->host}/$index")->getBody();
-            $body = json_decode($body);
-
-            if (isset($body['error'])) {
-                throw new FailedToDeleteIndex($body['error']['reason'], $body['status']);
-            }
-        }
-        catch (\Exception $exception) {
-            $this->error("Failed to delete index: {$index}\n\n{$exception->getMessage()}");
-
-            return;
-        }
-
-        $this->info("Successfully deleted index: {$index}");
     }
 }

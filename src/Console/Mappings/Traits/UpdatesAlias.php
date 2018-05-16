@@ -1,6 +1,7 @@
 <?php
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings\Traits;
+
 use DesignMyNight\Elasticsearch\Console\Mappings\Exceptions\FailedToUpdateAlias;
 
 /**
@@ -43,17 +44,17 @@ trait UpdatesAlias
     }
 
     /**
-     * @param string      $mapping
+     * @param string      $index
      * @param string|null $alias
      * @param string|null $oldMapping
      *
      * @return bool
      */
-    protected function updateAlias(string $mapping, string $alias = null, string $oldMapping = null):bool
+    protected function updateAlias(string $index, string $alias = null, string $oldMapping = null):bool
     {
-        $this->info("Updating alias for mapping: {$mapping}");
+        $this->info("Updating alias for mapping: {$index}");
 
-        $alias = $alias ?? $this->getAlias($mapping);
+        $alias = $alias ?? $this->getAlias($index);
 
         $body = [
             'actions' => [
@@ -63,7 +64,7 @@ trait UpdatesAlias
                         'alias' => $alias
                     ],
                     'add'    => [
-                        'index' => $mapping,
+                        'index' => $index,
                         'alias' => $alias
                     ]
                 ]
@@ -84,12 +85,12 @@ trait UpdatesAlias
             }
         }
         catch (\Exception $exception) {
-            $this->error("Failed to update alias: {$mapping}\n\n{$exception->getMessage()}");
+            $this->error("Failed to update alias: {$index}\n\n{$exception->getMessage()}");
 
             return false;
         }
 
-        $this->info("Updated alias for mapping: {$mapping}");
+        $this->info("Updated alias for mapping: {$index}");
 
         return true;
     }
