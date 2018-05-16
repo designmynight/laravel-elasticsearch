@@ -2,6 +2,7 @@
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
+use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasHost;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\UpdatesAlias;
 use GuzzleHttp\Client;
 use Illuminate\Console\Command;
@@ -20,6 +21,7 @@ use Symfony\Component\Finder\SplFileInfo;
 class MappingMigrateCommand extends Command
 {
 
+    use HasHost;
     use UpdatesAlias;
 
     /** @var Client $client */
@@ -34,9 +36,6 @@ class MappingMigrateCommand extends Command
     /** @var Filesystem $files */
     protected $files;
 
-    /** @var string $host */
-    protected $host;
-
     /** @var string $signature */
     protected $signature = 'migrate:mappings {artisan_command : Local Artisan indexing command.} {--S|swap : Automatically update alias.}';
 
@@ -49,12 +48,10 @@ class MappingMigrateCommand extends Command
     {
         parent::__construct();
 
-        $elasticsearchConfig = config('database.connections.elasticsearch');
-
         $this->client = $client;
         $this->connection = $this->getConnection();
         $this->files = $files;
-        $this->host = "{$elasticsearchConfig['host']}:{$elasticsearchConfig['port']}";
+        $this->host = $this->getHost();
     }
 
     /**

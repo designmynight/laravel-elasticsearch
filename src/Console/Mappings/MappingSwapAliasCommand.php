@@ -3,6 +3,7 @@
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\Exceptions\FailedToDeleteIndex;
+use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasHost;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\UpdatesAlias;
 use GuzzleHttp\Client;
 use Illuminate\Console\Command;
@@ -15,6 +16,7 @@ use Illuminate\Console\Command;
 class MappingSwapAliasCommand extends Command
 {
 
+    use HasHost;
     use UpdatesAlias;
 
     /** @var Client $client */
@@ -22,9 +24,6 @@ class MappingSwapAliasCommand extends Command
 
     /** @var string $description */
     protected $description = 'Swap Elasticsearch alias';
-
-    /** @var string $host */
-    protected $host;
 
     /** @var string $signature */
     protected $signature = 'index:swap {alias : Name of alias to be updated.} {index : Name of index to be updated to.} {old_index? : Name of current index.} {--R|remove_old_index : Deletes the old index.}';
@@ -38,10 +37,8 @@ class MappingSwapAliasCommand extends Command
     {
         parent::__construct();
 
-        $elasticsearchConfig = config('database.connections.elasticsearch');
-
         $this->client = $client;
-        $this->host = "{$elasticsearchConfig['host']}:{$elasticsearchConfig['port']}";
+        $this->host = $this->getHost();
     }
 
     /**
