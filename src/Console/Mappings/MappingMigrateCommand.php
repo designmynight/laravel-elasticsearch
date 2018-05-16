@@ -91,7 +91,10 @@ class MappingMigrateCommand extends Command
      */
     protected function getMappingName(string $mapping):string
     {
-        return str_replace('.json', '', $mapping);
+        $mapping = str_replace('.json', '', $mapping);
+        $suffix = config('database.connections.elasticsearch.suffix');
+
+        return "{$mapping}{$suffix}";
     }
 
     /**
