@@ -63,7 +63,9 @@ trait UpdatesAlias
                         'index' => $oldIndex ?? $this->getActiveIndex($alias),
                         'alias' => $alias
                     ],
-                    'add'    => [
+                ],
+                [
+                    'add' => [
                         'index' => $index,
                         'alias' => $alias
                     ]
