@@ -9,7 +9,6 @@ use Illuminate\Console\Command;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -163,7 +162,7 @@ class MappingMigrateCommand extends Command
             }
 
             // Begin indexing.
-            Artisan::call($this->argument('artisan_command'));
+            $this->call($this->argument('artisan_command'));
 
             $this->info("Indexed mapping: {$mapping}");
 
