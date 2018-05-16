@@ -55,12 +55,10 @@ class MappingSwapAliasCommand extends Command
             $arguments[] = $oldIndex;
         }
 
-        $this->updateAlias(...$arguments);
-
         if ($this->option('remove_old_index')) {
-            $this->call('index:remove', [
-                'index' => $oldIndex
-            ]);
+            $arguments[] = true;
         }
+
+        $this->updateAlias(...$arguments);
     }
 }
