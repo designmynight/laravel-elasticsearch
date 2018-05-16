@@ -10,6 +10,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * Class MappingMigrateCommand
@@ -69,7 +70,7 @@ class MappingMigrateCommand extends Command
     }
 
     /**
-     * @return array
+     * @return SplFileInfo[]
      */
     protected function getMappingFiles():array
     {
@@ -83,7 +84,7 @@ class MappingMigrateCommand extends Command
      */
     protected function getMappingName(string $mapping):string
     {
-        return str_replace('.php', '', $mapping);
+        return str_replace('.json', '', $mapping);
     }
 
     /**
@@ -95,9 +96,11 @@ class MappingMigrateCommand extends Command
     protected function pendingMappings(array $files, array $migrations):array
     {
         return Collection::make($files)
-            ->reject(function (string $file) use ($migrations):bool {
-                return in_array($this->getMappingName($file), $migrations);
-            })->values()->toArray();
+            ->reject(function (SplFileInfo $file) use ($migrations):bool {
+                return in_array($this->getMappingName($file->getFilename()), $migrations);
+            })->map(function (SplFileInfo $file):string {
+                return $this->getMappingName($file->getFilename());
+            })->toArray();
     }
 
     /**
@@ -140,6 +143,6 @@ class MappingMigrateCommand extends Command
      */
     protected function getConnection():Builder
     {
-        return DB::connection('default')->table('mappings');
+        return DB::connection()->table('mappings');
     }
 }
