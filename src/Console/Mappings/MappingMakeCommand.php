@@ -12,6 +12,7 @@ use Illuminate\Filesystem\Filesystem;
  */
 class MappingMakeCommand extends Command
 {
+
     /** @var string $description */
     protected $description = 'Create new mapping.';
 
@@ -19,7 +20,7 @@ class MappingMakeCommand extends Command
     protected $files;
 
     /** @var string $signature */
-    protected $signature = 'make:mapping {name=mapping : Name of the mapping.} {--U|use= : Optional name of existing mapping as template.}';
+    protected $signature = 'make:mapping {name=mapping : Name of the mapping.} {--T|template= : Optional name of existing mapping as template.}';
 
     /**
      * MappingMakeCommand constructor.
@@ -38,7 +39,7 @@ class MappingMakeCommand extends Command
      */
     public function handle()
     {
-        $mappingsPath = base_path('/database/mappings');
+        $mappingsPath = base_path('database/mappings');
 
         try {
             $this->resolveMappingsDirectory($mappingsPath);
@@ -46,7 +47,7 @@ class MappingMakeCommand extends Command
             $mapping = $this->getPath($mappingsPath);
             $template = $this->files->get($this->getTemplate());
 
-            $this->files->put($mapping, $this->files->get($template));
+            $this->files->put($mapping, $template);
         }
         catch (\Exception $exception) {
             $this->error($exception->getMessage());
@@ -70,7 +71,7 @@ class MappingMakeCommand extends Command
      */
     protected function getStub():string
     {
-        $name = $this->option('name');
+        $name = $this->argument('name');
         $timestamp = date('Y_m_d_His');
 
         return "{$timestamp}_{$name}";
@@ -81,15 +82,15 @@ class MappingMakeCommand extends Command
      */
     protected function getTemplate():string
     {
-        if ($template = $this->option('use')) {
+        if ($template = $this->option('template')) {
             if (!str_contains($template, '.json')) {
                 $template .= '.json';
             }
 
-            return base_path("/database/mappings/{$template}");
+            return base_path("database/mappings/{$template}");
         }
 
-        return base_path('/vendor/designmynight/laravel-elasticsearch/src/Console/Mappings/stubs/mapping.stub');
+        return base_path('vendor/designmynight/laravel-elasticsearch/src/Console/Mappings/stubs/mapping.stub');
     }
 
     /**

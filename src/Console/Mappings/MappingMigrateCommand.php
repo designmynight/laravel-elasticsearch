@@ -93,7 +93,7 @@ class MappingMigrateCommand extends Command
      */
     protected function getMappingFiles():array
     {
-        return $this->files->files(base_path('/database/mappings'));
+        return $this->files->files(base_path('database/mappings'));
     }
 
     /**
