@@ -29,7 +29,7 @@ class MappingSwapAliasCommand extends Command
     protected $signature = 'index:swap {alias : Name of alias to be updated.} {index : Name of index to be updated to.} {old_index? : Name of current index.}';
 
     /**
-     * MappingMigrateCommand constructor.
+     * MappingSwapAliasCommand constructor.
      *
      * @param Client $client
      */
