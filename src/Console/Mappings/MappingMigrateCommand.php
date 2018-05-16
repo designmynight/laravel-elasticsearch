@@ -3,12 +3,13 @@
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\UpdatesAlias;
-use DesignMyNight\Elasticsearch\Mapping;
 use GuzzleHttp\Client;
 use Illuminate\Console\Command;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Class MappingMigrateCommand
@@ -22,6 +23,9 @@ class MappingMigrateCommand extends Command
 
     /** @var Client $client */
     protected $client;
+
+    /** @var Builder $connection */
+    protected $connection;
 
     /** @var string $description */
     protected $description = 'Index new mapping';
@@ -45,6 +49,7 @@ class MappingMigrateCommand extends Command
         parent::__construct();
 
         $this->client = $client;
+        $this->connection = $this->getConnection();
         $this->files = $files;
         $this->host = config('database.elasticsearch.host');
     }
@@ -57,8 +62,8 @@ class MappingMigrateCommand extends Command
     public function handle()
     {
         $mappings = $this->getMappingFiles();
-        $mappingMigrations = Mapping::orderBy('mapping')->orderBy('batch')->pluck('mapping');
-        $pendingMappings = $this->pendingMappings($mappings, $mappingMigrations);
+        $mappingMigrations = $this->connection->orderBy('mapping')->orderBy('batch')->pluck('mapping');
+        $pendingMappings = $this->pendingMappings($mappings, $mappingMigrations->toArray());
 
         $this->runPending($pendingMappings);
     }
@@ -106,12 +111,12 @@ class MappingMigrateCommand extends Command
             return;
         }
 
-        $batch = Mapping::max('batch') + 1;
+        $batch = $this->connection->max('batch') + 1;
 
         foreach ($pending as $mapping) {
             $this->info("Migrating mapping: {$mapping}");
 
-            Mapping::create([
+            $this->connection->insert([
                 'batch'   => $batch,
                 'mapping' => $mapping,
             ]);
@@ -128,5 +133,13 @@ class MappingMigrateCommand extends Command
                 $this->updateAlias($mapping);
             }
         }
+    }
+
+    /**
+     * @return Builder
+     */
+    protected function getConnection():Builder
+    {
+        return DB::connection('default')->table('mappings');
     }
 }

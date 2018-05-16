@@ -84,7 +84,7 @@ class MappingSwapAliasCommand extends Command
             }
         }
         catch (\Exception $exception) {
-            $this->error("Failed to delete index: {$index}\n{$exception->getMessage()}");
+            $this->error("Failed to delete index: {$index}\n\n{$exception->getMessage()}");
 
             return;
         }

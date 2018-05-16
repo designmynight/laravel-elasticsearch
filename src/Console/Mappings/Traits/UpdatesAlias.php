@@ -84,7 +84,7 @@ trait UpdatesAlias
             }
         }
         catch (\Exception $exception) {
-            $this->error("Failed to update alias: {$mapping}\n{$exception->getMessage()}");
+            $this->error("Failed to update alias: {$mapping}\n\n{$exception->getMessage()}");
 
             return false;
         }
