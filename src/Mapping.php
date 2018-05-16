@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Mapping extends Model
 {
+
     /** @var bool $timestamps */
     public $timestamps = false;
 

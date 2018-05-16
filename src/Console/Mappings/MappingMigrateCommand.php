@@ -2,6 +2,7 @@
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
+use DesignMyNight\Elasticsearch\Console\Mappings\Traits\UpdatesAlias;
 use DesignMyNight\Elasticsearch\Mapping;
 use GuzzleHttp\Client;
 use Illuminate\Console\Command;
@@ -16,11 +17,14 @@ use Illuminate\Support\Facades\Artisan;
  */
 class MappingMigrateCommand extends Command
 {
+
+    use UpdatesAlias;
+
     /** @var Client $client */
     protected $client;
 
     /** @var string $description */
-    protected $description = 'Index new mapping.';
+    protected $description = 'Index new mapping';
 
     /** @var Filesystem $files */
     protected $files;
@@ -29,7 +33,7 @@ class MappingMigrateCommand extends Command
     protected $host;
 
     /** @var string $signature */
-    protected $signature = 'migrate:mappings {command : Local Artisan indexing command.} {--S|swap : Automatically update alias.}';
+    protected $signature = 'migrate:mappings {artisan_command : Local Artisan indexing command.} {--S|swap : Automatically update alias.}';
 
     /**
      * MappingMigrateCommand constructor.
@@ -57,35 +61,6 @@ class MappingMigrateCommand extends Command
         $pendingMappings = $this->pendingMappings($mappings, $mappingMigrations);
 
         $this->runPending($pendingMappings);
-    }
-
-    /**
-     * @param string $alias
-     *
-     * @return string
-     */
-    protected function getActiveIndex(string $alias):string
-    {
-        try {
-            $body = $this->client->get("{$this->host}/{$alias}/_alias/*")->getBody();
-
-            return array_keys(json_decode($body))[0];
-        }
-        catch (\Exception $exception) {
-            $this->error("Failed to retrieve the current active index.");
-        }
-
-        return '';
-    }
-
-    /**
-     * @param string $mapping
-     *
-     * @return string
-     */
-    protected function getAlias(string $mapping):string
-    {
-        return preg_replace('/[0-9_]+/', '', $mapping, 1);
     }
 
     /**
@@ -123,7 +98,7 @@ class MappingMigrateCommand extends Command
     /**
      * @param array $pending
      */
-    protected function runPending(array $pending)
+    protected function runPending(array $pending):void
     {
         if (empty($pending)) {
             $this->info('No new mappings to migrate.');
@@ -145,57 +120,13 @@ class MappingMigrateCommand extends Command
             $this->info("Indexing mapping: {$mapping}");
 
             // Begin indexing.
-            Artisan::call($this->argument('command'));
+            Artisan::call($this->argument('artisan_command'));
 
             $this->info("Indexed mapping: {$mapping}");
 
             if ($this->option('swap')) {
-                $this->updateAliases($mapping);
+                $this->updateAlias($mapping);
             }
         }
-    }
-
-    /**
-     * @param string $mapping
-     *
-     * @return bool
-     */
-    protected function updateAliases(string $mapping):bool
-    {
-        $this->info("Updating mapping alias: {$mapping}");
-
-        $alias = $this->getAlias($mapping);
-        $body = [
-            'actions' => [
-                [
-                    'remove' => [
-                        'index' => $this->getActiveIndex($alias),
-                        'alias' => $alias
-                    ],
-                    'add'    => [
-                        'index' => $mapping,
-                        'alias' => $alias
-                    ]
-                ]
-            ]
-        ];
-
-        try {
-            $this->client->post("{$this->host}/_aliases", [
-                'headers' => [
-                    'Content-Type' => 'application/json'
-                ],
-                'body'    => json_encode($body)
-            ]);
-        }
-        catch (\Exception $exception) {
-            $this->error("Failed to update alias: {$mapping}");
-
-            return false;
-        }
-
-        $this->info("Updated mapping alias: {$mapping}");
-
-        return true;
     }
 }
