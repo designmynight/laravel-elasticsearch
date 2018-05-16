@@ -38,8 +38,10 @@ class MappingSwapAliasCommand extends Command
     {
         parent::__construct();
 
+        $elasticsearchConfig = config('database.connections.elasticsearch');
+
         $this->client = $client;
-        $this->host = config('database.elasticsearch.host');
+        $this->host = "{$elasticsearchConfig['host']}:{$elasticsearchConfig['port']}";
     }
 
     /**
