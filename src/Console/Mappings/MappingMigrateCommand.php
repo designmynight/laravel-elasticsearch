@@ -70,6 +70,14 @@ class MappingMigrateCommand extends Command
     }
 
     /**
+     * @return Builder
+     */
+    protected function getConnection():Builder
+    {
+        return DB::connection()->table('mappings');
+    }
+
+    /**
      * @return SplFileInfo[]
      */
     protected function getMappingFiles():array
@@ -91,20 +99,33 @@ class MappingMigrateCommand extends Command
      * @param array $files
      * @param array $migrations
      *
-     * @return array
+     * @return SplFileInfo[]
      */
     protected function pendingMappings(array $files, array $migrations):array
     {
         return Collection::make($files)
             ->reject(function (SplFileInfo $file) use ($migrations):bool {
                 return in_array($this->getMappingName($file->getFilename()), $migrations);
-            })->map(function (SplFileInfo $file):string {
-                return $this->getMappingName($file->getFilename());
-            })->toArray();
+            })->values()->toArray();
     }
 
     /**
-     * @param array $pending
+     * @param SplFileInfo $mapping
+     */
+    protected function putMapping(SplFileInfo $mapping):void
+    {
+        $index = $this->getMappingName($mapping->getFileName());
+
+        $this->client->put("$this->host/{$index}", [
+            'headers' => [
+                'Content-Type' => 'application/json'
+            ],
+            'body'    => json_encode($mapping->getContents())
+        ]);
+    }
+
+    /**
+     * @param SplFileInfo[] $pending
      */
     protected function runPending(array $pending):void
     {
@@ -117,15 +138,20 @@ class MappingMigrateCommand extends Command
         $batch = $this->connection->max('batch') + 1;
 
         foreach ($pending as $mapping) {
-            $this->info("Migrating mapping: {$mapping}");
+            $fileName = $mapping->getFileName();
+
+            $this->info("Migrating mapping: {$fileName}");
 
             $this->connection->insert([
                 'batch'   => $batch,
-                'mapping' => $mapping,
+                'mapping' => $this->getMappingName($fileName),
             ]);
 
-            $this->info("Migrated mapping: {$mapping}");
-            $this->info("Indexing mapping: {$mapping}");
+            $this->info("Migrated mapping: {$fileName}");
+            $this->info("Indexing mapping: {$fileName}");
+
+            // Create index.
+            $this->putMapping($mapping);
 
             // Begin indexing.
             Artisan::call($this->argument('artisan_command'));
@@ -136,13 +162,5 @@ class MappingMigrateCommand extends Command
                 $this->updateAlias($mapping);
             }
         }
-    }
-
-    /**
-     * @return Builder
-     */
-    protected function getConnection():Builder
-    {
-        return DB::connection()->table('mappings');
     }
 }
