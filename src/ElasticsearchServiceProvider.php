@@ -4,6 +4,7 @@ namespace DesignMyNight\Elasticsearch;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\MappingMakeCommand;
 use DesignMyNight\Elasticsearch\Console\Mappings\MappingMigrateCommand;
+use DesignMyNight\Elasticsearch\Console\Mappings\MappingRemoveCommand;
 use DesignMyNight\Elasticsearch\Console\Mappings\MappingSwapAliasCommand;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\ServiceProvider;
@@ -20,7 +21,8 @@ class ElasticsearchServiceProvider extends ServiceProvider
     private $commands = [
         MappingMakeCommand::class,
         MappingMigrateCommand::class,
-        MappingSwapAliasCommand::class
+        MappingSwapAliasCommand::class,
+        MappingRemoveCommand::class
     ];
 
     /**
