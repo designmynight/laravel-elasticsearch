@@ -64,7 +64,7 @@ class MappingRemoveCommand extends Command
 
         try {
             $body = $this->client->delete("{$this->host}/{$index}")->getBody();
-            $body = json_decode($body);
+            $body = json_decode($body, true);
 
             if (isset($body['error'])) {
                 throw new FailedToDeleteIndex($body['error']['reason'], $body['status']);

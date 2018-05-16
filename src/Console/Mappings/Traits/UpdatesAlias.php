@@ -24,7 +24,7 @@ trait UpdatesAlias
         try {
             $body = $this->client->get("{$this->host}/{$alias}/_alias/*")->getBody();
 
-            return array_keys(json_decode($body))[0];
+            return array_keys(json_decode($body, true))[0];
         }
         catch (\Exception $exception) {
             $this->error('Failed to retrieve the current active index.');
@@ -78,7 +78,7 @@ trait UpdatesAlias
                 ],
                 'body'    => json_encode($body)
             ])->getBody();
-            $body = json_decode($body);
+            $body = json_decode($body, true);
 
             if (isset($body['error'])) {
                 throw new FailedToUpdateAlias($body['error']['reason'], $body['status']);
