@@ -96,7 +96,7 @@ class MappingMakeCommand extends Command
     /**
      * @param string $path
      */
-    private function resolveMappingsDirectory(string $path)
+    private function resolveMappingsDirectory(string $path):void
     {
         if ($this->files->exists($path)) {
             return;
