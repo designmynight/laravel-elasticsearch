@@ -72,20 +72,20 @@ trait UpdatesAlias
         ];
 
         try {
-            $body = $this->client->post("{$this->host}/_aliases", [
+            $responseBody = $this->client->post("{$this->host}/_aliases", [
                 'headers' => [
                     'Content-Type' => 'application/json'
                 ],
                 'body'    => json_encode($body)
             ])->getBody();
-            $body = json_decode($body, true);
+            $responseBody = json_decode($responseBody, true);
 
-            if (isset($body['error'])) {
-                throw new FailedToUpdateAlias($body['error']['reason'], $body['status']);
+            if (isset($responseBody['error'])) {
+                throw new FailedToUpdateAlias($responseBody['error']['reason'], $responseBody['status']);
             }
         }
         catch (\Exception $exception) {
-            $this->error("Failed to update alias: {$index}\n\n{$exception->getMessage()}");
+            $this->error("Failed to update alias: {$alias}\n\n{$exception->getMessage()}");
 
             return false;
         }

@@ -2,7 +2,6 @@
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
-use DesignMyNight\Elasticsearch\Console\Mappings\Exceptions\FailedToDeleteIndex;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasHost;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\UpdatesAlias;
 use GuzzleHttp\Client;
