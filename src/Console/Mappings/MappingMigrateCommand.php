@@ -49,10 +49,12 @@ class MappingMigrateCommand extends Command
     {
         parent::__construct();
 
+        $elasticsearchConfig = config('database.connections.elasticsearch');
+
         $this->client = $client;
         $this->connection = $this->getConnection();
         $this->files = $files;
-        $this->host = config('database.elasticsearch.host');
+        $this->host = "{$elasticsearchConfig['host']}:{$elasticsearchConfig['port']}";
     }
 
     /**
@@ -120,7 +122,7 @@ class MappingMigrateCommand extends Command
             'headers' => [
                 'Content-Type' => 'application/json'
             ],
-            'body'    => json_encode($mapping->getContents())
+            'body'    => $mapping->getContents()
         ]);
     }
 
@@ -138,7 +140,7 @@ class MappingMigrateCommand extends Command
         $batch = $this->connection->max('batch') + 1;
 
         foreach ($pending as $mapping) {
-            $fileName = $mapping->getFileName();
+            $fileName = $this->getMappingName($mapping->getFileName());
 
             $this->info("Migrating mapping: {$fileName}");
 
@@ -150,8 +152,15 @@ class MappingMigrateCommand extends Command
             $this->info("Migrated mapping: {$fileName}");
             $this->info("Indexing mapping: {$fileName}");
 
-            // Create index.
-            $this->putMapping($mapping);
+            try {
+                // Create index.
+                $this->putMapping($mapping);
+            }
+            catch (\Exception $exception) {
+                $this->error("Failed to put mapping: {$fileName}");
+
+                return;
+            }
 
             // Begin indexing.
             Artisan::call($this->argument('artisan_command'));
