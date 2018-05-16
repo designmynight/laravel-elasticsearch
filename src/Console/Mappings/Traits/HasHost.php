@@ -18,8 +18,8 @@ trait HasHost
      */
     protected function getHost():string
     {
-        $elasticsearchConfig = config('database.connections.elasticsearch');
+        ['host' => $host, 'port' => $port] = config('database.connections.elasticsearch');
 
-        return "{$elasticsearchConfig['host']}:{$elasticsearchConfig['port']}";
+        return "{$host}:{$port}";
     }
 }
