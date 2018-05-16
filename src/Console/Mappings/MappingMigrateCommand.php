@@ -85,15 +85,19 @@ class MappingMigrateCommand extends Command
 
     /**
      * @param string $mapping
+     * @param bool   $withSuffix
      *
      * @return string
      */
-    protected function getMappingName(string $mapping):string
+    protected function getMappingName(string $mapping, bool $withSuffix = false):string
     {
         $mapping = str_replace('.json', '', $mapping);
-        $suffix = config('database.connections.elasticsearch.suffix');
 
-        return "{$mapping}{$suffix}";
+        if ($withSuffix) {
+            $mapping .= config('database.connections.elasticsearch.suffix');
+        }
+
+        return $mapping;
     }
 
     /**

@@ -46,11 +46,11 @@ trait UpdatesAlias
     /**
      * @param string      $index
      * @param string|null $alias
-     * @param string|null $oldMapping
+     * @param string|null $oldIndex
      *
      * @return bool
      */
-    protected function updateAlias(string $index, string $alias = null, string $oldMapping = null):bool
+    protected function updateAlias(string $index, string $alias = null, string $oldIndex = null):bool
     {
         $this->info("Updating alias for mapping: {$index}");
 
@@ -60,7 +60,7 @@ trait UpdatesAlias
             'actions' => [
                 [
                     'remove' => [
-                        'index' => $oldMapping ?? $this->getActiveIndex($alias),
+                        'index' => $oldIndex ?? $this->getActiveIndex($alias),
                         'alias' => $alias
                     ],
                     'add'    => [
