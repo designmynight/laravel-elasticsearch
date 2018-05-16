@@ -139,37 +139,37 @@ class MappingMigrateCommand extends Command
         $batch = $this->connection->max('batch') + 1;
 
         foreach ($pending as $mapping) {
-            $fileName = $this->getMappingName($mapping->getFileName());
+            $index = $this->getMappingName($mapping->getFileName());
 
-            $this->info("Migrating mapping: {$fileName}");
+            $this->info("Migrating mapping: {$index}");
 
             $this->connection->insert([
                 'batch'   => $batch,
-                'mapping' => $this->getMappingName($fileName),
+                'mapping' => $this->getMappingName($index),
             ]);
 
-            $this->info("Migrated mapping: {$fileName}");
-            $this->info("Indexing mapping: {$fileName}");
+            $this->info("Migrated mapping: {$index}");
+            $this->info("Indexing mapping: {$index}");
 
             try {
                 // Create index.
                 $this->putMapping($mapping);
             }
             catch (\Exception $exception) {
-                $this->error("Failed to put mapping: {$fileName}");
+                $this->error("Failed to put mapping: {$index}");
 
                 return;
             }
 
             // Begin indexing.
             $this->call($this->argument('artisan_command'), [
-                'index' => $mapping
+                'index' => $index
             ]);
 
-            $this->info("Indexed mapping: {$mapping}");
+            $this->info("Indexed mapping: {$index}");
 
             if ($this->option('swap')) {
-                $this->updateAlias($mapping);
+                $this->updateAlias($index);
             }
         }
     }
