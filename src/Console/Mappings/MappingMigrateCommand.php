@@ -117,7 +117,7 @@ class MappingMigrateCommand extends Command
     {
         $index = $this->getMappingName($mapping->getFileName());
 
-        $this->client->put("$this->host/{$index}", [
+        $this->client->put("{$this->host}/{$index}", [
             'headers' => [
                 'Content-Type' => 'application/json'
             ],
@@ -162,7 +162,9 @@ class MappingMigrateCommand extends Command
             }
 
             // Begin indexing.
-            $this->call($this->argument('artisan_command'));
+            $this->call($this->argument('artisan_command'), [
+                'index' => $mapping
+            ]);
 
             $this->info("Indexed mapping: {$mapping}");
 
