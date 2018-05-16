@@ -36,6 +36,7 @@ class MappingRemoveCommand extends Command
         parent::__construct();
 
         $this->client = $client;
+        $this->host = $this->getHost();
     }
 
     /**
@@ -62,7 +63,7 @@ class MappingRemoveCommand extends Command
         $this->info("Removing index: {$index}");
 
         try {
-            $body = $this->client->delete("$this->host/$index")->getBody();
+            $body = $this->client->delete("{$this->host}/{$index}")->getBody();
             $body = json_decode($body);
 
             if (isset($body['error'])) {
