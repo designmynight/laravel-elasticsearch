@@ -2,6 +2,7 @@
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
+use DesignMyNight\Elasticsearch\Console\Mappings\Exceptions\FailedToDeleteIndex;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\UpdatesAlias;
 use GuzzleHttp\Client;
 use Illuminate\Console\Command;
@@ -26,7 +27,7 @@ class MappingSwapAliasCommand extends Command
     protected $host;
 
     /** @var string $signature */
-    protected $signature = 'index:swap {alias : Name of alias to be updated.} {index : Name of index to be updated to.} {old_index? : Name of current index.}';
+    protected $signature = 'index:swap {alias : Name of alias to be updated.} {index : Name of index to be updated to.} {old_index? : Name of current index.} {--R|remove_old_index : Deletes the old index.}';
 
     /**
      * MappingSwapAliasCommand constructor.
@@ -50,12 +51,44 @@ class MappingSwapAliasCommand extends Command
     {
         ['alias' => $alias, 'index' => $index] = $this->arguments();
 
+        $arguments = [$index, $alias];
+
         if ($oldIndex = $this->argument('old_index')) {
-            $this->updateAlias($index, $alias, $oldIndex);
+            $arguments[] = $oldIndex;
+        }
+
+        $this->updateAlias(...$arguments);
+
+        if ($this->option('remove_old_index')) {
+            $this->removeIndex($oldIndex);
+        }
+    }
+
+    /**
+     * @param string $index
+     */
+    protected function removeIndex(string $index):void
+    {
+        if (app()->environment('production') && !$this->confirm("Are you sure you wish to delete the index {$index}?")) {
+            return;
+        }
+
+        $this->info("Deleting index: {$index}");
+
+        try {
+            $body = $this->client->delete("{$this->host}/$index")->getBody();
+            $body = json_decode($body);
+
+            if (isset($body['error'])) {
+                throw new FailedToDeleteIndex($body['error']['reason'], $body['status']);
+            }
+        }
+        catch (\Exception $exception) {
+            $this->error("Failed to delete index: {$index}\n{$exception->getMessage()}");
 
             return;
         }
 
-        $this->updateAlias($index, $alias);
+        $this->info("Successfully deleted index: {$index}");
     }
 }

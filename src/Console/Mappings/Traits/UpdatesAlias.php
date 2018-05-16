@@ -1,12 +1,13 @@
 <?php
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings\Traits;
+use DesignMyNight\Elasticsearch\Console\Mappings\Exceptions\FailedToUpdateAlias;
 
 /**
  * Trait UpdatesAlias
  *
  * @property \GuzzleHttp\Client client
- * @property string            host
+ * @property string             host
  * @package DesignMyNight\Elasticsearch\Console\Mappings\Traits
  */
 trait UpdatesAlias
@@ -70,15 +71,20 @@ trait UpdatesAlias
         ];
 
         try {
-            $this->client->post("{$this->host}/_aliases", [
+            $body = $this->client->post("{$this->host}/_aliases", [
                 'headers' => [
                     'Content-Type' => 'application/json'
                 ],
                 'body'    => json_encode($body)
-            ]);
+            ])->getBody();
+            $body = json_decode($body);
+
+            if (isset($body['error'])) {
+                throw new FailedToUpdateAlias($body['error']['reason'], $body['status']);
+            }
         }
         catch (\Exception $exception) {
-            $this->error("Failed to update alias: {$mapping}");
+            $this->error("Failed to update alias: {$mapping}\n{$exception->getMessage()}");
 
             return false;
         }
