@@ -21,6 +21,6 @@ trait HasConnection
      */
     protected function getConnection():Builder
     {
-        return DB::connection()->table('mappings');
+        return DB::connection()->table(config('laravel-elasticsearch.mappings_migration_table', 'mappings'));
     }
 }
