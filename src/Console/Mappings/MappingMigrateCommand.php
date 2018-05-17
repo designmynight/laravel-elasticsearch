@@ -34,7 +34,7 @@ class MappingMigrateCommand extends Command
     protected $files;
 
     /** @var string $signature */
-    protected $signature = 'migrate:mappings {artisan_command : Local Artisan indexing command.} {--S|swap : Automatically update alias.}';
+    protected $signature = 'migrate:mappings {artisan_command? : Local Artisan indexing command. Defaults to config.} {--S|swap : Automatically update alias.}';
 
     /**
      * MappingMigrateCommand constructor.
@@ -163,8 +163,12 @@ class MappingMigrateCommand extends Command
                 'mapping' => $this->getMappingName($index),
             ]);
 
+            if (!($command = $this->argument('artisan_command'))) {
+                $command = config('database.connections.elasticsearch.index_command');
+            }
+
             // Begin indexing.
-            $this->call($this->argument('artisan_command'), [
+            $this->call($command, [
                 'index' => $index
             ]);
 
