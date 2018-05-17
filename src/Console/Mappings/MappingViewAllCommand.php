@@ -20,7 +20,7 @@ class MappingViewAllCommand extends Command
     protected $client;
 
     /** @var string $description */
-    protected $description = 'View all Elasticsearch indices.';
+    protected $description = 'View all Elasticsearch indices';
 
     /** @var string $signature */
     protected $signature = 'index:list';
@@ -46,7 +46,7 @@ class MappingViewAllCommand extends Command
     public function handle()
     {
         if ($indices = $this->getIndices()) {
-            $this->info($indices);
+            $this->line($indices);
         }
     }
 
