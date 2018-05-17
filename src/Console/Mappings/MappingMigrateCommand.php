@@ -2,6 +2,7 @@
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
+use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasConnection;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasHost;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\UpdatesAlias;
 use GuzzleHttp\Client;
@@ -20,14 +21,12 @@ use Symfony\Component\Finder\SplFileInfo;
 class MappingMigrateCommand extends Command
 {
 
+    use HasConnection;
     use HasHost;
     use UpdatesAlias;
 
     /** @var Client $client */
     protected $client;
-
-    /** @var Builder $connection */
-    protected $connection;
 
     /** @var string $description */
     protected $description = 'Index new mapping';
@@ -65,14 +64,6 @@ class MappingMigrateCommand extends Command
         $pendingMappings = $this->pendingMappings($mappings, $mappingMigrations->toArray());
 
         $this->runPending($pendingMappings);
-    }
-
-    /**
-     * @return Builder
-     */
-    protected function getConnection():Builder
-    {
-        return DB::connection()->table('mappings');
     }
 
     /**
