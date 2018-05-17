@@ -7,6 +7,7 @@ use DesignMyNight\Elasticsearch\Console\Mappings\MappingMigrateCommand;
 use DesignMyNight\Elasticsearch\Console\Mappings\MappingRemoveCommand;
 use DesignMyNight\Elasticsearch\Console\Mappings\MappingRollbackCommand;
 use DesignMyNight\Elasticsearch\Console\Mappings\MappingSwapAliasCommand;
+use DesignMyNight\Elasticsearch\Console\Mappings\MappingViewAllCommand;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,7 +25,8 @@ class ElasticsearchServiceProvider extends ServiceProvider
         MappingMigrateCommand::class,
         MappingSwapAliasCommand::class,
         MappingRemoveCommand::class,
-        MappingRollbackCommand::class
+        MappingRollbackCommand::class,
+        MappingViewAllCommand::class
     ];
 
     /**
