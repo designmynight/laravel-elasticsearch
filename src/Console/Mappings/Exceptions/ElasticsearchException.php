@@ -2,6 +2,11 @@
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings\Exceptions;
 
+/**
+ * Class ElasticsearchException
+ *
+ * @package DesignMyNight\Elasticsearch\Console\Mappings\Exceptions
+ */
 abstract class ElasticsearchException extends \Exception
 {
 
