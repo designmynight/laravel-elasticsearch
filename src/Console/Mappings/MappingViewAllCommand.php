@@ -45,14 +45,23 @@ class MappingViewAllCommand extends Command
      */
     public function handle()
     {
-        $this->info($this->getIndexes());
+        if ($indices = $this->getIndices()) {
+            $this->info($indices);
+        }
     }
 
     /**
-     * @return string
+     * @return null|string
      */
-    protected function getIndexes():string
+    protected function getIndices():?string
     {
-        return $this->client->get("{$this->host}/_cat/indices?v")->getBody();
+        try {
+            return $this->client->get("{$this->host}/_cat/indices?v")->getBody();
+        }
+        catch (\Exception $exception) {
+            $this->error('Failed to retrieve indices.');
+        }
+
+        return null;
     }
 }
