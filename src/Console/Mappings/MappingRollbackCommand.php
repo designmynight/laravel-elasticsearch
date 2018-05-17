@@ -23,7 +23,7 @@ class MappingRollbackCommand extends Command
     protected $description = 'Rollback to the previous index';
 
     /** @var string $signature */
-    protected $signature = 'index:rollback {--R|remove : Optionally remove indexes that have no previous migration.}';
+    protected $signature = 'index:rollback';
 
     /**
      * MappingRollbackCommand constructor.
@@ -51,7 +51,6 @@ class MappingRollbackCommand extends Command
             return;
         }
 
-        $removeIndexWithNoPreviousMigration = $this->option('remove');
         $latestBatch = $this->connection->max('batch');
 
         $mappingMigrations = $mappingMigrations->map(function (array $mapping) {
@@ -66,14 +65,6 @@ class MappingRollbackCommand extends Command
         foreach ($latestMigrations as $migration) {
             if ($match = $previousMigrations->where('alias', $migration['alias'])->first()) {
                 $this->updateAlias($match['alias'], null, $migration);
-
-                continue;
-            }
-
-            if ($removeIndexWithNoPreviousMigration) {
-                $this->call('index:remove', [
-                    'index' => $migration['mapping']
-                ]);
             }
         }
 

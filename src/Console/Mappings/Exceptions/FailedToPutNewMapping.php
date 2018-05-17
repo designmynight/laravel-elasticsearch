@@ -3,11 +3,11 @@
 namespace DesignMyNight\Elasticsearch\Console\Mappings\Exceptions;
 
 /**
- * Class FailedToUpdateAlias
+ * Class FailedToPutNewMapping
  *
  * @package DesignMyNight\Elasticsearch\Console\Mappings\Exceptions
  */
-class FailedToUpdateAlias extends ElasticsearchException
+class FailedToPutNewMapping extends ElasticsearchException
 {
 
 }

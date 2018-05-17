@@ -67,7 +67,7 @@ class MappingRemoveCommand extends Command
             $body = json_decode($body, true);
 
             if (isset($body['error'])) {
-                throw new FailedToDeleteIndex($body['error']['reason'], $body['status']);
+                throw new FailedToDeleteIndex($body);
             }
         }
         catch (\Exception $exception) {

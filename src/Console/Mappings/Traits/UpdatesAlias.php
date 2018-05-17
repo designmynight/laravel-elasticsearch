@@ -83,7 +83,7 @@ trait UpdatesAlias
             $responseBody = json_decode($responseBody, true);
 
             if (isset($responseBody['error'])) {
-                throw new FailedToUpdateAlias($responseBody['error']['reason'], $responseBody['status']);
+                throw new FailedToUpdateAlias($responseBody);
             }
         }
         catch (\Exception $exception) {

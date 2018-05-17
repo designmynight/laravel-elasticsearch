@@ -7,7 +7,7 @@ namespace DesignMyNight\Elasticsearch\Console\Mappings\Exceptions;
  *
  * @package DesignMyNight\Elasticsearch\Console\Mappings\Exceptions
  */
-class FailedToDeleteIndex extends \Exception
+class FailedToDeleteIndex extends ElasticsearchException
 {
 
 }

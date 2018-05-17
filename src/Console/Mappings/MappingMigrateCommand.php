@@ -2,15 +2,14 @@
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
+use DesignMyNight\Elasticsearch\Console\Mappings\Exceptions\FailedToPutNewMapping;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasConnection;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasHost;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\UpdatesAlias;
 use GuzzleHttp\Client;
 use Illuminate\Console\Command;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Symfony\Component\Finder\SplFileInfo;
 
 /**
@@ -107,17 +106,27 @@ class MappingMigrateCommand extends Command
 
     /**
      * @param SplFileInfo $mapping
+     *
+     * @return array
+     * @throws FailedToPutNewMapping
      */
-    protected function putMapping(SplFileInfo $mapping):void
+    protected function putMapping(SplFileInfo $mapping):array
     {
         $index = $this->getMappingName($mapping->getFileName(), true);
 
-        $this->client->put("{$this->host}/{$index}", [
+        $body = $this->client->put("{$this->host}/{$index}", [
             'headers' => [
                 'Content-Type' => 'application/json'
             ],
             'body'    => $mapping->getContents()
-        ]);
+        ])->getBody();
+        $body = json_decode($body, true);
+
+        if (isset($body['error'])) {
+            throw new FailedToPutNewMapping($body);
+        }
+
+        return $body;
     }
 
     /**
@@ -151,7 +160,7 @@ class MappingMigrateCommand extends Command
                 $this->putMapping($mapping);
             }
             catch (\Exception $exception) {
-                $this->error("Failed to put mapping: {$index}");
+                $this->error("Failed to put mapping: {$index}\n\n{$exception->getMessage()}");
 
                 return;
             }
