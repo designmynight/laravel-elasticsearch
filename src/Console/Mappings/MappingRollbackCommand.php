@@ -53,7 +53,7 @@ class MappingRollbackCommand extends Command
 
         $latestBatch = $this->connection->max('batch');
 
-        $mappingMigrations = $mappingMigrations->map(function (array $mapping) {
+        $mappingMigrations = $mappingMigrations->map(function (array $mapping):array {
             $mapping['alias'] = $this->stripTimestamp($mapping['mapping']);
 
             return $mapping;

@@ -146,13 +146,6 @@ class MappingMigrateCommand extends Command
             $index = $this->getMappingName($mapping->getFileName());
 
             $this->info("Migrating mapping: {$index}");
-
-            $this->connection->insert([
-                'batch'   => $batch,
-                'mapping' => $this->getMappingName($index),
-            ]);
-
-            $this->info("Migrated mapping: {$index}");
             $this->info("Indexing mapping: {$index}");
 
             try {
@@ -165,6 +158,11 @@ class MappingMigrateCommand extends Command
                 return;
             }
 
+            $this->connection->insert([
+                'batch'   => $batch,
+                'mapping' => $this->getMappingName($index),
+            ]);
+
             // Begin indexing.
             $this->call($this->argument('artisan_command'), [
                 'index' => $index
@@ -175,6 +173,8 @@ class MappingMigrateCommand extends Command
             if ($this->option('swap')) {
                 $this->updateAlias($this->getMappingName($index, true));
             }
+
+            $this->info("Migrated mapping: {$index}");
         }
     }
 }
