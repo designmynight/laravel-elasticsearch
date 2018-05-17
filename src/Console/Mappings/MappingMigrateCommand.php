@@ -91,6 +91,18 @@ class MappingMigrateCommand extends Command
     }
 
     /**
+     * @param int    $batch
+     * @param string $mapping
+     */
+    protected function migrateMapping(int $batch, string $mapping):void
+    {
+        $this->connection->insert([
+            'batch'   => $batch,
+            'mapping' => $mapping,
+        ]);
+    }
+
+    /**
      * @param array $files
      * @param array $migrations
      *
@@ -158,19 +170,14 @@ class MappingMigrateCommand extends Command
                 return;
             }
 
-            $this->connection->insert([
-                'batch'   => $batch,
-                'mapping' => $this->getMappingName($index),
-            ]);
+            $this->migrateMapping($batch, $this->getMappingName($index));
 
             if (!($command = $this->argument('artisan_command'))) {
                 $command = config('database.connections.elasticsearch.index_command');
             }
 
             // Begin indexing.
-            $this->call($command, [
-                'index' => $index
-            ]);
+            $this->call($command, ['index' => $index]);
 
             $this->info("Indexed mapping: {$index}");
 
