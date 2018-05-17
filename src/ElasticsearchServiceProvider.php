@@ -44,8 +44,6 @@ class ElasticsearchServiceProvider extends ServiceProvider
             __DIR__ . '/Config/laravel-elasticsearch.php' => config_path('laravel-elasticsearch.php')
         ]);
 
-        $this->mergeConfigFrom(__DIR__ . '/Config/database.php', 'database');
-
         $this->loadMigrationsFrom(__DIR__ . '/Migrations');
     }
 
@@ -62,5 +60,7 @@ class ElasticsearchServiceProvider extends ServiceProvider
                 return new Connection($config);
             });
         });
+
+        $this->mergeConfigFrom(__DIR__ . '/Config/database.php', 'database');
     }
 }
