@@ -61,7 +61,9 @@ class MappingRollbackCommand extends Command
 
         foreach ($latestMigrations as $migration) {
             if ($match = $previousMigrations->where('alias', $migration['alias'])->first()) {
+                $this->info("Rolling back {$migration['mapping']} to {$match['mapping']}");
                 $this->updateAlias($match['alias'], null, $migration);
+                $this->info("Rolled back {$migration['mapping']}");
             }
         }
 
