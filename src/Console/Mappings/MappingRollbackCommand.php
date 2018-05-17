@@ -68,6 +68,7 @@ class MappingRollbackCommand extends Command
         }
 
         $this->connection->where('batch', $latestBatch)->delete();
+        $this->info('Successfully rolled back.');
     }
 
     /**
