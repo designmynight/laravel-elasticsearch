@@ -19,6 +19,12 @@ class MappingViewAllCommand extends Command
     /** @var Client $client */
     protected $client;
 
+    /** @var string $description */
+    protected $description = 'View all Elasticsearch indices.';
+
+    /** @var string $signature */
+    protected $signature = 'index:list';
+
     /**
      * MappingViewAllCommand constructor.
      *
