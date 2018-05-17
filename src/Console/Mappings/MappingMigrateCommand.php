@@ -173,7 +173,7 @@ class MappingMigrateCommand extends Command
             $this->migrateMapping($batch, $this->getMappingName($index));
 
             if (!($command = $this->argument('artisan_command'))) {
-                $command = config('database.connections.elasticsearch.index_command');
+                $command = config('laravel-elasticsearch.index_command');
             }
 
             // Begin indexing.
