@@ -64,7 +64,11 @@ class MappingRollbackCommand extends Command
                 $this->info("Rolling back {$migration['mapping']} to {$match['mapping']}");
                 $this->updateAlias($match['alias'], null, $migration);
                 $this->info("Rolled back {$migration['mapping']}");
+
+                continue;
             }
+
+            $this->warn("No previous migration found for {$migration['mapping']}. Skipping...");
         }
 
         $this->connection->where('batch', $latestBatch)->delete();
