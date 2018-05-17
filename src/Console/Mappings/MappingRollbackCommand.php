@@ -3,7 +3,6 @@
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasConnection;
-use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasHost;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\UpdatesAlias;
 use Illuminate\Console\Command;
 
@@ -16,7 +15,6 @@ class MappingRollbackCommand extends Command
 {
 
     use HasConnection;
-    use HasHost;
     use UpdatesAlias;
 
     /** @var string $description */
@@ -33,7 +31,6 @@ class MappingRollbackCommand extends Command
         parent::__construct();
 
         $this->connection = $this->getConnection();
-        $this->host = $this->getHost();
     }
 
     /**
