@@ -4,12 +4,12 @@ return [
     'connections' => [
         'elasticsearch' => [
             'driver'   => 'elasticsearch',
-            'host'     => 'localhost',
-            'port'     => 9200,
-            'database' => 'your_es_index',
-            // 'username' => 'optional_es_username',
-            // 'password' => 'optional_es_username',
-            // 'suffix'   => 'optional_es_index_suffix',
+            'host'     => env('ELASTICSEARCH_HOST', 'localhost'),
+            'port'     => env('ELASTICSEARCH_PORT', 9200),
+            'database' => env('ELASTICSEARCH_DATABASE', 'your_es_index'),
+            // 'username' => env('ELASTICSEARCH_USERNAME', 'optional_es_username'),
+            // 'password' => env('ELASTICSEARCH_PASSWORD', 'optional_es_username'),
+            // 'suffix'   => env('ELASTICSEARCH_INDEX_SUFFIX', 'optional_es_index_suffix'),
         ]
     ]
 ];
