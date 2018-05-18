@@ -8,11 +8,11 @@ use GuzzleHttp\Client;
 use Illuminate\Console\Command;
 
 /**
- * Class MappingSwapAliasCommand
+ * Class IndexSwapCommand
  *
  * @package DesignMyNight\Elasticsearch\Console\Mappings
  */
-class MappingSwapAliasCommand extends Command
+class IndexSwapCommand extends Command
 {
 
     use HasHost;
@@ -28,7 +28,7 @@ class MappingSwapAliasCommand extends Command
     protected $signature = 'index:swap {alias : Name of alias to be updated.} {index : Name of index to be updated to.} {old-index? : Name of current index.} {--R|remove-old-index : Deletes the old index.}';
 
     /**
-     * MappingSwapAliasCommand constructor.
+     * IndexSwapCommand constructor.
      *
      * @param Client $client
      */

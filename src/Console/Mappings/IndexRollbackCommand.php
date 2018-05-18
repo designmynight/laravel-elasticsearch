@@ -7,11 +7,11 @@ use DesignMyNight\Elasticsearch\Console\Mappings\Traits\UpdatesAlias;
 use Illuminate\Console\Command;
 
 /**
- * Class MappingRollbackCommand
+ * Class IndexRollbackCommand
  *
  * @package DesignMyNight\Elasticsearch\Console\Mappings
  */
-class MappingRollbackCommand extends Command
+class IndexRollbackCommand extends Command
 {
 
     use HasConnection;
@@ -24,7 +24,7 @@ class MappingRollbackCommand extends Command
     protected $signature = 'index:rollback';
 
     /**
-     * MappingRollbackCommand constructor.
+     * IndexRollbackCommand constructor.
      */
     public function __construct()
     {
