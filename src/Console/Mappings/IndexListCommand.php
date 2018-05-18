@@ -66,6 +66,21 @@ class IndexListCommand extends Command
     }
 
     /**
+     * @return null|string
+     */
+    protected function getIndices():?string
+    {
+        try {
+            return $this->client->get("{$this->host}/_cat/indices?v")->getBody();
+        }
+        catch (\Exception $exception) {
+            $this->error('Failed to retrieve indices.');
+        }
+
+        return null;
+    }
+
+    /**
      * @param string $alias
      *
      * @return array
@@ -87,20 +102,5 @@ class IndexListCommand extends Command
         }
 
         return [];
-    }
-
-    /**
-     * @return null|string
-     */
-    protected function getIndices():?string
-    {
-        try {
-            return $this->client->get("{$this->host}/_cat/indices?v")->getBody();
-        }
-        catch (\Exception $exception) {
-            $this->error('Failed to retrieve indices.');
-        }
-
-        return null;
     }
 }
