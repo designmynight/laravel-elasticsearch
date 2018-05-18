@@ -8,11 +8,11 @@ use GuzzleHttp\Client;
 use Illuminate\Console\Command;
 
 /**
- * Class MappingRemoveCommand
+ * Class IndexRemoveCommand
  *
  * @package DesignMyNight\Elasticsearch\Console\Mappings
  */
-class MappingRemoveCommand extends Command
+class IndexRemoveCommand extends Command
 {
 
     use HasHost;
@@ -27,7 +27,7 @@ class MappingRemoveCommand extends Command
     protected $signature = 'index:remove {index : Name of the index to remove.}';
 
     /**
-     * MappingRemoveCommand constructor.
+     * IndexRemoveCommand constructor.
      *
      * @param Client $client
      */
