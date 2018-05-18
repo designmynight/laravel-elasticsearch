@@ -136,6 +136,12 @@ foreach ($documents as $document){
 }
 ```
 
+<style type="text/css">
+  table td {
+    width: 25%;
+  }
+</style>
+
 ## Console
 This package ships with the following commands to be used as utilities or as part of your deployment process.
 
