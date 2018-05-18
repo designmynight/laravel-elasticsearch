@@ -20,7 +20,7 @@ class MappingMakeCommand extends Command
     protected $files;
 
     /** @var string $signature */
-    protected $signature = 'make:mapping {name=mapping : Name of the mapping.} {--T|template= : Optional name of existing mapping as template.}';
+    protected $signature = 'make:mapping {name : Name of the mapping.} {--T|template= : Optional name of existing mapping as template.}';
 
     /**
      * MappingMakeCommand constructor.
