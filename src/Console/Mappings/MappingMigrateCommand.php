@@ -34,7 +34,7 @@ class MappingMigrateCommand extends Command
     protected $files;
 
     /** @var string $signature */
-    protected $signature = 'migrate:mappings {artisan_command? : Local Artisan indexing command. Defaults to config.} {--S|swap : Automatically update alias.}';
+    protected $signature = 'migrate:mappings {artisan-command? : Local Artisan indexing command. Defaults to config.} {--S|swap : Automatically update alias.}';
 
     /**
      * MappingMigrateCommand constructor.

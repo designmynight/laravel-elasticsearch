@@ -25,7 +25,7 @@ class MappingSwapAliasCommand extends Command
     protected $description = 'Swap Elasticsearch alias';
 
     /** @var string $signature */
-    protected $signature = 'index:swap {alias : Name of alias to be updated.} {index : Name of index to be updated to.} {old_index? : Name of current index.} {--R|remove_old_index : Deletes the old index.}';
+    protected $signature = 'index:swap {alias : Name of alias to be updated.} {index : Name of index to be updated to.} {old-index? : Name of current index.} {--R|remove-old-index : Deletes the old index.}';
 
     /**
      * MappingSwapAliasCommand constructor.
@@ -47,8 +47,8 @@ class MappingSwapAliasCommand extends Command
      */
     public function handle()
     {
-        ['alias' => $alias, 'index' => $index, 'old_index' => $oldIndex] = $this->arguments();
+        ['alias' => $alias, 'index' => $index, 'old-index' => $oldIndex] = $this->arguments();
 
-        $this->updateAlias($index, $alias, $oldIndex, $this->option('remove_old_index'));
+        $this->updateAlias($index, $alias, $oldIndex, $this->option('remove-old-index'));
     }
 }
