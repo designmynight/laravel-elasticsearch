@@ -135,3 +135,15 @@ foreach ($documents as $document){
   echo $document->id;
 }
 ```
+
+## Console
+This package ships with the following commands to be used as utilities or as part of your deployment process.
+
+| Command | Arguments | Options | Description |
+| ------- | --------- | ------- | ----------- |
+| `make:mapping` | `name`: Name of the mapping. This name also determines the name of the index and the alias. | `--template`: Pass a pre-existing mapping filename to create your new mapping from. | Creates a new mapping migration file. |
+| `migrate:mappings` | `index-command`: (Optional) Name of your local Artisan console command that performs the Elasticsearch indexing. If not given, command will be retrieved from `laravel-elasticsearch` config file. | `--swap`: Automatically update the alias after the indexing has finished. | Migrates your mapping files and begins to create the index. |
+| `index:rollback` |  |  | Rollback to the previous index migration. |
+| `index:remove` | `index`: Name of the index to remove from your Elasticsearch cluster. |  | Removes an index from your Elasticsearch cluster. |
+| `index:swap` | `alias`: Name of alias to update. `index`: Name of index to update alias to. `old-index`: (Optional) Name of old index. | `--remove-old-index`: Remove old index from your Elasticsearch cluster. | Swap the index your alias points to. |
+| `index:list` |  |  | Display a list of all indexes in your Elasticsearch cluster. |
