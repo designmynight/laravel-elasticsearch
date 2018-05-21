@@ -18,7 +18,7 @@ class IndexRemoveCommand extends Command
     use HasHost;
 
     /** @var Client $client */
-    protected $client;
+    public $client;
 
     /** @var string $description */
     protected $description = 'Remove index from Elasticsearch';
@@ -57,8 +57,10 @@ class IndexRemoveCommand extends Command
 
     /**
      * @param string $index
+     *
+     * @return bool
      */
-    protected function removeIndex(string $index):void
+    protected function removeIndex(string $index):bool
     {
         $this->info("Removing index: {$index}");
 
@@ -73,9 +75,11 @@ class IndexRemoveCommand extends Command
         catch (\Exception $exception) {
             $this->error("Failed to remove index: {$index}\n\n{$exception->getMessage()}");
 
-            return;
+            return false;
         }
 
         $this->info("Removed index: {$index}");
+
+        return true;
     }
 }

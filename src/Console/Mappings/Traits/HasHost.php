@@ -14,6 +14,14 @@ trait HasHost
     protected $host;
 
     /**
+     * @param string $host
+     */
+    public function setHost(string $host):void
+    {
+        $this->host = $host;
+    }
+
+    /**
      * @return string
      */
     protected function getHost():string
