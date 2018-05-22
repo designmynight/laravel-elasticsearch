@@ -5,10 +5,10 @@ namespace Tests\Console\Mappings;
 use DesignMyNight\Elasticsearch\Console\Mappings\Exceptions\FailedToPutNewMapping;
 use DesignMyNight\Elasticsearch\Console\Mappings\MappingMigrateCommand;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\Filesystem;
 use Mockery as m;
 use Symfony\Component\Finder\SplFileInfo;
@@ -33,8 +33,13 @@ class MappingMigrateCommandTest extends TestCase
             ->shouldAllowMockingProtectedMethods()
             ->makePartial();
 
+        $builder = m::mock(Builder::class);
+        $builder->shouldReceive('orderBy')->andReturnSelf();
+        $builder->shouldReceive('pluck')->andReturn(collect());
+        $builder->shouldReceive('max')->andReturn(0);
+
         $this->command->setHost('host:1111');
-        $this->command->setConnection(collect());
+        $this->command->setConnection($builder);
         $this->command->files = m::mock(Filesystem::class);
     }
 
@@ -152,10 +157,10 @@ class MappingMigrateCommandTest extends TestCase
     public function it_writes_a_message_to_console_if_there_are_no_mappings_to_migrate()
     {
         $this->command->shouldReceive('info')->once()->with('No new mappings to migrate.');
-        $this->command->shouldReceive('putMapping')->times(0);
-        $this->command->shouldReceive('migrateMapping')->times(0);
-        $this->command->shouldReceive('call')->times(0);
-        $this->command->shouldReceive('updateAlias')->times(0);
+        $this->command->shouldReceive('putMapping')->never();
+        $this->command->shouldReceive('migrateMapping')->never();
+        $this->command->shouldReceive('call')->never();
+        $this->command->shouldReceive('updateAlias')->never();
 
         $this->command->runPending([]);
     }
@@ -238,6 +243,27 @@ class MappingMigrateCommandTest extends TestCase
             'artisan command is passed' => [array_merge($defaults, ['has_artisan_command' => true])],
             'automatically swap alias'  => [array_merge($defaults, ['swap_alias' => true])]
         ];
+    }
+
+    /**
+     * It handles the console command call.
+     *
+     * @test
+     * @covers MappingMigrateCommand::handle()
+     */
+    public function it_handles_the_console_command_call()
+    {
+        $mappings = [
+            new SplFileInfo('mapping_migration1.json', '', ''),
+            new SplFileInfo('mapping_migration2.json', '', ''),
+            new SplFileInfo('mapping_migration3.json', '', ''),
+        ];
+
+        $this->command->shouldReceive('getMappingFiles')->once()->andReturn($mappings);
+        $this->command->shouldReceive('pendingMappings')->once()->with($mappings, [])->passthru();
+        $this->command->shouldReceive('runPending')->once()->with($mappings);
+
+        $this->command->handle();
     }
 
     /**
