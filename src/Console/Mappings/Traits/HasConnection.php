@@ -17,6 +17,14 @@ trait HasConnection
     protected $connection;
 
     /**
+     * @param $connection
+     */
+    public function setConnection($connection):void
+    {
+        $this->connection = $connection;
+    }
+
+    /**
      * @return Builder
      */
     protected function getConnection():Builder
