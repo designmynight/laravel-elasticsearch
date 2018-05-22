@@ -152,6 +152,10 @@ class MappingMigrateCommandTest extends TestCase
     public function it_writes_a_message_to_console_if_there_are_no_mappings_to_migrate()
     {
         $this->command->shouldReceive('info')->once()->with('No new mappings to migrate.');
+        $this->command->shouldReceive('putMapping')->times(0);
+        $this->command->shouldReceive('migrateMapping')->times(0);
+        $this->command->shouldReceive('call')->times(0);
+        $this->command->shouldReceive('updateAlias')->times(0);
 
         $this->command->runPending([]);
     }
@@ -181,11 +185,12 @@ class MappingMigrateCommandTest extends TestCase
                 ->andThrow(new FailedToPutNewMapping(['error' => ['reason' => ''], 'status' => 400]));
             $this->command->shouldReceive('error')->once();
 
+            $this->command->runPending($pending);
+
             return;
         }
 
         $this->command->shouldReceive('putMapping')->once()->with($mapping);
-
         $this->command->shouldReceive('migrateMapping')->once()->with(1, 'pending_mapping');
 
         $command = $options['has_artisan_command'] ? 'index:local-command' : 'index:mapping';
@@ -199,7 +204,7 @@ class MappingMigrateCommandTest extends TestCase
         $this->command
             ->shouldReceive('call')
             ->once()
-            ->with($command, ['index' => $mapping]);
+            ->with($command, ['index' => 'pending_mapping']);
 
         $this->command
             ->shouldReceive('option')
@@ -209,9 +214,9 @@ class MappingMigrateCommandTest extends TestCase
 
         if ($options['swap_alias']) {
             $this->command
-                ->shouldReceive('updatesAlias')
+                ->shouldReceive('updateAlias')
                 ->once()
-                ->with("{$mapping}_dev");
+                ->with('pending_mapping_dev');
         }
 
         $this->command->runPending($pending);
