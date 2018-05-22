@@ -65,4 +65,44 @@ class IndexRemoveCommandTest extends TestCase
             'request exception' => [false, new RequestException('', new Request('delete', ''))]
         ];
     }
+
+    /**
+     * It handles the console command call.
+     *
+     * @test
+     * @covers IndexRemoveCommand::handle()
+     */
+    public function it_handles_the_console_command_call()
+    {
+        $index = 'some_index';
+        $this->command->shouldReceive('argument')->once()->with('index')->andReturn($index);
+        $this->command->shouldReceive('confirm')->withAnyArgs()->andReturnTrue();
+        $this->command->shouldReceive('removeIndex')->once()->with($index);
+
+        $this->command->handle();
+    }
+
+    /**
+     * It handles the console command call when in production.
+     *
+     * @test
+     * @covers IndexRemoveCommand::handle()
+     */
+    public function it_handles_the_console_command_call_when_in_production()
+    {
+        $index = 'some_index';
+        $this->command->shouldReceive('argument')->once()->with('index')->andReturn($index);
+        $this->command->shouldReceive('confirm')->withAnyArgs()->andReturnFalse();
+        $this->command->shouldReceive('removeIndex')->never();
+
+        $this->command->handle();
+    }
+
+    /**
+     * @param \Illuminate\Foundation\Application $app
+     */
+    protected function getEnvironmentSetUp($app)
+    {
+        $app['env'] = 'production';
+    }
 }
