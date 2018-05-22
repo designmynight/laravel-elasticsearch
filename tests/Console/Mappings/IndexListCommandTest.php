@@ -131,4 +131,43 @@ class IndexListCommandTest extends TestCase
             'request exception' => [[], new RequestException('', new Request('get', ''))]
         ];
     }
+
+    /**
+     * It handles the console command when an alias is given.
+     *
+     * @test
+     * @covers IndexListCommand::handle()
+     */
+    public function it_handles_the_console_command_when_an_alias_is_given()
+    {
+        $alias = 'some_alias';
+        $this->command->shouldReceive('option')->once()->with('alias')->andReturn($alias);
+
+        $this->command->shouldReceive('getIndicesForAlias')->once()->with($alias)->andReturn([
+            $alias => ['index1', 'index2', 'index3']
+        ]);
+
+        $this->command->shouldReceive('info')->once()->withAnyArgs();
+
+        $this->command->shouldReceive('line')->times(4)->withAnyArgs();
+
+        $this->command->handle();
+    }
+
+    /**
+     * It handles the console command call.
+     *
+     * @test
+     * @covers IndexListCommand::handle()
+     */
+    public function it_handles_the_console_command_call()
+    {
+        $this->command->shouldReceive('option')->once()->with('alias')->andReturnNull();
+
+        $indices = 'here are some indices';
+        $this->command->shouldReceive('getIndices')->once()->andReturn($indices);
+        $this->command->shouldReceive('line')->once()->with($indices);
+
+        $this->command->handle();
+    }
 }
