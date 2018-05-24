@@ -5,10 +5,10 @@ namespace DesignMyNight\Elasticsearch\Console\Mappings;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasConnection;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\UpdatesAlias;
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 
 /**
  * Class IndexRollbackCommand
- *
  * @package DesignMyNight\Elasticsearch\Console\Mappings
  */
 class IndexRollbackCommand extends Command
@@ -48,31 +48,50 @@ class IndexRollbackCommand extends Command
             return;
         }
 
+        $mappingMigrations = $this->mapAliases($mappingMigrations);
+
         $latestBatch = $this->connection->max('batch');
-
-        $mappingMigrations = $mappingMigrations->map(function (array $mapping):array {
-            $mapping['alias'] = $this->stripTimestamp($mapping['mapping']);
-
-            return $mapping;
-        });
 
         $latestMigrations = $mappingMigrations->where('batch', $latestBatch);
         $previousMigrations = $mappingMigrations->where('batch', $latestBatch - 1);
 
         foreach ($latestMigrations as $migration) {
-            if ($match = $previousMigrations->where('alias', $migration['alias'])->first()) {
-                $this->info("Rolling back {$migration['mapping']} to {$match['mapping']}");
-                $this->updateAlias($match['alias'], null, $migration);
-                $this->info("Rolled back {$migration['mapping']}");
-
-                continue;
-            }
-
-            $this->warn("No previous migration found for {$migration['mapping']}. Skipping...");
+            $this->rollback($migration, $previousMigrations);
         }
 
         $this->connection->where('batch', $latestBatch)->delete();
         $this->info('Successfully rolled back.');
+    }
+
+    /**
+     * @param Collection $migrations
+     *
+     * @return Collection
+     */
+    protected function mapAliases(Collection $migrations):Collection
+    {
+        return $migrations->map(function (array $mapping):array {
+            $mapping['alias'] = $this->stripTimestamp($mapping['mapping']);
+
+            return $mapping;
+        });
+    }
+
+    /**
+     * @param array      $migration
+     * @param Collection $previousMigrations
+     */
+    protected function rollback(array $migration, Collection $previousMigrations):void
+    {
+        if ($match = $previousMigrations->where('alias', $migration['alias'])->first()) {
+            $this->info("Rolling back {$migration['mapping']} to {$match['mapping']}");
+            $this->updateAlias($match['alias'], null, $migration['alias']);
+            $this->info("Rolled back {$migration['mapping']}");
+
+            return;
+        }
+
+        $this->warn("No previous migration found for {$migration['mapping']}. Skipping...");
     }
 
     /**
