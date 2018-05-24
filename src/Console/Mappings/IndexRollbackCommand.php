@@ -23,6 +23,9 @@ class IndexRollbackCommand extends Command
     /** @var string $signature */
     protected $signature = 'index:rollback';
 
+    /** @var Collection $previousMigrations */
+    private $previousMigrations;
+
     /**
      * IndexRollbackCommand constructor.
      */
@@ -48,19 +51,25 @@ class IndexRollbackCommand extends Command
             return;
         }
 
-        $mappingMigrations = $this->mapAliases($mappingMigrations);
-
         $latestBatch = $this->connection->max('batch');
-
+        $mappingMigrations = $this->mapAliases($mappingMigrations);
         $latestMigrations = $mappingMigrations->where('batch', $latestBatch);
-        $previousMigrations = $mappingMigrations->where('batch', $latestBatch - 1);
+        $this->setPreviousMigrations($mappingMigrations->where('batch', $latestBatch - 1));
 
         foreach ($latestMigrations as $migration) {
-            $this->rollback($migration, $previousMigrations);
+            $this->rollback($migration);
         }
 
         $this->connection->where('batch', $latestBatch)->delete();
         $this->info('Successfully rolled back.');
+    }
+
+    /**
+     * @param Collection $migrations
+     */
+    public function setPreviousMigrations(Collection $migrations):void
+    {
+        $this->previousMigrations = $migrations;
     }
 
     /**
@@ -79,11 +88,10 @@ class IndexRollbackCommand extends Command
 
     /**
      * @param array      $migration
-     * @param Collection $previousMigrations
      */
-    protected function rollback(array $migration, Collection $previousMigrations):void
+    protected function rollback(array $migration):void
     {
-        if ($match = $previousMigrations->where('alias', $migration['alias'])->first()) {
+        if ($match = $this->previousMigrations->where('alias', $migration['alias'])->first()) {
             $this->info("Rolling back {$migration['mapping']} to {$match['mapping']}");
             $this->updateAlias($match['alias'], null, $migration['alias']);
             $this->info("Rolled back {$migration['mapping']}");

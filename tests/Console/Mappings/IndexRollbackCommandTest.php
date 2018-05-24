@@ -68,18 +68,20 @@ class IndexRollbackCommandTest extends TestCase
             ['alias' => 'pending_3', 'mapping' => 'pending_3.json'],
         ]);
 
+        $this->command->setPreviousMigrations($previousMigrations);
+
         if ($hasPreviousMisgration) {
             $this->command->shouldReceive('info')->twice()->withAnyArgs();
             $this->command->shouldReceive('updateAlias')->once()->with('pending_3', null, $migration['alias']);
 
-            $this->command->rollback($migration, $previousMigrations);
+            $this->command->rollback($migration);
 
             return;
         }
 
         $this->command->shouldReceive('warn')->once()->withAnyArgs();
 
-        $this->command->rollback($migration, $previousMigrations);
+        $this->command->rollback($migration);
     }
 
     /**
