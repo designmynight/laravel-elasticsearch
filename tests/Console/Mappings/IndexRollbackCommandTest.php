@@ -51,7 +51,7 @@ class IndexRollbackCommandTest extends TestCase
         $mappedMigrations = $this->command->mapAliases($migrations);
         $migration = $mappedMigrations->first();
 
-        $this->assertEquals('test_mapping', $migration['alias']);
+        $this->assertEquals('test_mapping_dev', $migration['alias']);
     }
 
     /**
@@ -63,16 +63,16 @@ class IndexRollbackCommandTest extends TestCase
     public function it_rolls_back_the_mapping_migration($migration, $hasPreviousMisgration)
     {
         $previousMigrations = collect([
-            ['alias' => 'pending_1', 'mapping' => 'pending_1.json'],
-            ['alias' => 'pending_2', 'mapping' => 'pending_2.json'],
-            ['alias' => 'pending_3', 'mapping' => 'pending_3.json'],
+            ['alias' => '1_pending_dev', 'mapping' => '1_pending_dev'],
+            ['alias' => '2_pending_dev', 'mapping' => '2_pending_dev'],
+            ['alias' => '3_pending_dev', 'mapping' => '3_pending_dev'],
         ]);
 
         $this->command->setPreviousMigrations($previousMigrations);
 
         if ($hasPreviousMisgration) {
             $this->command->shouldReceive('info')->twice()->withAnyArgs();
-            $this->command->shouldReceive('updateAlias')->once()->with('pending_3', null, $migration['alias']);
+            $this->command->shouldReceive('updateAlias')->once()->with('3_pending_dev', null, $migration['alias']);
 
             $this->command->rollback($migration);
 
@@ -90,8 +90,8 @@ class IndexRollbackCommandTest extends TestCase
     public function rollback_data_provider():array
     {
         return [
-            'has previous migration'    => [['alias' => 'pending_3', 'mapping' => 'pending_3.json'], true],
-            'has no previous migration' => [['alias' => 'pending_4', 'mapping' => 'pending_4.json'], false],
+            'has previous migration'    => [['alias' => '3_pending_dev', 'mapping' => '3_pending_dev'], true],
+            'has no previous migration' => [['alias' => '4_pending_dev', 'mapping' => '4_pending_dev'], false],
         ];
     }
 
