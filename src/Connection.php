@@ -146,7 +146,7 @@ class Connection extends BaseConnection
      * @param  array   $bindings
      * @return mixed
      */
-    public function selectOne($query, $bindings = [])
+    public function selectOne($query, $bindings = [], $useReadPdo = true)
     {
 
     }
@@ -158,7 +158,7 @@ class Connection extends BaseConnection
      * @param  array   $bindings
      * @return array
      */
-    public function select($params, $bindings = [])
+    public function select($params, $bindings = [], $useReadPdo = true)
     {
         return $this->run(
             $this->addClientParams($params),
