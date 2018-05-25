@@ -2,6 +2,7 @@
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 
@@ -39,12 +40,10 @@ class MappingMakeCommand extends Command
      */
     public function handle()
     {
-        $mappingsPath = base_path('database/mappings');
-
         try {
-            $this->resolveMappingsDirectory($mappingsPath);
+            $this->resolveMappingsDirectory();
 
-            $mapping = $this->getPath($mappingsPath);
+            $mapping = $this->getPath();
             $template = $this->files->get($this->getTemplate());
 
             $this->files->put($mapping, $template);
@@ -61,9 +60,9 @@ class MappingMakeCommand extends Command
     /**
      * @return string
      */
-    protected function getPath(string $path):string
+    protected function getPath():string
     {
-        return "{$path}/{$this->getStub()}.json";
+        return base_path("database/mappings/{$this->getStub()}.json");
     }
 
     /**
@@ -72,7 +71,7 @@ class MappingMakeCommand extends Command
     protected function getStub():string
     {
         $name = $this->argument('name');
-        $timestamp = date('Y_m_d_His');
+        $timestamp = Carbon::now()->format('Y_m_d_His');
 
         return "{$timestamp}_{$name}";
     }
@@ -94,10 +93,12 @@ class MappingMakeCommand extends Command
     }
 
     /**
-     * @param string $path
+     * @return void
      */
-    private function resolveMappingsDirectory(string $path):void
+    private function resolveMappingsDirectory():void
     {
+        $path = base_path('database/mappings');
+
         if ($this->files->exists($path)) {
             return;
         }

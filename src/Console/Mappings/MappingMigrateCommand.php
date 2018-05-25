@@ -25,13 +25,13 @@ class MappingMigrateCommand extends Command
     use UpdatesAlias;
 
     /** @var Client $client */
-    protected $client;
+    public $client;
+
+    /** @var Filesystem $files */
+    public $files;
 
     /** @var string $description */
     protected $description = 'Index new mapping';
-
-    /** @var Filesystem $files */
-    protected $files;
 
     /** @var string $signature */
     protected $signature = 'migrate:mappings {artisan-command? : Local Artisan indexing command. Defaults to config.} {--S|swap : Automatically update alias.}';
@@ -127,10 +127,11 @@ class MappingMigrateCommand extends Command
         $index = $this->getMappingName($mapping->getFileName(), true);
 
         $body = $this->client->put("{$this->host}/{$index}", [
-            'headers' => [
+            'headers'     => [
                 'Content-Type' => 'application/json'
             ],
-            'body'    => $mapping->getContents()
+            'http_errors' => false,
+            'body'        => $mapping->getContents()
         ])->getBody();
         $body = json_decode($body, true);
 
@@ -170,9 +171,9 @@ class MappingMigrateCommand extends Command
                 return;
             }
 
-            $this->migrateMapping($batch, $this->getMappingName($index));
+            $this->migrateMapping($batch, $index);
 
-            if (!($command = $this->argument('artisan_command'))) {
+            if (!($command = $this->argument('artisan-command'))) {
                 $command = config('laravel-elasticsearch.index_command');
             }
 

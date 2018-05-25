@@ -18,7 +18,7 @@ class IndexListCommand extends Command
     use HasHost;
 
     /** @var Client $client */
-    protected $client;
+    public $client;
 
     /** @var string $description */
     protected $description = 'View all Elasticsearch indices';
@@ -85,16 +85,16 @@ class IndexListCommand extends Command
      *
      * @return array
      */
-    protected function getIndicesForAlias(string $alias):array
+    protected function getIndicesForAlias(string $alias = '*'):array
     {
         try {
             $body = $this->client->get("{$this->host}/_alias/{$alias}")->getBody();
             $body = collect(json_decode($body, true));
 
-            return $body->groupBy(function ($item) {
+            return $body->groupBy(function ($item):string {
                 return key($item['aliases']);
-            }, true)->map(function (Collection $indices) {
-                return $indices->keys();
+            }, true)->map(function (Collection $indices):Collection {
+                return $indices->sortKeys()->keys();
             })->toArray();
         }
         catch (\Exception $exception) {
