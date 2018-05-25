@@ -5,7 +5,7 @@ return [
         'elasticsearch' => [
             'driver'   => 'elasticsearch',
             'host'     => env('ELASTICSEARCH_HOST', 'localhost'),
-            'hosts'    => env('ELASTICSEARCH_HOSTS', 'localhost'),
+            'hosts'    => env('ELASTICSEARCH_HOSTS'),
             'port'     => env('ELASTICSEARCH_PORT', 9200),
             'database' => env('ELASTICSEARCH_DATABASE'),
             'username' => env('ELASTICSEARCH_USERNAME'),
