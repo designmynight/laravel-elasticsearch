@@ -2,8 +2,7 @@
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
-use DesignMyNight\Elasticsearch\Console\Mappings\Exceptions\FailedToDeleteIndex;
-use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasHost;
+use Elasticsearch\ClientBuilder;
 use GuzzleHttp\Client;
 use Illuminate\Console\Command;
 
@@ -15,29 +14,11 @@ use Illuminate\Console\Command;
 class IndexRemoveCommand extends Command
 {
 
-    use HasHost;
-
-    /** @var Client $client */
-    public $client;
-
     /** @var string $description */
     protected $description = 'Remove index from Elasticsearch';
 
     /** @var string $signature */
     protected $signature = 'index:remove {index : Name of the index to remove.}';
-
-    /**
-     * IndexRemoveCommand constructor.
-     *
-     * @param Client $client
-     */
-    public function __construct(Client $client)
-    {
-        parent::__construct();
-
-        $this->client = $client;
-        $this->host = $this->getHost();
-    }
 
     /**
      * Execute the console command.
@@ -65,15 +46,11 @@ class IndexRemoveCommand extends Command
         $this->info("Removing index: {$index}");
 
         try {
-            $body = $this->client->delete("{$this->host}/{$index}")->getBody();
-            $body = json_decode($body, true);
-
-            if (isset($body['error'])) {
-                throw new FailedToDeleteIndex($body);
-            }
+            ClientBuilder::create()->build()->indices()->delete(['index' => $index]);
         }
         catch (\Exception $exception) {
-            $this->error("Failed to remove index: {$index}\n\n{$exception->getMessage()}");
+            $message = json_decode($exception->getMessage(), true);
+            $this->error("Failed to remove index: {$index}. Reason: {$message['error']['root_cause'][0]['reason']}");
 
             return false;
         }
