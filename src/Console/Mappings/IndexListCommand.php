@@ -3,6 +3,8 @@
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasHost;
+use Elasticsearch\ClientBuilder;
+use Elasticsearch\Namespaces\CatNamespace;
 use GuzzleHttp\Client;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
@@ -14,8 +16,6 @@ use Illuminate\Support\Collection;
  */
 class IndexListCommand extends Command
 {
-
-    use HasHost;
 
     /** @var Client $client */
     public $client;
@@ -36,7 +36,6 @@ class IndexListCommand extends Command
         parent::__construct();
 
         $this->client = $client;
-        $this->host = $this->getHost();
     }
 
     /**
@@ -61,17 +60,17 @@ class IndexListCommand extends Command
         }
 
         if ($indices = $this->getIndices()) {
-            $this->line($indices);
+            $this->table(array_keys($indices[0]), $indices);
         }
     }
 
     /**
-     * @return null|string
+     * @return null|array
      */
-    protected function getIndices():?string
+    protected function getIndices():?array
     {
         try {
-            return $this->client->get("{$this->host}/_cat/indices?v")->getBody();
+            return ClientBuilder::create()->build()->cat()->indices();
         }
         catch (\Exception $exception) {
             $this->error('Failed to retrieve indices.');
@@ -88,14 +87,21 @@ class IndexListCommand extends Command
     protected function getIndicesForAlias(string $alias = '*'):array
     {
         try {
-            $body = $this->client->get("{$this->host}/_alias/{$alias}")->getBody();
-            $body = collect(json_decode($body, true));
+            $aliases = collect(ClientBuilder::create()->build()->cat()->aliases());
 
-            return $body->groupBy(function ($item):string {
-                return key($item['aliases']);
-            }, true)->map(function (Collection $indices):Collection {
-                return $indices->sortKeys()->keys();
-            })->toArray();
+            return $aliases
+                ->groupBy(function (array $item):string {
+                    return $item['alias'];
+                })
+                ->when($alias !== '*', function (Collection $aliases) use ($alias) {
+                    return $aliases->filter(function ($item, $key) use ($alias) {
+                        return $key === $alias;
+                    });
+                })
+                ->map(function (Collection $indices):Collection {
+                    return $indices->sortBy('index')->pluck('index');
+                })
+                ->toArray();
         }
         catch (\Exception $exception) {
             $this->error("Failed to retrieve alias {$alias}");
