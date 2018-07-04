@@ -2,14 +2,12 @@
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings\Traits;
 
-use DesignMyNight\Elasticsearch\Console\Mappings\Exceptions\FailedToUpdateAlias;
 use Elasticsearch\ClientBuilder;
 
 /**
  * Trait UpdatesAlias
  *
- * @property \GuzzleHttp\Client client
- * @property string             host
+ * @property ClientBuilder client
  * @package DesignMyNight\Elasticsearch\Console\Mappings\Traits
  */
 trait UpdatesAlias
@@ -23,7 +21,7 @@ trait UpdatesAlias
     protected function getActiveIndex(string $alias):string
     {
         try {
-            $aliases = collect(ClientBuilder::create()->build()->cat()->aliases());
+            $aliases = collect($this->client->create()->build()->cat()->aliases());
             $aliases = $aliases->filter(function (array $item) use ($alias):bool {
                 return str_contains($item['index'], $alias);
             })->sortByDesc('index');
@@ -80,7 +78,7 @@ trait UpdatesAlias
         ];
 
         try {
-            ClientBuilder::create()->build()->indices()->updateAliases(['body' => $body]);
+            $this->client->create()->build()->indices()->updateAliases(['body' => $body]);
         }
         catch (\Exception $exception) {
             $this->error("Failed to update alias: {$alias}. {$exception->getMessage()}");

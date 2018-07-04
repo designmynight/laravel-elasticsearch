@@ -21,6 +21,21 @@ class IndexListCommand extends Command
     /** @var string $signature */
     protected $signature = 'index:list {--A|alias= : Name of alias indexes belong to.}';
 
+    /** @var ClientBuilder $client */
+    private $client;
+
+    /**
+     * IndexListCommand constructor.
+     *
+     * @param ClientBuilder $client
+     */
+    public function __construct(ClientBuilder $client)
+    {
+        parent::__construct();
+
+        $this->client = $client;
+    }
+
     /**
      * Execute the console command.
      *
@@ -53,7 +68,7 @@ class IndexListCommand extends Command
     protected function getIndices():?array
     {
         try {
-            return ClientBuilder::create()->build()->cat()->indices();
+            return collect($this->client->create()->build()->cat()->indices())->sortBy('index')->toArray();
         }
         catch (\Exception $exception) {
             $this->error('Failed to retrieve indices.');
@@ -70,7 +85,7 @@ class IndexListCommand extends Command
     protected function getIndicesForAlias(string $alias = '*'):array
     {
         try {
-            $aliases = collect(ClientBuilder::create()->build()->cat()->aliases());
+            $aliases = collect($this->client->create()->build()->cat()->aliases());
 
             return $aliases
                 ->groupBy(function (array $item):string {

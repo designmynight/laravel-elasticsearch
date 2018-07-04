@@ -20,6 +20,21 @@ class IndexRemoveCommand extends Command
     /** @var string $signature */
     protected $signature = 'index:remove {index : Name of the index to remove.}';
 
+    /** @var ClientBuilder $client */
+    private $client;
+
+    /**
+     * IndexRemoveCommand constructor.
+     *
+     * @param ClientBuilder $client
+     */
+    public function __construct(ClientBuilder $client)
+    {
+        parent::__construct();
+
+        $this->client = $client;
+    }
+
     /**
      * Execute the console command.
      *
@@ -46,7 +61,7 @@ class IndexRemoveCommand extends Command
         $this->info("Removing index: {$index}");
 
         try {
-            ClientBuilder::create()->build()->indices()->delete(['index' => $index]);
+            $this->client->create()->build()->indices()->delete(['index' => $index]);
         }
         catch (\Exception $exception) {
             $message = json_decode($exception->getMessage(), true);
