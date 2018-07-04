@@ -6,7 +6,6 @@ use DesignMyNight\Elasticsearch\Console\Mappings\Exceptions\FailedToPutNewMappin
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasConnection;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\UpdatesAlias;
 use Elasticsearch\ClientBuilder;
-use GuzzleHttp\Client;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
@@ -118,20 +117,15 @@ class MappingMigrateCommand extends Command
      * @param SplFileInfo $mapping
      *
      * @return array
-     * @throws FailedToPutNewMapping
      */
-    protected function putMapping(SplFileInfo $mapping):array
+    protected function putMapping(SplFileInfo $mapping):void
     {
         $index = $this->getMappingName($mapping->getFileName(), true);
 
-        $response = $this->client->build()->indices()->putMapping([
+        $this->client->build()->indices()->create([
             'index' => $index,
-            'body'  => $mapping->getContents(),
+            'body'  => json_decode($mapping->getContents(), true),
         ]);
-
-        dd($response);
-
-        return $response;
     }
 
     /**
@@ -158,7 +152,7 @@ class MappingMigrateCommand extends Command
                 $this->putMapping($mapping);
             }
             catch (\Exception $exception) {
-                $this->error("Failed to put mapping: {$index}\n\n{$exception->getMessage()}");
+                $this->error("Failed to put mapping: {$index} because {$exception->getMessage()}");
 
                 return;
             }

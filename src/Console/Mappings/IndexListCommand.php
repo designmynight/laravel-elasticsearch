@@ -3,7 +3,6 @@
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
 use Elasticsearch\ClientBuilder;
-use GuzzleHttp\Client;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 

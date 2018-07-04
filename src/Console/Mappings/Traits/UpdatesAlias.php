@@ -22,19 +22,22 @@ trait UpdatesAlias
     {
         try {
             $aliases = collect($this->client->create()->build()->cat()->aliases());
-            $aliases = $aliases->filter(function (array $item) use ($alias):bool {
-                return str_contains($item['index'], $alias);
-            })->sortByDesc('index');
-
-            $index = $this->choice('Which index is the current index?', $aliases->pluck('index')->toArray(), 0);
-
-            return $aliases->firstWhere('index', $index)['index'];
         }
         catch (\Exception $exception) {
             $this->error('Failed to retrieve the current active index.');
         }
 
-        return '';
+        $aliases = $aliases->filter(function (array $item) use ($alias):bool {
+            return str_contains($item['index'], $alias);
+        })->sortByDesc('index');
+
+        if ($aliases->count() === 1) {
+            return $aliases->first()['index'];
+        }
+
+        $index = $this->choice('Which index is the current index?', $aliases->pluck('index')->toArray(), 0);
+
+        return $aliases->firstWhere('index', $index)['index'];
     }
 
     /**
@@ -48,13 +51,36 @@ trait UpdatesAlias
     }
 
     /**
-     * @param string      $index
+     * @param string $alias
+     *
+     * @return string
+     */
+    protected function getIndex(string $alias):string
+    {
+        try {
+            $indices = collect($this->client->build()->cat()->indices());
+        }
+        catch (\Exception $exception) {
+            $this->error('An error occurred attempting to retrieve indices.');
+        }
+
+        $relevant = $indices->filter(function (array $item) use ($alias):bool {
+            return str_contains($item['index'], $alias);
+        })->sortByDesc('index');
+
+        return $this->choice('Which index would you like to use?', $relevant->pluck('index')->toArray(), 0);
+    }
+
+    /**
+     * @param string|null $index
      * @param string|null $alias
      * @param string|null $currentIndex
      * @param bool        $removeOldIndex
      */
-    protected function updateAlias(string $index, string $alias = null, ?string $currentIndex = null, bool $removeOldIndex = false):void
+    protected function updateAlias(?string $index, string $alias = null, ?string $currentIndex = null, bool $removeOldIndex = false):void
     {
+        $index = $index ?? $this->getIndex($alias);
+
         $this->info("Updating alias with mapping: {$index}");
 
         $alias = $alias ?? $this->getAlias($index);
