@@ -18,7 +18,7 @@ class IndexRemoveCommand extends Command
     protected $description = 'Remove index from Elasticsearch';
 
     /** @var string $signature */
-    protected $signature = 'index:remove {index : Name of the index to remove.}';
+    protected $signature = 'index:remove {index? : Name of the index to remove.}';
 
     /** @var ClientBuilder $client */
     private $client;
@@ -44,7 +44,12 @@ class IndexRemoveCommand extends Command
     {
         $index = $this->argument('index');
 
-        if (app()->environment('production') && !$this->confirm("Are you sure you wish to remove the index {$index}?")) {
+        if (!$index) {
+            $indices = collect($this->client->build()->cat()->indices())->sortBy('index')->pluck('index')->toArray();
+            $index = $this->choice('Which index would you like to delete?', $indices);
+        }
+
+        if (!$this->confirm("Are you sure you wish to remove the index {$index}?")) {
             return;
         }
 
