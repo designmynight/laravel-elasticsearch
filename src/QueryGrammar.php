@@ -301,6 +301,17 @@ class QueryGrammar extends BaseGrammar
         return $this->applyWhereRelationship($builder, $where, 'parent');
     }
 
+    protected function compileWherePrefix(Builder $builder, array $where): array
+    {
+        $query = [
+            'prefix' => [
+                $where['column'] => $where['value'],
+            ]
+        ];
+
+        return $query;
+    }
+
     /**
      * Compile a child clause
      *

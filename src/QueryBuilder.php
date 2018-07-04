@@ -147,6 +147,15 @@ class QueryBuilder extends BaseBuilder
         return $this;
     }
 
+    public function whereStartsWith($column, string $value, $boolean = 'and', $not = false): self
+    {
+        $type = 'Prefix';
+
+        $this->wheres[] = compact('column', 'value', 'type', 'boolean', 'not');
+
+        return $this;
+    }
+
     /**
      * Add another query builder as a nested where to the query builder.
      *
