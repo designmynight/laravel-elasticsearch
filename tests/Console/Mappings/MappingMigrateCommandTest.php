@@ -4,6 +4,8 @@ namespace Tests\Console\Mappings;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\Exceptions\FailedToPutNewMapping;
 use DesignMyNight\Elasticsearch\Console\Mappings\MappingMigrateCommand;
+use Elasticsearch\ClientBuilder;
+use Elasticsearch\Namespaces\IndicesNamespace;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
@@ -38,7 +40,6 @@ class MappingMigrateCommandTest extends TestCase
         $builder->shouldReceive('pluck')->andReturn(collect());
         $builder->shouldReceive('max')->andReturn(0);
 
-        $this->command->setHost('host:1111');
         $this->command->setConnection($builder);
         $this->command->files = m::mock(Filesystem::class);
     }
@@ -79,7 +80,7 @@ class MappingMigrateCommandTest extends TestCase
     {
         return [
             'removes file extension' => ['mapping_filename'],
-            'appends suffix'         => ['mapping_filename_dev', true]
+            'appends suffix'         => ['mapping_filename_dev', true],
         ];
     }
 
@@ -121,29 +122,26 @@ class MappingMigrateCommandTest extends TestCase
      */
     public function it_puts_the_new_mapping_into_the_elasticsearch_cluster()
     {
-        $expected = ['acknowledged' => true];
+        $contents = json_encode(['mappings' => []]);
 
         /** @var m\CompositeExpectation|SplFileInfo $mapping */
         $mapping = m::mock(SplFileInfo::class);
         $mapping->shouldReceive('getFileName')->andReturn('pending_mapping.json');
-        $mapping->shouldReceive('getContents')->andReturn(json_encode(['mappings' => []]));
+        $mapping->shouldReceive('getContents')->andReturn($contents);
 
-        $mock = new MockHandler([
-            new Response(200, [], json_encode($expected)),
-            new Response(400, ['Content-Type' => 'application/json'], json_encode([
-                'error'  => [
-                    'reason' => 'index [pending_mapping] already exists'
-                ],
-                'status' => 400
-            ]))
+        $indicesNamespace = m::mock(IndicesNamespace::class);
+        $indicesNamespace->shouldReceive('create')->once()->with([
+            'index' => 'pending_mapping_dev',
+            'body'  => ['mappings' => []],
         ]);
-        $handler = HandlerStack::create($mock);
 
-        $this->command->client = new Client(['handler' => $handler]);
+        $client = m::mock(Client::class);
+        $client->shouldReceive('indices')->andReturn($indicesNamespace);
 
-        $this->assertEquals($expected, $this->command->putMapping($mapping));
+        $clientBuilder = m::mock(ClientBuilder::class);
+        $clientBuilder->shouldReceive('build')->andReturn($client);
 
-        $this->expectException(FailedToPutNewMapping::class);
+        $this->command->client = $clientBuilder;
 
         $this->command->putMapping($mapping);
     }
@@ -235,13 +233,13 @@ class MappingMigrateCommandTest extends TestCase
         $defaults = [
             'has_artisan_command' => false,
             'put_mapping_fails'   => false,
-            'swap_alias'          => false
+            'swap_alias'          => false,
         ];
 
         return [
             'put mapping fails'         => [array_merge($defaults, ['put_mapping_fails' => true])],
             'artisan command is passed' => [array_merge($defaults, ['has_artisan_command' => true])],
-            'automatically swap alias'  => [array_merge($defaults, ['swap_alias' => true])]
+            'automatically swap alias'  => [array_merge($defaults, ['swap_alias' => true])],
         ];
     }
 
