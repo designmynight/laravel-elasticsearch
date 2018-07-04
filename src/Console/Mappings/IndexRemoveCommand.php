@@ -14,14 +14,14 @@ use Illuminate\Console\Command;
 class IndexRemoveCommand extends Command
 {
 
+    /** @var ClientBuilder $client */
+    public $client;
+
     /** @var string $description */
     protected $description = 'Remove index from Elasticsearch';
 
     /** @var string $signature */
     protected $signature = 'index:remove {index? : Name of the index to remove.}';
-
-    /** @var ClientBuilder $client */
-    private $client;
 
     /**
      * IndexRemoveCommand constructor.

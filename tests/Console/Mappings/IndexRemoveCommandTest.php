@@ -3,12 +3,10 @@
 namespace Tests\Console\Mappings;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\IndexRemoveCommand;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
+use Elasticsearch\Client;
+use Elasticsearch\ClientBuilder;
+use Elasticsearch\Namespaces\CatNamespace;
+use Elasticsearch\Namespaces\IndicesNamespace;
 use Mockery as m;
 use Orchestra\Testbench\TestCase;
 
@@ -37,33 +35,23 @@ class IndexRemoveCommandTest extends TestCase
      *
      * @test
      * @covers       IndexRemoveCommand::removeIndex()
-     * @dataProvider remove_index_data_provider
      */
-    public function it_removes_the_given_index($expected, $request)
+    public function it_removes_the_given_index()
     {
-        $mock = new MockHandler([$request]);
-        $handler = HandlerStack::create($mock);
+        $indicesNamespace = m::mock(IndicesNamespace::class);
+        $indicesNamespace->shouldReceive('delete')->once()->with(['index' => 'test_index']);
 
-        $this->command->client = new Client(['handler' => $handler]);
+        $client = m::mock(Client::class);
+        $client->shouldReceive('indices')->andReturn($indicesNamespace);
+
+        $clientBuilder = m::mock(ClientBuilder::class);
+        $clientBuilder->shouldReceive('build')->andReturn($client);
+
+        $this->command->client = $clientBuilder;
 
         $this->command->shouldReceive('info');
 
-        if ($expected === false) {
-            $this->command->shouldReceive('error')->once();
-        }
-
-        $this->assertEquals($expected, $this->command->removeIndex('test_index'));
-    }
-
-    /**
-     * @return array
-     */
-    public function remove_index_data_provider():array
-    {
-        return [
-            '200 response'      => [true, new Response(200, [], json_encode(['acknowledged' => true]))],
-            'request exception' => [false, new RequestException('', new Request('delete', ''))]
-        ];
+        $this->assertTrue($this->command->removeIndex('test_index'));
     }
 
     /**
@@ -71,38 +59,37 @@ class IndexRemoveCommandTest extends TestCase
      *
      * @test
      * @covers IndexRemoveCommand::handle()
+     * @dataProvider handle_data_provider
      */
-    public function it_handles_the_console_command_call()
+    public function it_handles_the_console_command_call($index)
     {
-        $index = 'some_index';
+        $catNamespace = m::mock(CatNamespace::class);
+        $catNamespace->shouldReceive('indices')->andReturn([['index' => $index]]);
+
+        $client = m::mock(Client::class);
+        $client->shouldReceive('cat')->andReturn($catNamespace);
+
+        $clientBuilder = m::mock(ClientBuilder::class);
+        $clientBuilder->shouldReceive('build')->andReturn($client);
+
+        $this->command->client = $clientBuilder;
+
         $this->command->shouldReceive('argument')->once()->with('index')->andReturn($index);
-        $this->command->shouldReceive('confirm')->withAnyArgs()->andReturnTrue();
-        $this->command->shouldReceive('removeIndex')->once()->with($index);
+        $this->command->shouldReceive('choice')->with('Which index would you like to delete?', [$index]);
+        $this->command->shouldReceive('confirm')->withAnyArgs()->andReturn(!!$index);
+        $this->command->shouldReceive('removeIndex')->with($index);
 
         $this->command->handle();
     }
 
     /**
-     * It handles the console command call when in production.
-     *
-     * @test
-     * @covers IndexRemoveCommand::handle()
+     * @return array
      */
-    public function it_handles_the_console_command_call_when_in_production()
+    public function handle_data_provider():array
     {
-        $index = 'some_index';
-        $this->command->shouldReceive('argument')->once()->with('index')->andReturn($index);
-        $this->command->shouldReceive('confirm')->withAnyArgs()->andReturnFalse();
-        $this->command->shouldReceive('removeIndex')->never();
-
-        $this->command->handle();
-    }
-
-    /**
-     * @param \Illuminate\Foundation\Application $app
-     */
-    protected function getEnvironmentSetUp($app)
-    {
-        $app['env'] = 'production';
+        return [
+            'index given'    => ['test_index'],
+            'no index given' => [null],
+        ];
     }
 }
