@@ -4,7 +4,7 @@ namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasConnection;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\UpdatesAlias;
-use GuzzleHttp\Client;
+use Elasticsearch\ClientBuilder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 
@@ -18,7 +18,7 @@ class IndexRollbackCommand extends Command
     use HasConnection;
     use UpdatesAlias;
 
-    /** @var Client $client */
+    /** @var ClientBuilder $client */
     protected $client;
 
     /** @var string $description */
@@ -36,9 +36,9 @@ class IndexRollbackCommand extends Command
     /**
      * IndexRollbackCommand constructor.
      *
-     * @param Client $client
+     * @param ClientBuilder $client
      */
-    public function __construct(Client $client)
+    public function __construct(ClientBuilder $client)
     {
         parent::__construct();
 
