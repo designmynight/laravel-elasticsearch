@@ -66,7 +66,7 @@ class IndexRemoveCommand extends Command
         $this->info("Removing index: {$index}");
 
         try {
-            $this->client->create()->build()->indices()->delete(['index' => $index]);
+            $this->client->build()->indices()->delete(['index' => $index]);
         }
         catch (\Exception $exception) {
             $message = json_decode($exception->getMessage(), true);

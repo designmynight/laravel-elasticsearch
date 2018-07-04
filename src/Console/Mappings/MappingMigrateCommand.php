@@ -2,7 +2,6 @@
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
-use DesignMyNight\Elasticsearch\Console\Mappings\Exceptions\FailedToPutNewMapping;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasConnection;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\UpdatesAlias;
 use Elasticsearch\ClientBuilder;
@@ -37,7 +36,7 @@ class MappingMigrateCommand extends Command
     /**
      * MappingMigrateCommand constructor.
      *
-     * @param Client $client
+     * @param ClientBuilder $client
      */
     public function __construct(ClientBuilder $client, Filesystem $files)
     {
