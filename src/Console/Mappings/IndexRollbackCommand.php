@@ -3,7 +3,6 @@
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasConnection;
-use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasHost;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\UpdatesAlias;
 use GuzzleHttp\Client;
 use Illuminate\Console\Command;
@@ -17,7 +16,6 @@ class IndexRollbackCommand extends Command
 {
 
     use HasConnection;
-    use HasHost;
     use UpdatesAlias;
 
     /** @var Client $client */
@@ -46,7 +44,6 @@ class IndexRollbackCommand extends Command
 
         $this->client = $client;
         $this->connection = $this->getConnection();
-        $this->host = $this->getHost();
     }
 
     /**
