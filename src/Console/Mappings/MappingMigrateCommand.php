@@ -4,8 +4,8 @@ namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\Exceptions\FailedToPutNewMapping;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasConnection;
-use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasHost;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\UpdatesAlias;
+use Elasticsearch\ClientBuilder;
 use GuzzleHttp\Client;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
@@ -21,10 +21,9 @@ class MappingMigrateCommand extends Command
 {
 
     use HasConnection;
-    use HasHost;
     use UpdatesAlias;
 
-    /** @var Client $client */
+    /** @var ClientBuilder $client */
     public $client;
 
     /** @var Filesystem $files */
@@ -41,14 +40,13 @@ class MappingMigrateCommand extends Command
      *
      * @param Client $client
      */
-    public function __construct(Client $client, Filesystem $files)
+    public function __construct(ClientBuilder $client, Filesystem $files)
     {
         parent::__construct();
 
         $this->client = $client;
         $this->connection = $this->getConnection();
         $this->files = $files;
-        $this->host = $this->getHost();
     }
 
     /**
@@ -126,20 +124,14 @@ class MappingMigrateCommand extends Command
     {
         $index = $this->getMappingName($mapping->getFileName(), true);
 
-        $body = $this->client->put("{$this->host}/{$index}", [
-            'headers'     => [
-                'Content-Type' => 'application/json'
-            ],
-            'http_errors' => false,
-            'body'        => $mapping->getContents()
-        ])->getBody();
-        $body = json_decode($body, true);
+        $response = $this->client->build()->indices()->putMapping([
+            'index' => $index,
+            'body'  => $mapping->getContents(),
+        ]);
 
-        if (isset($body['error'])) {
-            throw new FailedToPutNewMapping($body);
-        }
+        dd($response);
 
-        return $body;
+        return $response;
     }
 
     /**
