@@ -3,12 +3,9 @@
 namespace Tests\Console\Mappings;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\IndexListCommand;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
+use Elasticsearch\Client;
+use Elasticsearch\ClientBuilder;
+use Elasticsearch\Namespaces\CatNamespace;
 use Orchestra\Testbench\TestCase;
 use Mockery as m;
 
@@ -33,8 +30,6 @@ class IndexListCommandTest extends TestCase
         $this->command = m::mock(IndexListCommand::class)
             ->shouldAllowMockingProtectedMethods()
             ->makePartial();
-
-        $this->command->setHost('host:1111');
     }
 
     /**
@@ -42,31 +37,21 @@ class IndexListCommandTest extends TestCase
      *
      * @test
      * @covers       IndexListCommand::getIndices()
-     * @dataProvider get_indices_data_provider
      */
-    public function it_gets_a_list_of_indices_on_the_elasticsearch_cluster($expected, $request)
+    public function it_gets_a_list_of_indices_on_the_elasticsearch_cluster()
     {
-        $mock = new MockHandler([$request]);
-        $handler = HandlerStack::create($mock);
+        $catNamespace = m::mock(CatNamespace::class);
+        $catNamespace->shouldReceive('indices')->andReturn([]);
 
-        $this->command->client = new Client(['handler' => $handler]);
+        $client = m::mock(Client::class);
+        $client->shouldReceive('cat')->andReturn($catNamespace);
 
-        if (is_null($expected)) {
-            $this->command->shouldReceive('error')->once()->with('Failed to retrieve indices.');
-        }
+        $clientBuilder = m::mock(ClientBuilder::class);
+        $clientBuilder->shouldReceive('build')->andReturn($client);
 
-        $this->assertEquals($expected, $this->command->getIndices());
-    }
+        $this->command->client = $clientBuilder;
 
-    /**
-     * @return array
-     */
-    public function get_indices_data_provider():array
-    {
-        return [
-            '200 response'      => ['some response', new Response(200, [], 'some response')],
-            'request exception' => [null, new RequestException('', new Request('GET', ''))]
-        ];
+        $this->assertEquals([], $this->command->getIndices());
     }
 
     /**
@@ -74,62 +59,45 @@ class IndexListCommandTest extends TestCase
      *
      * @test
      * @covers       IndexListCommand::getIndicesForAlias()
-     * @dataProvider get_indices_for_alias_data_provider
      */
-    public function it_returns_a_formatted_array_of_active_aliases_and_their_corresponding_indices($expected, $request)
+    public function it_returns_a_formatted_array_of_active_aliases_and_their_corresponding_indices()
     {
-        $mock = new MockHandler([
-            $request
-        ]);
-        $handler = HandlerStack::create($mock);
+        $expected = [
+            'test_dev'        => [
+                '2017_05_21_111500_test_dev',
+                '2018_05_21_111500_test_dev',
+            ],
+            'test_production' => [
+                '2018_05_21_111500_test_production',
+            ],
+        ];
+        $body = [
+            [
+                'alias' => 'test_production',
+                'index' => '2018_05_21_111500_test_production',
+            ],
+            [
+                'index' => '2018_05_21_111500_test_dev',
+                'alias' => 'test_dev',
+            ],
+            [
+                'index' => '2017_05_21_111500_test_dev',
+                'alias' => 'test_dev',
+            ],
+        ];
 
-        $this->command->client = new Client(['handler' => $handler]);
+        $catNamespace = m::mock(CatNamespace::class);
+        $catNamespace->shouldReceive('aliases')->andReturn($body);
 
-        if ($expected === []) {
-            $this->command->shouldReceive('error')->once()->with("Failed to retrieve alias *");
-        }
+        $client = m::mock(Client::class);
+        $client->shouldReceive('cat')->andReturn($catNamespace);
+
+        $clientBuilder = m::mock(ClientBuilder::class);
+        $clientBuilder->shouldReceive('build')->andReturn($client);
+
+        $this->command->client = $clientBuilder;
 
         $this->assertEquals($expected, $this->command->getIndicesForAlias());
-    }
-
-    /**
-     * @return array
-     */
-    public function get_indices_for_alias_data_provider():array
-    {
-        $body = [
-            '2018_05_21_111500_test_production' => [
-                'aliases' => [
-                    'test_production' => []
-                ]
-            ],
-            '2018_05_21_111500_test_dev'        => [
-                'aliases' => [
-                    'test_dev' => []
-                ]
-            ],
-            '2017_05_21_111500_test_dev'        => [
-                'aliases' => [
-                    'test_dev' => []
-                ]
-            ],
-        ];
-
-        return [
-            '200 response'      => [
-                [
-                    'test_dev'        => [
-                        '2017_05_21_111500_test_dev',
-                        '2018_05_21_111500_test_dev'
-                    ],
-                    'test_production' => [
-                        '2018_05_21_111500_test_production'
-                    ]
-                ],
-                new Response(200, ['Content-Type' => 'application/json'], json_encode($body))
-            ],
-            'request exception' => [[], new RequestException('', new Request('get', ''))]
-        ];
     }
 
     /**
@@ -144,11 +112,10 @@ class IndexListCommandTest extends TestCase
         $this->command->shouldReceive('option')->once()->with('alias')->andReturn($alias);
 
         $this->command->shouldReceive('getIndicesForAlias')->once()->with($alias)->andReturn([
-            $alias => ['index1', 'index2', 'index3']
+            $alias => ['index1', 'index2', 'index3'],
         ]);
 
         $this->command->shouldReceive('info')->once()->withAnyArgs();
-
         $this->command->shouldReceive('line')->times(4)->withAnyArgs();
 
         $this->command->handle();
@@ -164,9 +131,13 @@ class IndexListCommandTest extends TestCase
     {
         $this->command->shouldReceive('option')->once()->with('alias')->andReturnNull();
 
-        $indices = 'here are some indices';
+        $indices = [
+            [
+                'index' => 'name of index',
+            ],
+        ];
         $this->command->shouldReceive('getIndices')->once()->andReturn($indices);
-        $this->command->shouldReceive('line')->once()->with($indices);
+        $this->command->shouldReceive('table')->once()->withAnyArgs();
 
         $this->command->handle();
     }
