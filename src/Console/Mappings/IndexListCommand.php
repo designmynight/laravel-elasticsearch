@@ -2,9 +2,7 @@
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
-use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasHost;
 use Elasticsearch\ClientBuilder;
-use Elasticsearch\Namespaces\CatNamespace;
 use GuzzleHttp\Client;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
@@ -17,26 +15,11 @@ use Illuminate\Support\Collection;
 class IndexListCommand extends Command
 {
 
-    /** @var Client $client */
-    public $client;
-
     /** @var string $description */
     protected $description = 'View all Elasticsearch indices';
 
     /** @var string $signature */
     protected $signature = 'index:list {--A|alias= : Name of alias indexes belong to.}';
-
-    /**
-     * IndexListCommand constructor.
-     *
-     * @param Client $client
-     */
-    public function __construct(Client $client)
-    {
-        parent::__construct();
-
-        $this->client = $client;
-    }
 
     /**
      * Execute the console command.

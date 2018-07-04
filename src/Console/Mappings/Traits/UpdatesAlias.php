@@ -3,6 +3,7 @@
 namespace DesignMyNight\Elasticsearch\Console\Mappings\Traits;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\Exceptions\FailedToUpdateAlias;
+use Elasticsearch\ClientBuilder;
 
 /**
  * Trait UpdatesAlias
@@ -22,9 +23,14 @@ trait UpdatesAlias
     protected function getActiveIndex(string $alias):string
     {
         try {
-            $body = $this->client->get("{$this->host}/{$alias}/_alias/*")->getBody();
+            $aliases = collect(ClientBuilder::create()->build()->cat()->aliases());
+            $aliases = $aliases->filter(function (array $item) use ($alias):bool {
+                return str_contains($item['index'], $alias);
+            })->sortByDesc('index');
 
-            return array_keys(json_decode($body, true))[0];
+            $index = $this->choice('Which index is the current index?', $aliases->pluck('index')->toArray(), 0);
+
+            return $aliases->firstWhere('index', $index)['index'];
         }
         catch (\Exception $exception) {
             $this->error('Failed to retrieve the current active index.');
@@ -61,42 +67,32 @@ trait UpdatesAlias
                 [
                     'remove' => [
                         'index' => $currentIndex,
-                        'alias' => $alias
+                        'alias' => $alias,
                     ],
                 ],
                 [
                     'add' => [
                         'index' => $index,
-                        'alias' => $alias
-                    ]
-                ]
-            ]
+                        'alias' => $alias,
+                    ],
+                ],
+            ],
         ];
 
         try {
-            $responseBody = $this->client->post("{$this->host}/_aliases", [
-                'headers' => [
-                    'Content-Type' => 'application/json'
-                ],
-                'body'    => json_encode($body)
-            ])->getBody();
-            $responseBody = json_decode($responseBody, true);
-
-            if (isset($responseBody['error'])) {
-                throw new FailedToUpdateAlias($responseBody);
-            }
+            ClientBuilder::create()->build()->indices()->updateAliases(['body' => $body]);
         }
         catch (\Exception $exception) {
-            $this->error("Failed to update alias: {$alias}\n\n{$exception->getMessage()}");
+            $this->error("Failed to update alias: {$alias}. {$exception->getMessage()}");
 
             return;
         }
 
-        $this->info("Updated alias for mapping: {$index}");
+        $this->info("Updated alias to mapping: {$index}");
 
         if ($removeOldIndex) {
             $this->call('index:remove', [
-                'index' => $currentIndex
+                'index' => $currentIndex,
             ]);
         }
     }
