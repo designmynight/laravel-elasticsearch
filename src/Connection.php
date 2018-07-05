@@ -5,6 +5,7 @@ namespace DesignMyNight\Elasticsearch;
 use Closure;
 use Elasticsearch\ClientBuilder;
 use Illuminate\Database\Connection as BaseConnection;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\Grammar as BaseGrammar;
 
 class Connection extends BaseConnection
@@ -102,6 +103,23 @@ class Connection extends BaseConnection
     public function getTablePrefix()
     {
         return $this->indexSuffix;
+    }
+
+    /**
+     * Log a query in the connection's query log.
+     *
+     * @param  string  $query
+     * @param  array   $bindings
+     * @param  float|null  $time
+     * @return void
+     */
+    public function logQuery($query, $bindings, $time = null)
+    {
+        $this->event(new QueryExecuted(json_encode($query), $bindings, $time, $this));
+
+        if ($this->loggingQueries) {
+            $this->queryLog[] = compact('query', 'bindings', 'time');
+        }
     }
 
     /**
