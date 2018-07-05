@@ -326,7 +326,7 @@ class Connection extends BaseConnection
      */
     public function prepareBindings(array $bindings)
     {
-
+        return $bindings;
     }
 
     /**
