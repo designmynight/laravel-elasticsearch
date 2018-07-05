@@ -5,7 +5,6 @@ namespace DesignMyNight\Elasticsearch\Console\Mappings;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasConnection;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\UpdatesAlias;
 use Elasticsearch\ClientBuilder;
-use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
 use Symfony\Component\Finder\SplFileInfo;
@@ -20,9 +19,6 @@ class MappingMigrateCommand extends Command
 
     use HasConnection;
     use UpdatesAlias;
-
-    /** @var ClientBuilder $client */
-    public $client;
 
     /** @var Filesystem $files */
     public $files;
@@ -40,9 +36,8 @@ class MappingMigrateCommand extends Command
      */
     public function __construct(ClientBuilder $client, Filesystem $files)
     {
-        parent::__construct();
+        parent::__construct($client);
 
-        $this->client = $client;
         $this->connection = $this->getConnection();
         $this->files = $files;
     }
