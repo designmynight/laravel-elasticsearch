@@ -63,18 +63,23 @@ class IndexListCommandTest extends TestCase
     public function it_returns_a_formatted_array_of_active_aliases_and_their_corresponding_indices()
     {
         $expected = [
-            'test_dev'        => [
-                '2017_05_21_111500_test_dev',
-                '2018_05_21_111500_test_dev',
+            [
+                'index' => '2017_05_21_111500_test_dev',
+                'alias' => 'test_dev',
             ],
-            'test_production' => [
-                '2018_05_21_111500_test_production',
+            [
+                'index' => '2018_05_21_111500_test_dev',
+                'alias' => 'test_dev',
+            ],
+            [
+                'index' => '2018_05_21_111500_test_production',
+                'alias' => 'test_production',
             ],
         ];
         $body = [
             [
-                'alias' => 'test_production',
                 'index' => '2018_05_21_111500_test_production',
+                'alias' => 'test_production',
             ],
             [
                 'index' => '2018_05_21_111500_test_dev',

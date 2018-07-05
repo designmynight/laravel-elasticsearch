@@ -99,6 +99,7 @@ class IndexListCommand extends Command
                         return str_contains($item['alias'], $alias);
                     });
                 })
+                ->values()
                 ->toArray();
         }
         catch (\Exception $exception) {

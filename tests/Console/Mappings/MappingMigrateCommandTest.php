@@ -7,9 +7,6 @@ use DesignMyNight\Elasticsearch\Console\Mappings\MappingMigrateCommand;
 use Elasticsearch\ClientBuilder;
 use Elasticsearch\Namespaces\IndicesNamespace;
 use GuzzleHttp\Client;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Psr7\Response;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\Filesystem;
 use Mockery as m;
@@ -179,20 +176,6 @@ class MappingMigrateCommandTest extends TestCase
         $pending = [$mapping];
 
         $this->command->shouldReceive('info');
-
-        if ($options['put_mapping_fails']) {
-            $this->command
-                ->shouldReceive('putMapping')
-                ->once()
-                ->with($mapping)
-                ->andThrow(new FailedToPutNewMapping(['error' => ['reason' => ''], 'status' => 400]));
-            $this->command->shouldReceive('error')->once();
-
-            $this->command->runPending($pending);
-
-            return;
-        }
-
         $this->command->shouldReceive('putMapping')->once()->with($mapping);
         $this->command->shouldReceive('migrateMapping')->once()->with(1, 'pending_mapping');
 
@@ -237,7 +220,6 @@ class MappingMigrateCommandTest extends TestCase
         ];
 
         return [
-            'put mapping fails'         => [array_merge($defaults, ['put_mapping_fails' => true])],
             'artisan command is passed' => [array_merge($defaults, ['has_artisan_command' => true])],
             'automatically swap alias'  => [array_merge($defaults, ['swap_alias' => true])],
         ];
