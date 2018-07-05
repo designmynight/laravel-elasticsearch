@@ -2,8 +2,8 @@
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
+use DesignMyNight\Elasticsearch\Connection;
 use Elasticsearch\ClientBuilder;
-use Elasticsearch\ConnectionPool\Selectors\StickyRoundRobinSelector;
 use Illuminate\Console\Command as BaseCommand;
 
 /**
@@ -25,7 +25,6 @@ abstract class Command extends BaseCommand
     {
         parent::__construct();
 
-        $hosts = explode(',', config('hosts', config('host', [])));
-        $this->client = $client->setHosts($hosts)->setSelector(StickyRoundRobinSelector::class)->build();
+        $this->client = new Connection(config('database.connections.elasticsearch'));
     }
 }
