@@ -116,7 +116,7 @@ class MappingMigrateCommand extends Command
     {
         $index = $this->getMappingName($mapping->getFileName(), true);
 
-        $this->client->build()->indices()->create([
+        $this->client->indices()->create([
             'index' => $index,
             'body'  => json_decode($mapping->getContents(), true),
         ]);
