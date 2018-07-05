@@ -3,7 +3,6 @@
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
 use Elasticsearch\ClientBuilder;
-use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 
 /**
@@ -13,9 +12,6 @@ use Illuminate\Support\Collection;
  */
 class IndexListCommand extends Command
 {
-
-    /** @var ClientBuilder $client */
-    public $client;
 
     /** @var string $description */
     protected $description = 'View all Elasticsearch indices';
@@ -30,9 +26,7 @@ class IndexListCommand extends Command
      */
     public function __construct(ClientBuilder $client)
     {
-        parent::__construct();
-
-        $this->client = $client;
+        parent::__construct($client);
     }
 
     /**
@@ -73,7 +67,7 @@ class IndexListCommand extends Command
     protected function getIndices():array
     {
         try {
-            return collect($this->client->build()->cat()->indices())->sortBy('index')->toArray();
+            return collect($this->client->cat()->indices())->sortBy('index')->toArray();
         }
         catch (\Exception $exception) {
             $this->error('Failed to retrieve indices.');
@@ -90,7 +84,7 @@ class IndexListCommand extends Command
     protected function getIndicesForAlias(string $alias = '*'):array
     {
         try {
-            $aliases = collect($this->client->build()->cat()->aliases());
+            $aliases = collect($this->client->cat()->aliases());
 
             return $aliases
                 ->sortBy('alias')

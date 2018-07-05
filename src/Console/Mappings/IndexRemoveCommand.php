@@ -3,8 +3,6 @@
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
 use Elasticsearch\ClientBuilder;
-use GuzzleHttp\Client;
-use Illuminate\Console\Command;
 
 /**
  * Class IndexRemoveCommand
@@ -13,9 +11,6 @@ use Illuminate\Console\Command;
  */
 class IndexRemoveCommand extends Command
 {
-
-    /** @var ClientBuilder $client */
-    public $client;
 
     /** @var string $description */
     protected $description = 'Remove index from Elasticsearch';
@@ -30,9 +25,7 @@ class IndexRemoveCommand extends Command
      */
     public function __construct(ClientBuilder $client)
     {
-        parent::__construct();
-
-        $this->client = $client;
+        parent::__construct($client);
     }
 
     /**
@@ -45,7 +38,7 @@ class IndexRemoveCommand extends Command
         $index = $this->argument('index');
 
         if (!$index) {
-            $indices = collect($this->client->build()->cat()->indices())->sortBy('index')->pluck('index')->toArray();
+            $indices = collect($this->client->cat()->indices())->sortBy('index')->pluck('index')->toArray();
             $index = $this->choice('Which index would you like to delete?', $indices);
         }
 
@@ -66,7 +59,7 @@ class IndexRemoveCommand extends Command
         $this->info("Removing index: {$index}");
 
         try {
-            $this->client->build()->indices()->delete(['index' => $index]);
+            $this->client->indices()->delete(['index' => $index]);
         }
         catch (\Exception $exception) {
             $message = json_decode($exception->getMessage(), true);
