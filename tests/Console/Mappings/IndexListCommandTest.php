@@ -112,11 +112,12 @@ class IndexListCommandTest extends TestCase
         $this->command->shouldReceive('option')->once()->with('alias')->andReturn($alias);
 
         $this->command->shouldReceive('getIndicesForAlias')->once()->with($alias)->andReturn([
-            $alias => ['index1', 'index2', 'index3'],
+            ['index' => 'index1', 'alias' => 'alias1'],
+            ['index' => 'index2', 'alias' => 'alias2'],
+            ['index' => 'index3', 'alias' => 'alias3'],
         ]);
 
-        $this->command->shouldReceive('info')->once()->withAnyArgs();
-        $this->command->shouldReceive('line')->times(4)->withAnyArgs();
+        $this->command->shouldReceive('table')->once()->withAnyArgs();
 
         $this->command->handle();
     }

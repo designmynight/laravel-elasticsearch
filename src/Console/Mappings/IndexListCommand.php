@@ -43,28 +43,34 @@ class IndexListCommand extends Command
     public function handle()
     {
         if ($alias = $this->option('alias')) {
-            foreach ($this->getIndicesForAlias($alias) as $key => $indices) {
-                $this->info("Alias: $key");
+            $indices = $this->getIndicesForAlias($alias);
 
-                foreach ($indices as $index => $item) {
-                    $this->line("[$index]: $item");
-                }
+            if (empty($indices)) {
+                $this->line('No aliases found.');
 
-                $this->line('');
+                return;
             }
+
+            $this->table(array_keys($indices[0]), $indices);
 
             return;
         }
 
         if ($indices = $this->getIndices()) {
+            if (empty($indices)) {
+                $this->line('No indexes were found.');
+
+                return;
+            }
+
             $this->table(array_keys($indices[0]), $indices);
         }
     }
 
     /**
-     * @return null|array
+     * @return array
      */
-    protected function getIndices():?array
+    protected function getIndices():array
     {
         try {
             return collect($this->client->build()->cat()->indices())->sortBy('index')->toArray();
@@ -73,7 +79,7 @@ class IndexListCommand extends Command
             $this->error('Failed to retrieve indices.');
         }
 
-        return null;
+        return [];
     }
 
     /**
@@ -87,16 +93,11 @@ class IndexListCommand extends Command
             $aliases = collect($this->client->build()->cat()->aliases());
 
             return $aliases
-                ->groupBy(function (array $item):string {
-                    return $item['alias'];
-                })
+                ->sortBy('alias')
                 ->when($alias !== '*', function (Collection $aliases) use ($alias) {
-                    return $aliases->filter(function ($item, $key) use ($alias) {
-                        return $key === $alias;
+                    return $aliases->filter(function ($item) use ($alias) {
+                        return str_contains($item['alias'], $alias);
                     });
-                })
-                ->map(function (Collection $indices):Collection {
-                    return $indices->sortBy('index')->pluck('index');
                 })
                 ->toArray();
         }
