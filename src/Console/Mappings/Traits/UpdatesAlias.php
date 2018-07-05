@@ -81,7 +81,7 @@ trait UpdatesAlias
     {
         $index = $index ?? $this->getIndex($alias);
 
-        $this->info("Updating alias with mapping: {$index}");
+        $this->line("Updating alias to mapping: {$index}");
 
         $alias = $alias ?? $this->getAlias($index);
         $currentIndex = $currentIndex ?? $this->getActiveIndex($alias);
