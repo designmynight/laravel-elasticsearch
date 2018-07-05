@@ -2,12 +2,12 @@
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings\Traits;
 
-use Elasticsearch\ClientBuilder;
+use Elasticsearch\Client;
 
 /**
  * Trait UpdatesAlias
  *
- * @property ClientBuilder client
+ * @property Client client
  * @package DesignMyNight\Elasticsearch\Console\Mappings\Traits
  */
 trait UpdatesAlias
@@ -21,7 +21,7 @@ trait UpdatesAlias
     protected function getActiveIndex(string $alias):string
     {
         try {
-            $aliases = collect($this->client->create()->build()->cat()->aliases());
+            $aliases = collect($this->client->cat()->aliases());
         }
         catch (\Exception $exception) {
             $this->error('Failed to retrieve the current active index.');
@@ -58,7 +58,7 @@ trait UpdatesAlias
     protected function getIndex(string $alias):string
     {
         try {
-            $indices = collect($this->client->build()->cat()->indices());
+            $indices = collect($this->client->cat()->indices());
         }
         catch (\Exception $exception) {
             $this->error('An error occurred attempting to retrieve indices.');
@@ -104,7 +104,7 @@ trait UpdatesAlias
         ];
 
         try {
-            $this->client->create()->build()->indices()->updateAliases(['body' => $body]);
+            $this->client->indices()->updateAliases(['body' => $body]);
         }
         catch (\Exception $exception) {
             $this->error("Failed to update alias: {$alias}. {$exception->getMessage()}");

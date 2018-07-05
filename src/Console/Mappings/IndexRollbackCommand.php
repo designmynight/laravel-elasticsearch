@@ -5,7 +5,6 @@ namespace DesignMyNight\Elasticsearch\Console\Mappings;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\HasConnection;
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\UpdatesAlias;
 use Elasticsearch\ClientBuilder;
-use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 
 /**
@@ -17,9 +16,6 @@ class IndexRollbackCommand extends Command
 
     use HasConnection;
     use UpdatesAlias;
-
-    /** @var ClientBuilder $client */
-    protected $client;
 
     /** @var string $description */
     protected $description = 'Rollback to the previous index';
@@ -40,9 +36,8 @@ class IndexRollbackCommand extends Command
      */
     public function __construct(ClientBuilder $client)
     {
-        parent::__construct();
+        parent::__construct($client);
 
-        $this->client = $client;
         $this->connection = $this->getConnection();
     }
 
