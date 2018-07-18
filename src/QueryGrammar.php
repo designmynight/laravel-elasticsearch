@@ -1078,6 +1078,10 @@ class QueryGrammar extends BaseGrammar
      */
     protected function convertDateTime($value): string
     {
+        if (is_string($value)) {
+            return $value;
+        }
+
         return $value->format('Y-m-d\TH:i:s');
     }
 
