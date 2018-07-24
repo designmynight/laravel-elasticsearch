@@ -21,7 +21,7 @@ class MappingMakeCommand extends Command
     protected $files;
 
     /** @var string $signature */
-    protected $signature = 'make:mapping {name : Name of the mapping.} {--T|template= : Optional name of existing mapping as template.}';
+    protected $signature = 'make:mapping {name : Name of the mapping.} {--T|template= : Optional name of existing mapping as template.} {--U|update : Update existing index}';
 
     /**
      * MappingMakeCommand constructor.
@@ -72,6 +72,10 @@ class MappingMakeCommand extends Command
     {
         $name = $this->argument('name');
         $timestamp = Carbon::now()->format('Y_m_d_His');
+
+        if ($this->option('update')) {
+            $timestamp .= "_update";
+        }
 
         return "{$timestamp}_{$name}";
     }

@@ -3,6 +3,7 @@
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
 use DesignMyNight\Elasticsearch\Connection;
+use Elasticsearch\Client;
 use Elasticsearch\ClientBuilder;
 use Illuminate\Console\Command as BaseCommand;
 
@@ -13,7 +14,7 @@ use Illuminate\Console\Command as BaseCommand;
 abstract class Command extends BaseCommand
 {
 
-    /** @var ClientBuilder $client */
+    /** @var ClientBuilder|Client $client */
     public $client;
 
     /**
