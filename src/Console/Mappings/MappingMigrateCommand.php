@@ -57,6 +57,22 @@ class MappingMigrateCommand extends Command
     }
 
     /**
+     * @param string $index
+     * @param array  $body
+     */
+    protected function createIndex(string $index, array $body):void
+    {
+        $this->line("Creating index $index");
+
+        $this->client->indices()->create([
+            'index' => $index,
+            'body'  => $body,
+        ]);
+
+        $this->info("Created index $index");
+    }
+
+    /**
      * @return SplFileInfo[]
      */
     protected function getMappingFiles():array
@@ -79,6 +95,23 @@ class MappingMigrateCommand extends Command
         }
 
         return $mapping;
+    }
+
+    /**
+     * @param string $index
+     */
+    protected function index(string $index):void
+    {
+        if (!($command = $this->argument('artisan-command'))) {
+            $command = config('laravel-elasticsearch.index_command');
+        }
+
+        $this->info("Indexing mapping: {$index}");
+
+        // Begin indexing.
+        $this->call($command, ['index' => $index]);
+
+        $this->info("Indexed mapping: {$index}");
     }
 
     /**
@@ -115,11 +148,15 @@ class MappingMigrateCommand extends Command
     protected function putMapping(SplFileInfo $mapping):void
     {
         $index = $this->getMappingName($mapping->getFileName(), true);
+        $mappings = json_decode($mapping->getContents(), true);
 
-        $this->client->indices()->create([
-            'index' => $index,
-            'body'  => json_decode($mapping->getContents(), true),
-        ]);
+        if (str_contains($index, 'update')) {
+            $this->updateIndex($index, $mappings['mappings']);
+
+            return;
+        }
+
+        $this->createIndex($index, $mappings);
     }
 
     /**
@@ -139,10 +176,8 @@ class MappingMigrateCommand extends Command
             $index = $this->getMappingName($mapping->getFileName());
 
             $this->info("Migrating mapping: {$index}");
-            $this->info("Indexing mapping: {$index}");
 
             try {
-                // Create index.
                 $this->putMapping($mapping);
             }
             catch (\Exception $exception) {
@@ -151,16 +186,11 @@ class MappingMigrateCommand extends Command
                 return;
             }
 
-            $this->migrateMapping($batch, $index);
+//            $this->migrateMapping($batch, $index);
 
-            if (!($command = $this->argument('artisan-command'))) {
-                $command = config('laravel-elasticsearch.index_command');
+            if (!str_contains($index, 'update')) {
+                $this->index($index);
             }
-
-            // Begin indexing.
-            $this->call($command, ['index' => $index]);
-
-            $this->info("Indexed mapping: {$index}");
 
             if ($this->option('swap')) {
                 $this->updateAlias($this->getMappingName($index, true));
@@ -168,5 +198,26 @@ class MappingMigrateCommand extends Command
 
             $this->info("Migrated mapping: {$index}");
         }
+    }
+
+    /**
+     * @param string $index
+     * @param array  $mappings
+     */
+    protected function updateIndex(string $index, array $mappings):void
+    {
+        $index = preg_replace('/[0-9_].+update_/', '', $index);
+
+        $this->line("Updating index mapping $index");
+
+        foreach ($mappings as $type => $body) {
+            $this->client->indices()->putMapping([
+                'index' => $index,
+                'type'  => $type,
+                'body'  => $body,
+            ]);
+        }
+
+        $this->info("Updated index mapping $index");
     }
 }
