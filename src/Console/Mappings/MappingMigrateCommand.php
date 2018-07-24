@@ -186,7 +186,7 @@ class MappingMigrateCommand extends Command
                 return;
             }
 
-//            $this->migrateMapping($batch, $index);
+            $this->migrateMapping($batch, $index);
 
             if (!str_contains($index, 'update')) {
                 $this->index($index);
