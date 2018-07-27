@@ -46,10 +46,7 @@ class IndexListCommandTest extends TestCase
         $client = m::mock(Client::class);
         $client->shouldReceive('cat')->andReturn($catNamespace);
 
-        $clientBuilder = m::mock(ClientBuilder::class);
-        $clientBuilder->shouldReceive('build')->andReturn($client);
-
-        $this->command->client = $clientBuilder;
+        $this->command->client = $client;
 
         $this->assertEquals([], $this->command->getIndices());
     }
@@ -97,10 +94,7 @@ class IndexListCommandTest extends TestCase
         $client = m::mock(Client::class);
         $client->shouldReceive('cat')->andReturn($catNamespace);
 
-        $clientBuilder = m::mock(ClientBuilder::class);
-        $clientBuilder->shouldReceive('build')->andReturn($client);
-
-        $this->command->client = $clientBuilder;
+        $this->command->client = $client;
 
         $this->assertEquals($expected, $this->command->getIndicesForAlias());
     }

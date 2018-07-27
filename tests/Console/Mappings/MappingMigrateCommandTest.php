@@ -115,32 +115,32 @@ class MappingMigrateCommandTest extends TestCase
      * It puts the new mapping into the Elasticsearch cluster.
      *
      * @test
-     * @covers MappingMigrateCommand::putMapping()
+     * @covers       MappingMigrateCommand::putMapping()
+     * @dataProvider put_mapping_data_provider
      */
-    public function it_puts_the_new_mapping_into_the_elasticsearch_cluster()
+    public function it_puts_the_new_mapping_into_the_elasticsearch_cluster(string $method, string $file)
     {
         $contents = json_encode(['mappings' => []]);
 
         /** @var m\CompositeExpectation|SplFileInfo $mapping */
         $mapping = m::mock(SplFileInfo::class);
-        $mapping->shouldReceive('getFileName')->andReturn('pending_mapping.json');
+        $mapping->shouldReceive('getFileName')->andReturn($file);
         $mapping->shouldReceive('getContents')->andReturn($contents);
 
-        $indicesNamespace = m::mock(IndicesNamespace::class);
-        $indicesNamespace->shouldReceive('create')->once()->with([
-            'index' => 'pending_mapping_dev',
-            'body'  => ['mappings' => []],
-        ]);
-
-        $client = m::mock(Client::class);
-        $client->shouldReceive('indices')->andReturn($indicesNamespace);
-
-        $clientBuilder = m::mock(ClientBuilder::class);
-        $clientBuilder->shouldReceive('build')->andReturn($client);
-
-        $this->command->client = $clientBuilder;
+        $this->command->shouldReceive($method)->once();
 
         $this->command->putMapping($mapping);
+    }
+
+    /**
+     * putMapping data provider.
+     */
+    public function put_mapping_data_provider():array
+    {
+        return [
+            'create index' => ['createIndex', 'pending_mapping.json'],
+            'update index' => ['updateIndex', 'update_pending_mappings.json'],
+        ];
     }
 
     /**

@@ -44,10 +44,7 @@ class IndexRemoveCommandTest extends TestCase
         $client = m::mock(Client::class);
         $client->shouldReceive('indices')->andReturn($indicesNamespace);
 
-        $clientBuilder = m::mock(ClientBuilder::class);
-        $clientBuilder->shouldReceive('build')->andReturn($client);
-
-        $this->command->client = $clientBuilder;
+        $this->command->client = $client;
 
         $this->command->shouldReceive('info');
 
@@ -69,10 +66,7 @@ class IndexRemoveCommandTest extends TestCase
         $client = m::mock(Client::class);
         $client->shouldReceive('cat')->andReturn($catNamespace);
 
-        $clientBuilder = m::mock(ClientBuilder::class);
-        $clientBuilder->shouldReceive('build')->andReturn($client);
-
-        $this->command->client = $clientBuilder;
+        $this->command->client = $client;
 
         $this->command->shouldReceive('argument')->once()->with('index')->andReturn($index);
         $this->command->shouldReceive('choice')->with('Which index would you like to delete?', [$index]);
