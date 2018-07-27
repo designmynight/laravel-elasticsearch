@@ -34,14 +34,27 @@ class MappingMakeCommandTest extends TestCase
      * It returns a timestamp prefixed stub of the name argument.
      *
      * @test
-     * @covers MappingMakeCommand::getStub()
+     * @covers       MappingMakeCommand::getStub()
+     * @dataProvider get_sub_data_provider
      */
-    public function it_returns_a_timestamp_prefixed_stub_of_the_name_argument()
+    public function it_returns_a_timestamp_prefixed_stub_of_the_name_argument(string $expected, bool $update)
     {
         Carbon::setTestNow(Carbon::create(2018, 5, 18, 16, 12, 0));
-        $this->command->shouldReceive('argument')->once()->andReturn('mapping');
+        $this->command->shouldReceive('argument')->once()->with('name')->andReturn('mapping');
+        $this->command->shouldReceive('option')->once()->with('update')->andReturn($update);
 
-        $this->assertEquals('2018_05_18_161200_mapping', $this->command->getStub());
+        $this->assertEquals($expected, $this->command->getStub());
+    }
+
+    /**
+     * getSub data provider.
+     */
+    public function get_sub_data_provider():array
+    {
+        return [
+            'create' => ['2018_05_18_161200_mapping', false],
+            'update' => ['2018_05_18_161200_update_mapping', true],
+        ];
     }
 
     /**
