@@ -27,7 +27,7 @@ class MappingMigrateCommand extends Command
     protected $description = 'Index new mapping';
 
     /** @var string $signature */
-    protected $signature = 'migrate:mappings {artisan-command? : Local Artisan indexing command. Defaults to config.} {--S|swap : Automatically update alias.}';
+    protected $signature = 'migrate:mappings {artisan-command? : Local Artisan indexing command. Defaults to config.} {--I|index : Index mapping on migration} {--S|swap : Automatically update alias.}';
 
     /**
      * MappingMigrateCommand constructor.
@@ -188,15 +188,15 @@ class MappingMigrateCommand extends Command
 
             $this->migrateMapping($batch, $index);
 
-            if (!str_contains($index, 'update')) {
-                $this->index($index);
-            }
-
-            if ($this->option('swap')) {
-                $this->updateAlias($this->getMappingName($index, true));
-            }
-
             $this->info("Migrated mapping: {$index}");
+
+            if (!str_contains($index, 'update') && $this->option('index')) {
+                $this->index($index);
+
+                if ($this->option('swap')) {
+                    $this->updateAlias($this->getMappingName($index, true));
+                }
+            }
         }
     }
 
