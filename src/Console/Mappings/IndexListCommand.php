@@ -2,6 +2,7 @@
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
+use DesignMyNight\Elasticsearch\Console\Mappings\Traits\GetsIndices;
 use Elasticsearch\ClientBuilder;
 use Illuminate\Support\Collection;
 
@@ -12,6 +13,8 @@ use Illuminate\Support\Collection;
  */
 class IndexListCommand extends Command
 {
+
+    use GetsIndices;
 
     /** @var string $description */
     protected $description = 'View all Elasticsearch indices';
@@ -59,21 +62,6 @@ class IndexListCommand extends Command
 
             $this->table(array_keys($indices[0]), $indices);
         }
-    }
-
-    /**
-     * @return array
-     */
-    protected function getIndices():array
-    {
-        try {
-            return collect($this->client->cat()->indices())->sortBy('index')->toArray();
-        }
-        catch (\Exception $exception) {
-            $this->error('Failed to retrieve indices.');
-        }
-
-        return [];
     }
 
     /**
