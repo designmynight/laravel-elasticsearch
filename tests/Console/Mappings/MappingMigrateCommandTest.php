@@ -218,7 +218,6 @@ class MappingMigrateCommandTest extends TestCase
             'put_mapping_fails'   => false,
             'swap_alias'          => false,
             'automatically_index' => false,
-            'updates_alias'       => false,
         ];
 
         return [
