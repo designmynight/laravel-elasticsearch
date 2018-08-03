@@ -179,24 +179,24 @@ class MappingMigrateCommandTest extends TestCase
         $this->command->shouldReceive('putMapping')->once()->with($mapping);
         $this->command->shouldReceive('migrateMapping')->once()->with(1, 'pending_mapping');
 
-        $command = $options['has_artisan_command'] ? 'index:local-command' : 'index:mapping';
-
-        $this->command
-            ->shouldReceive('argument')
-            ->once()
-            ->with('artisan-command')
-            ->andReturn($command);
-
-        $this->command
-            ->shouldReceive('call')
-            ->once()
-            ->with($command, ['index' => 'pending_mapping']);
-
         $this->command
             ->shouldReceive('option')
             ->once()
-            ->with('swap')
-            ->andReturn($options['swap_alias']);
+            ->with('index')
+            ->andReturn($options['automatically_index']);
+
+        if ($options['automatically_index']) {
+            $this->command
+                ->shouldReceive('index')
+                ->once()
+                ->with('pending_mapping');
+
+            $this->command
+                ->shouldReceive('option')
+                ->once()
+                ->with('swap')
+                ->andReturn($options['swap_alias']);
+        }
 
         if ($options['swap_alias']) {
             $this->command
@@ -217,11 +217,13 @@ class MappingMigrateCommandTest extends TestCase
             'has_artisan_command' => false,
             'put_mapping_fails'   => false,
             'swap_alias'          => false,
+            'automatically_index' => false,
         ];
 
         return [
-            'artisan command is passed' => [array_merge($defaults, ['has_artisan_command' => true])],
-            'automatically swap alias'  => [array_merge($defaults, ['swap_alias' => true])],
+            'artisan command is passed'   => [array_merge($defaults, ['has_artisan_command' => true])],
+            'automatically index mapping' => [array_merge($defaults, ['automatically_index' => true])],
+            'automatically swap alias'    => [array_merge($defaults, ['automatically_index' => true, 'swap_alias' => true])],
         ];
     }
 
