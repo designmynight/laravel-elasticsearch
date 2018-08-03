@@ -63,11 +63,11 @@ class MappingMigrateCommandTest extends TestCase
      * @covers       MappingMigrateCommand::getMappingName()
      * @dataProvider get_mapping_name_data_provider
      */
-    public function it_gets_the_mapping_name($expected, $withSuffix = false)
+    public function it_gets_the_mapping_name($expected, $filename, $withSuffix = false)
     {
         config(['database.connections.elasticsearch.suffix' => '_dev']);
 
-        $this->assertEquals($expected, $this->command->getMappingName('mapping_filename.json', $withSuffix));
+        $this->assertEquals($expected, $this->command->getMappingName($filename, $withSuffix));
     }
 
     /**
@@ -76,8 +76,8 @@ class MappingMigrateCommandTest extends TestCase
     public function get_mapping_name_data_provider():array
     {
         return [
-            'removes file extension' => ['mapping_filename'],
-            'appends suffix'         => ['mapping_filename_dev', true],
+            'removes file extension' => ['mapping_filename', 'mapping_filename.json'],
+            'appends suffix'         => ['mapping_filename_dev', 'mapping_filename.json', true],
         ];
     }
 
@@ -193,12 +193,17 @@ class MappingMigrateCommandTest extends TestCase
 
             $this->command
                 ->shouldReceive('option')
+                ->atMost()
                 ->once()
                 ->with('swap')
                 ->andReturn($options['swap_alias']);
         }
 
-        if ($options['swap_alias']) {
+        $this->command->shouldReceive('call')
+            ->once()
+            ->with('make:mapping-alias', ['name' => 'pending_mapping', 'index' => 'pending_mapping']);
+
+        if($options['automatically_index']){
             $this->command
                 ->shouldReceive('updateAlias')
                 ->once()
