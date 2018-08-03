@@ -172,11 +172,11 @@ class MappingMigrateCommand extends Command
 
         $batch = $this->connection->max('batch') + 1;
 
+        $createdAliases = [];
+
         foreach ($pending as $mapping) {
             $index = $this->getMappingName($mapping->getFileName());
             $aliasName = $this->getAlias($index);
-
-            $createdIndex = false;
 
             try {
                 $this->call('make:mapping-alias', [
@@ -184,7 +184,7 @@ class MappingMigrateCommand extends Command
                   'index' => $index
                 ]);
 
-                $createdIndex = true;
+                $createdAliases[] = $aliasName;
             }
             catch(\Exception $e) {
                 // ignore
@@ -208,7 +208,7 @@ class MappingMigrateCommand extends Command
             if (!str_contains($index, 'update') && $this->option('index')) {
                 $this->index($index);
 
-                if ($createdIndex || $this->option('swap')) {
+                if (in_array($aliasName, $createdAliases) || $this->option('swap')) {
                     $this->updateAlias($this->getMappingName($index, true));
                 }
             }
