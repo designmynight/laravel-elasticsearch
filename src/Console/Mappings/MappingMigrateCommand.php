@@ -174,6 +174,21 @@ class MappingMigrateCommand extends Command
 
         foreach ($pending as $mapping) {
             $index = $this->getMappingName($mapping->getFileName());
+            $aliasName = $this->getAlias($index);
+
+            $createdIndex = false;
+
+            try {
+                $this->call('make:mapping-alias', [
+                  'name' => $aliasName,
+                  'index' => $index
+                ]);
+
+                $createdIndex = true;
+            }
+            catch(\Exception $e) {
+                // ignore
+            }
 
             $this->info("Migrating mapping: {$index}");
 
@@ -193,7 +208,7 @@ class MappingMigrateCommand extends Command
             if (!str_contains($index, 'update') && $this->option('index')) {
                 $this->index($index);
 
-                if ($this->option('swap')) {
+                if ($createdIndex || $this->option('swap')) {
                     $this->updateAlias($this->getMappingName($index, true));
                 }
             }
