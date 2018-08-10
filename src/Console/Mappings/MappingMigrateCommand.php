@@ -47,7 +47,9 @@ class MappingMigrateCommand extends Command
     public function handle()
     {
         $mappings = $this->getMappingFiles();
-        $mappingMigrations = $this->connection->orderBy('mapping')->orderBy('batch')->pluck('mapping');
+        $mappingMigrations = $this->connection->orderBy('mapping')
+          ->orderBy('batch')
+          ->pluck('mapping');
         $pendingMappings = $this->pendingMappings($mappings, $mappingMigrations->toArray());
 
         $this->runPending($pendingMappings);
@@ -61,10 +63,11 @@ class MappingMigrateCommand extends Command
     {
         $this->line("Creating index $index");
 
-        $this->client->indices()->create([
+        $this->client->indices()
+          ->create([
             'index' => $index,
             'body'  => $body,
-        ]);
+          ]);
 
         $this->info("Created index $index");
     }
@@ -118,8 +121,8 @@ class MappingMigrateCommand extends Command
     protected function migrateMapping(int $batch, string $mapping):void
     {
         $this->connection->insert([
-            'batch'   => $batch,
-            'mapping' => $mapping,
+          'batch'   => $batch,
+          'mapping' => $mapping,
         ]);
     }
 
@@ -132,9 +135,11 @@ class MappingMigrateCommand extends Command
     protected function pendingMappings(array $files, array $migrations):array
     {
         return Collection::make($files)
-            ->reject(function (SplFileInfo $file) use ($migrations):bool {
-                return in_array($this->getMappingName($file->getFilename()), $migrations);
-            })->values()->toArray();
+          ->reject(function (SplFileInfo $file) use ($migrations):bool {
+              return in_array($this->getMappingName($file->getFilename()), $migrations);
+          })
+          ->values()
+          ->toArray();
     }
 
     /**
@@ -173,19 +178,8 @@ class MappingMigrateCommand extends Command
 
         foreach ($pending as $mapping) {
             $index = $this->getMappingName($mapping->getFileName());
-            $aliasName = $this->getAlias($index);
-
-            try {
-                $this->call('make:mapping-alias', [
-                  'name' => $aliasName,
-                  'index' => $index
-                ]);
-
-                $createdAliases[] = $aliasName;
-            }
-            catch(\Exception $e) {
-                // ignore
-            }
+            $indexWithSuffix = $this->getMappingName($index, true);
+            $aliasName = $this->getAlias($indexWithSuffix);
 
             $this->info("Migrating mapping: {$index}");
 
@@ -199,6 +193,18 @@ class MappingMigrateCommand extends Command
             }
 
             $this->migrateMapping($batch, $index);
+
+            try {
+                $this->call('make:mapping-alias', [
+                  'name'  => $aliasName,
+                  'index' => $indexWithSuffix
+                ]);
+
+                $createdAliases[] = $aliasName;
+            }
+            catch (\Exception $e) {
+                $this->info("Migrating mapping alias error: {$e->getMessage()}");
+            }
 
             $this->info("Migrated mapping: {$index}");
 
@@ -223,11 +229,12 @@ class MappingMigrateCommand extends Command
         $this->line("Updating index mapping $index");
 
         foreach ($mappings as $type => $body) {
-            $this->client->indices()->putMapping([
+            $this->client->indices()
+              ->putMapping([
                 'index' => $index,
                 'type'  => $type,
                 'body'  => $body,
-            ]);
+              ]);
         }
 
         $this->info("Updated index mapping $index");

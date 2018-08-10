@@ -201,7 +201,7 @@ class MappingMigrateCommandTest extends TestCase
 
         $this->command->shouldReceive('call')
             ->once()
-            ->with('make:mapping-alias', ['name' => 'pending_mapping', 'index' => 'pending_mapping']);
+            ->with('make:mapping-alias', ['name' => 'pending_mapping_dev', 'index' => 'pending_mapping_dev']);
 
         if($options['automatically_index']){
             $this->command
