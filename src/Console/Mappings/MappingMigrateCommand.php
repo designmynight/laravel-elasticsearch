@@ -20,9 +20,6 @@ class MappingMigrateCommand extends Command
     use HasConnection;
     use UpdatesAlias;
 
-    /** @var Filesystem $files */
-    public $files;
-
     /** @var string $description */
     protected $description = 'Index new mapping';
 
@@ -172,8 +169,23 @@ class MappingMigrateCommand extends Command
 
         $batch = $this->connection->max('batch') + 1;
 
+        $createdAliases = [];
+
         foreach ($pending as $mapping) {
             $index = $this->getMappingName($mapping->getFileName());
+            $aliasName = $this->getAlias($index);
+
+            try {
+                $this->call('make:mapping-alias', [
+                  'name' => $aliasName,
+                  'index' => $index
+                ]);
+
+                $createdAliases[] = $aliasName;
+            }
+            catch(\Exception $e) {
+                // ignore
+            }
 
             $this->info("Migrating mapping: {$index}");
 
@@ -193,7 +205,7 @@ class MappingMigrateCommand extends Command
             if (!str_contains($index, 'update') && $this->option('index')) {
                 $this->index($index);
 
-                if ($this->option('swap')) {
+                if (in_array($aliasName, $createdAliases) || $this->option('swap')) {
                     $this->updateAlias($this->getMappingName($index, true));
                 }
             }
