@@ -7,8 +7,6 @@ Build Elasticsearch queries as you're used to with Eloquent, and get Model insta
 - Build and perform complex aggregations on your data
 - Use the Elasticsearch scroll API to retrieve large numbers of results 
 
-Note that this package doesn't provide any support for indexing documents in Elasticsearch - that's handled well by other libraries, for example [Laravel Scout](https://laravel.com/docs/master/scout) with the [ErickTamayo/laravel-scout-elastic](https://github.com/ErickTamayo/laravel-scout-elastic) driver.
-
 ## Setup
 Add elasticsearch connection configuration to database.php
 ```
