@@ -348,6 +348,28 @@ class Connection extends BaseConnection
     }
 
     /**
+     * Run a search query.
+     *
+     * @param  array     $query
+     * @param  array     $bindings
+     * @param  \Closure  $callback
+     * @return mixed
+     *
+     * @throws \DesignMyNight\Elasticsearch\QueryException
+     */
+    protected function runQueryCallback($query, $bindings, Closure $callback)
+    {
+        try {
+            $result = $callback($query, $bindings);
+        }
+        catch (Exception $e) {
+            throw new QueryException($query, null, $e);
+        }
+
+        return $result;
+    }
+
+    /**
      * Execute a Closure within a transaction.
      *
      * @param  \Closure  $callback
