@@ -47,7 +47,7 @@ trait UpdatesAlias
      */
     protected function getAlias(string $mapping):string
     {
-        return preg_replace('/^\d{4}\_\d{2}\_\d{2}\_\d{6}\_/', '', $mapping, 1);
+        return preg_replace('/^\d{4}\_\d{2}\_\d{2}\_\d{6}\_(update_)?/', '', $mapping, 1);
     }
 
     /**
