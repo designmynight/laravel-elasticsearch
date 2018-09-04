@@ -41,6 +41,8 @@ trait UpdatesAlias
     }
 
     /**
+     * Change 2018_09_04_104700_update_pages_dev to pages_dev.
+     *
      * @param string $mapping
      *
      * @return string
