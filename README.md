@@ -148,8 +148,8 @@ This package ships with the following commands to be used as utilities or as par
 
 
 ### Mappings and Aliases
-When creating a new index during a `migrate:mappings` the command will automatically create an alias based on the migration name by removing the date string.
+When creating a new index during a `migrate:mappings` the command will automatically create an alias based on the migration name by removing the date string. For example the migration `2018_08_03_095804_users.json` will create the alias `users`.
 
-For example the migration `2018_08_03_095804_users.json` will create the alias `users`.
+During the first migration an index appears in the `migrate:mappings` command will also switch the alias to the latest index mapping.  The above will only happen when the alias does not already exist.
 
-During the first migration the `migrate:mappings` command will also switch the alias to the latest index mapping.  Future migrations will require you to use the `--swap` option. 
+Future migrations will require you to use the `--swap` option. 
