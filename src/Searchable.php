@@ -41,9 +41,12 @@ trait Searchable {
 
         $this->setConnection(static::getElasticsearchConnectionName());
 
-        $result = $callback(...array_slice(func_get_args(), 1));
-
-        $this->setConnection($originalConnection);
+        try {
+            $result = $callback(...array_slice(func_get_args(), 1));
+        }
+        finally {
+            $this->setConnection($originalConnection);
+        }
 
         return $result;
     }
