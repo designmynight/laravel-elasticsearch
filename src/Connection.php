@@ -186,6 +186,45 @@ class Connection extends BaseConnection
     }
 
     /**
+     * Run a select statement against the database and returns a generator.
+     *
+     * @param  string  $query
+     * @param  array  $bindings
+     * @param  bool  $useReadPdo
+     * @return \Generator
+     */
+    public function cursor($query, $bindings = [], $useReadPdo = false)
+    {
+        $scrollTimeout = '30s';
+        $limit = min($params['body']['size'] ?? 100000, 100000);
+
+        $scrollParams = array(
+            'scroll' => $scrollTimeout,
+            'size'   => 500,
+            'index'  => $query['index'],
+            'body'   => $query['body']
+        );
+
+        $results = $this->select($scrollParams);
+
+        $scrollId = $results['_scroll_id'];
+
+        $numFound = $results['hits']['total'];
+
+        $numResults = count($results['hits']['hits']);
+
+        foreach ($results['hits']['hits'] as $result) {
+            yield $result;
+        }
+
+        if ( $limit >= $numResults ){
+            foreach ($this->scroll($scrollId, $scrollTimeout, $limit - $numResults) as $result) {
+                yield $result;
+            }
+        }
+    }
+
+    /**
      * Run a select statement against the database using an Elasticsearch scroll cursor.
      *
      * @param  array   $params

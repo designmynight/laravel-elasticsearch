@@ -22,8 +22,6 @@ class QueryBuilder extends BaseBuilder
 
     protected $rawResponse;
 
-    protected $scrollSelect;
-
     /**
      * All of the supported clause operators.
      *
@@ -420,7 +418,7 @@ class QueryBuilder extends BaseBuilder
      * Execute the query as a "select" statement.
      *
      * @param  array  $columns
-     * @return \Illuminate\Support\Collection|Generator
+     * @return \Illuminate\Support\Collection
      */
     public function get($columns = ['*'])
     {
@@ -434,13 +432,13 @@ class QueryBuilder extends BaseBuilder
 
         $this->columns = $original;
 
-        return $this->shouldUseScroll() ? $results : collect($results);
+        return collect($results);
     }
 
     /**
      * Get results without re-fetching for subsequent calls.
      *
-     * @return array|Generator
+     * @return array
      */
     protected function getResultsOnce()
     {
@@ -458,36 +456,7 @@ class QueryBuilder extends BaseBuilder
      */
     protected function runSelect()
     {
-        if ($this->shouldUseScroll()){
-            $this->rawResponse = $this->connection->scrollSelect($this->toCompiledQuery());
-        }
-        else {
-            $this->rawResponse = $this->connection->select($this->toCompiledQuery());
-        }
-
-        return $this->rawResponse;
-    }
-
-    /**
-     * Determine whether to use an Elasticsearch scroll cursor for the query.
-     *
-     * @return self
-     */
-    public function usingScroll(bool $useScroll = true): self
-    {
-        $this->scrollSelect = $useScroll;
-
-        return $this;
-    }
-
-    /**
-     * Determine whether to use an Elasticsearch scroll cursor for the query.
-     *
-     * @return bool
-     */
-    public function shouldUseScroll(): bool
-    {
-        return !!$this->scrollSelect;
+        return $this->connection->select($this->toCompiledQuery());
     }
 
     /**
@@ -498,9 +467,24 @@ class QueryBuilder extends BaseBuilder
      */
     public function getCountForPagination($columns = ['*'])
     {
-        if ($rawResponse = $this->processor->getRawResponse()) {
-            return $rawResponse['hits']['total'];
+        if ($this->results === null) {
+            $this->runPaginationCountQuery();
         }
+
+        return $this->processor->getRawResponse()['hits']['total'];
+    }
+
+    /**
+     * Run a pagination count query.
+     *
+     * @param  array  $columns
+     * @return array
+     */
+    protected function runPaginationCountQuery($columns = ['_id'])
+    {
+        return $this->cloneWithout(['columns', 'orders', 'limit', 'offset'])
+                    ->limit(1)
+                    ->get($columns)->all();
     }
 
     /**
@@ -510,9 +494,11 @@ class QueryBuilder extends BaseBuilder
      */
     public function getSearchDuration()
     {
-        if ($rawResponse = $this->processor->getRawResponse()) {
-            return $rawResponse['took'];
+        if ($this->results === null) {
+            $this->getResultsOnce();
         }
+
+        return $this->processor->getRawResponse()['took'];
     }
 
     /**
@@ -523,6 +509,22 @@ class QueryBuilder extends BaseBuilder
     public function toCompiledQuery(): array
     {
         return $this->toSql();
+    }
+
+    /**
+     * Get a generator for the given query.
+     *
+     * @return \Generator
+     */
+    public function cursor()
+    {
+        if (is_null($this->columns)) {
+            $this->columns = ['*'];
+        }
+
+        foreach ($this->connection->cursor($this->toCompiledQuery()) as $document) {
+            yield $this->processor->documentFromResult($this, $document);
+        }
     }
 
     /**
