@@ -186,7 +186,7 @@ class Connection extends BaseConnection
     }
 
     /**
-     * Run a select statement against the database and returns a generator.
+     * Run a select statement against the database and return a generator.
      *
      * @param  string  $query
      * @param  array  $bindings
@@ -227,45 +227,17 @@ class Connection extends BaseConnection
     /**
      * Run a select statement against the database using an Elasticsearch scroll cursor.
      *
-     * @param  array   $params
-     * @param  array   $bindings
-     * @return array
+     * @param  string $scrollId
+     * @param  string $scrollTimeout
+     * @param  int $limit
+     * @return \Generator
      */
-    public function scrollSelect($params, $bindings = [])
+    public function scroll(string $scrollId, string $scrollTimeout = '30s', int $limit = null)
     {
-        $scrollTimeout = '30s';
-        $limit = min($params['body']['size'] ?? 100000, 100000);
-
-        $scrollParams = array(
-            'scroll' => $scrollTimeout,
-            'size'   => 500,
-            'index'  => $params['index'],
-            'body'   => $params['body']
-        );
-
-        $results = $this->select($scrollParams);
-
-        $scrollId = $results['_scroll_id'];
-
-        $numFound = $results['hits']['total'];
-
-        $numResults = count($results['hits']['hits']);
-
-        if ( $limit >= $numResults ){
-            $results['scrollCursor'] = $this->scroll($scrollId, $scrollTimeout, $limit - $numResults);
-        }
-
-        return $results;
-    }
-
-    /**
-     * Run a select statement against the database using an Elasticsearch scroll cursor.
-     */
-    public function scroll($scrollId, $scrollTimeout, $limit){
         $numResults = 0;
 
         // Loop until the scroll 'cursors' are exhausted or we have enough results
-        while ($numResults < $limit) {
+        while (!$limit || $numResults < $limit) {
             // Execute a Scroll request
             $results = $this->connection->scroll(array(
                 'scroll_id' => $scrollId,
