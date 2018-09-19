@@ -743,7 +743,7 @@ class QueryGrammar extends BaseGrammar
             $key => $this->$method($aggregation)
         ];
 
-        if ( isset($aggregation['aggregations']) ){
+        if (isset($aggregation['aggregations']) && $aggregation['aggregations']->aggregations) {
             $compiled[$key]['aggregations'] = $this->compileAggregations($aggregation['aggregations']);
         }
 
