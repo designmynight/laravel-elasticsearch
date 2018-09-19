@@ -232,7 +232,7 @@ class Connection extends BaseConnection
      * @param  int $limit
      * @return \Generator
      */
-    public function scroll(string $scrollId, string $scrollTimeout = '30s', int $limit = null)
+    public function scroll(string $scrollId, string $scrollTimeout = '30s', int $limit = 0)
     {
         $numResults = 0;
 
