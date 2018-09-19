@@ -186,13 +186,14 @@ class Connection extends BaseConnection
     }
 
     /**
-     * Run a select statement against the database using an Elasticsearch scroll cursor.
+     * Run a select statement against the database and return a generator.
      *
-     * @param  array   $params
-     * @param  array   $bindings
-     * @return array
+     * @param  string  $query
+     * @param  array  $bindings
+     * @param  bool  $useReadPdo
+     * @return \Generator
      */
-    public function scrollSelect($params, $bindings = [])
+    public function cursor($query, $bindings = [], $useReadPdo = false)
     {
         $scrollTimeout = '30s';
         $limit = min($params['body']['size'] ?? 100000, 100000);
@@ -200,8 +201,8 @@ class Connection extends BaseConnection
         $scrollParams = array(
             'scroll' => $scrollTimeout,
             'size'   => 500,
-            'index'  => $params['index'],
-            'body'   => $params['body']
+            'index'  => $query['index'],
+            'body'   => $query['body']
         );
 
         $results = $this->select($scrollParams);
@@ -212,21 +213,31 @@ class Connection extends BaseConnection
 
         $numResults = count($results['hits']['hits']);
 
-        if ( $limit >= $numResults ){
-            $results['scrollCursor'] = $this->scroll($scrollId, $scrollTimeout, $limit - $numResults);
+        foreach ($results['hits']['hits'] as $result) {
+            yield $result;
         }
 
-        return $results;
+        if ( $limit >= $numResults ){
+            foreach ($this->scroll($scrollId, $scrollTimeout, $limit - $numResults) as $result) {
+                yield $result;
+            }
+        }
     }
 
     /**
      * Run a select statement against the database using an Elasticsearch scroll cursor.
+     *
+     * @param  string $scrollId
+     * @param  string $scrollTimeout
+     * @param  int $limit
+     * @return \Generator
      */
-    public function scroll($scrollId, $scrollTimeout, $limit){
+    public function scroll(string $scrollId, string $scrollTimeout = '30s', int $limit = 0)
+    {
         $numResults = 0;
 
         // Loop until the scroll 'cursors' are exhausted or we have enough results
-        while ($numResults < $limit) {
+        while (!$limit || $numResults < $limit) {
             // Execute a Scroll request
             $results = $this->connection->scroll(array(
                 'scroll_id' => $scrollId,

@@ -42,15 +42,6 @@ class EloquentBuilder extends BaseBuilder
 
         $models = $builder->getModels($columns);
 
-        // If we got a generator response then we'll return it without eager loading
-        if ($models instanceof Generator){
-            // Throw an exception if relations were supposed to be eager loaded
-            if ($this->eagerLoad){
-                throw new Exception('Eager loading relations is not currently supported with Generator responses from a scroll search');
-            }
-
-            return $models;
-        }
         // If we actually found models we will also eager load any relationships that
         // have been specified as needing to be eager loaded, which will solve the
         // n+1 query issue for the developers to avoid running a lot of queries.
@@ -73,30 +64,24 @@ class EloquentBuilder extends BaseBuilder
      * Get the hydrated models without eager loading.
      *
      * @param  array  $columns
-     * @return \Illuminate\Database\Eloquent\Model[]|Generator
+     * @return \Illuminate\Database\Eloquent\Model[]
      */
     public function getModels($columns = ['*'])
     {
-        $results = $this->query->get($columns);
-
-        if ($results instanceof Generator){
-            return $this->yieldResults($results);
-        }
-
         return $this->model->hydrate(
-            $results->all()
+            $this->query->get($columns)->all()
         )->all();
     }
 
     /**
-     * Return new models as a generator
+     * Get a generator for the given query.
+     *
+     * @return Generator
      */
-    protected function yieldResults($results)
+    public function cursor()
     {
-        $instance = $this->newModelInstance();
-
-        foreach ( $results as $result ){
-            yield $instance->newFromBuilder($result);
+        foreach ($this->applyScopes()->query->cursor() as $record) {
+            yield $this->model->newFromBuilder($record);
         }
     }
 

@@ -2,7 +2,6 @@
 
 namespace DesignMyNight\Elasticsearch;
 
-use Generator;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Processors\Processor as BaseProcessor;
 
@@ -17,7 +16,7 @@ class QueryProcessor extends BaseProcessor
      *
      * @param  \Illuminate\Database\Query\Builder  $query
      * @param  array  $results
-     * @return array|Generator
+     * @return array
      */
     public function processSelect(Builder $query, $results)
     {
@@ -27,42 +26,13 @@ class QueryProcessor extends BaseProcessor
 
         $this->query = $query;
 
-        // Return a generator if we got a scroll cursor in the results
-        if (isset($results['_scroll_id'])){
-            return $this->yieldResults($results);
-        }
-        else {
-            $documents = [];
+        $documents = [];
 
-            foreach ($results['hits']['hits'] as $result) {
-                $documents[] = $this->documentFromResult($query, $result);
-            }
-
-            return $documents;
-        }
-    }
-
-    /**
-     * Go through the results of a scroll search, yielding one result at a time
-     *
-     * @param array $results
-     * @return Generator
-     */
-    protected function yieldResults($results): Generator
-    {
-        // First yield each result from the initial request
-        foreach ($results['hits']['hits'] as $result){
-            yield $this->documentFromResult($this->query, $result);
+        foreach ($results['hits']['hits'] as $result) {
+            $documents[] = $this->documentFromResult($query, $result);
         }
 
-        // Then go through the scroll cursor getting one result at a time
-        if (isset($results['scrollCursor'])){
-            foreach ($results['scrollCursor'] as $result){
-                $document = $this->documentFromResult($this->query, $result);
-
-                yield $document;
-            }
-        }
+        return $documents;
     }
 
     /**
@@ -72,12 +42,12 @@ class QueryProcessor extends BaseProcessor
      * @param  array $result
      * @return array
      */
-    protected function documentFromResult(Builder $query, array $result): array
+    public function documentFromResult(Builder $query, array $result): array
     {
         $document = $result['_source'];
         $document['_id'] = $result['_id'];
 
-        if ($query->includeInnerHits && isset($result['inner_hits'])){
+        if ($query->includeInnerHits && isset($result['inner_hits'])) {
             $document = $this->addInnerHitsToDocument($document, $result['inner_hits']);
         }
 
@@ -93,8 +63,8 @@ class QueryProcessor extends BaseProcessor
      */
     protected function addInnerHitsToDocument($document, $innerHits): array
     {
-        foreach ($innerHits as $documentType => $hitResults){
-            foreach ( $hitResults['hits']['hits'] as $result ){
+        foreach ($innerHits as $documentType => $hitResults) {
+            foreach ($hitResults['hits']['hits'] as $result) {
                 $document['inner_hits'][$documentType][] = array_merge(['_id' => $result['_id']], $result['_source']);
             }
         }
