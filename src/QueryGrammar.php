@@ -909,6 +909,17 @@ class QueryGrammar extends BaseGrammar
     }
 
     /**
+     * Compile avg aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileAvgAggregation(array $aggregation): array
+    {
+        return $this->compileMetricAggregation($aggregation);
+    }
+
+    /**
      * Compile metric aggregation
      *
      * @param  array  $aggregation
