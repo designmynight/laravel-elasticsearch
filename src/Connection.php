@@ -419,7 +419,7 @@ class Connection extends BaseConnection
      *
      * @return void
      */
-    public function rollBack()
+    public function rollBack($toLevel = null)
     {
 
     }
