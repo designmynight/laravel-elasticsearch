@@ -89,7 +89,21 @@ class EloquentBuilder extends BaseBuilder
     }
 
     /**
-     * Return new models as a generator
+     * @inheritdoc
+     */
+    public function hydrate(array $items)
+    {
+        $instance = $this->newModelInstance();
+
+        return $instance->newCollection(array_map(function ($item) use ($instance) {
+            return $instance->newFromBuilder($item, $this->getConnection()->getName());
+        }, $items));
+    }
+
+    /**
+     * Get a generator for the given query.
+     *
+     * @return Generator
      */
     protected function yieldResults($results)
     {
