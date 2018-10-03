@@ -1093,7 +1093,15 @@ class QueryGrammar extends BaseGrammar
             return $value;
         }
 
-        return $value->format('Y-m-d\TH:i:s');
+        return $value->format($this->getDateFormat());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDateFormat():string
+    {
+        return 'Y-m-d\TH:i:s';
     }
 
     /**
