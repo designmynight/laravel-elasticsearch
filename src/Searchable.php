@@ -159,6 +159,12 @@ trait Searchable
         return empty($value) ? $value : $this->asDateTime($value)->format('Y-m-d\TH:i:s');
     }
 
+    /**
+     * Build index details for a sub document
+     *
+     * @param  Model $document
+     * @return array
+     */
     public function getSubDocumentIndexData($document)
     {
         return [
