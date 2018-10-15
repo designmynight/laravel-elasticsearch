@@ -156,7 +156,17 @@ trait Searchable
      */
     public function fromDateTimeSearchable($value): string
     {
-        return empty($value) ? $value : $this->asDateTime($value)->format('Y-m-d\TH:i:s');
+        return empty($value) ? $value : $this->asDateTime($value)->format($this->getSearchableDateFormat());
+    }
+
+    /**
+     * Return the format to be used for dates in Elasticsearch
+     *
+     * @return string
+     */
+    public function getSearchableDateFormat(): string
+    {
+        return 'Y-m-d\TH:i:s';
     }
 
     /**
