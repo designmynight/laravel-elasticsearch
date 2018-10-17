@@ -52,6 +52,18 @@ trait Searchable
     }
 
     /**
+     * Implementing models can override this method to set additional query
+     * parameters to be used when searching
+     *
+     * @param  EloquentBuilder $query
+     * @return EloquentBuilder
+     */
+    public function setKeysForSearch(EloquentBuilder $query): EloquentBuilder
+    {
+        return $query;
+    }
+
+    /**
      * Add to search index
      *
      * @throws Exception
@@ -59,8 +71,10 @@ trait Searchable
      */
     public function addToIndex()
     {
-        return $this->onSearchConnection(function($model){
-            $query = $model->newQueryWithoutScopes();
+        return $this->onSearchConnection(function($model) {
+            $query = $model->setKeysForSaveQuery($this->newQueryWithoutScopes());
+
+            $this->setKeysForSearch($query);
 
             return $query->insert($model->toSearchableArray());
         }, $this);
@@ -83,8 +97,12 @@ trait Searchable
      */
     public function removeFromIndex()
     {
-        return $this->onSearchConnection(function($model){
-            $model->delete();
+        return $this->onSearchConnection(function($model) {
+            $query = $model->setKeysForSaveQuery($this->newQueryWithoutScopes());
+
+            $this->setKeysForSearch($query);
+
+            return $query->delete();
         }, $this);
     }
 
