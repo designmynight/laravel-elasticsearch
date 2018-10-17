@@ -1038,7 +1038,10 @@ class QueryGrammar extends BaseGrammar
                 '_id'    => $doc['id'],
             ];
 
-            if (isset($doc['_parent'])) {
+            if ($parentId = $builder->getParentId()) {
+                $index['parent'] = $parentId;
+            }
+            else if (isset($doc['_parent'])) {
                 $index['parent'] = $doc['_parent'];
                 unset($doc['_parent']);
             }
@@ -1066,6 +1069,10 @@ class QueryGrammar extends BaseGrammar
             'type'  => $builder->type,
             'id'    => (string) $builder->wheres[0]['value']
         ];
+
+        if ($parentId = $builder->getParentId()) {
+            $params['parent'] = $parentId;
+        }
 
         return $params;
     }
