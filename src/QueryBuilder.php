@@ -18,6 +18,8 @@ class QueryBuilder extends BaseBuilder
 
     public $includeInnerHits;
 
+    protected $parentId;
+
     protected $results;
 
     protected $rawResponse;
@@ -41,6 +43,29 @@ class QueryBuilder extends BaseBuilder
         $this->type = $type;
 
         return $this;
+    }
+
+    /**
+     * Set the parent ID to be used when routing queries to Elasticsearch
+     *
+     * @param  string $id
+     * @return Builder
+     */
+    public function parentId(string $id): self
+    {
+        $this->parentId = $id;
+
+        return $this;
+    }
+
+    /**
+     * Get the parent ID to be used when routing queries to Elasticsearch
+     *
+     * @return string|null
+     */
+    public function getParentId(): ?string
+    {
+        return $this->parentId;
     }
 
     /**
