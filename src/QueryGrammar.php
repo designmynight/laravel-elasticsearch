@@ -1038,7 +1038,10 @@ class QueryGrammar extends BaseGrammar
                 '_id'    => $doc['id'],
             ];
 
-            if (isset($doc['_parent'])) {
+            if ($parentId = $builder->getParentId()) {
+                $index['parent'] = $parentId;
+            }
+            else if (isset($doc['_parent'])) {
                 $index['parent'] = $doc['_parent'];
                 unset($doc['_parent']);
             }
@@ -1067,6 +1070,10 @@ class QueryGrammar extends BaseGrammar
             'id'    => (string) $builder->wheres[0]['value']
         ];
 
+        if ($parentId = $builder->getParentId()) {
+            $params['parent'] = $parentId;
+        }
+
         return $params;
     }
 
@@ -1093,7 +1100,15 @@ class QueryGrammar extends BaseGrammar
             return $value;
         }
 
-        return $value->format('Y-m-d\TH:i:s');
+        return $value->format($this->getDateFormat());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDateFormat():string
+    {
+        return 'Y-m-d\TH:i:s';
     }
 
     /**
