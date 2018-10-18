@@ -6,6 +6,11 @@ use Closure;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Support\Str;
 
+/**
+ * Class QueryBuilder
+ * @method void filterWhere(string|Closure $column, string $operator = null, mixed $value = null, string $boolean = null)
+ * @package DesignMyNight\Elasticsearch
+ */
 class QueryBuilder extends BaseBuilder
 {
     public $type;
