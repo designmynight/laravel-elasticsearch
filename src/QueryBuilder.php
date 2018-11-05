@@ -8,7 +8,9 @@ use Illuminate\Support\Str;
 
 /**
  * Class QueryBuilder
- * @method void filterWhere(string|Closure $column, string $operator = null, mixed $value = null, string $boolean = null)
+ * @method $this filterWhere(string|Closure $column, string $operator = null, mixed $value = null, string $boolean = null)
+ * @method $this filterWhereGeoBoundsIn($column, array $bounds)
+ * @method $this filterWhereGeoDistance($column, array $location, $distance, $boolean = 'and', bool $not = false)
  * @package DesignMyNight\Elasticsearch
  */
 class QueryBuilder extends BaseBuilder
