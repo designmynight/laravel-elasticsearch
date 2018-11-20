@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
  * @method $this filterWhere(string|Closure $column, string $operator = null, mixed $value = null, string $boolean = null)
  * @method $this filterWhereGeoBoundsIn($column, array $bounds)
  * @method $this filterWhereGeoDistance($column, array $location, $distance, $boolean = 'and', bool $not = false)
+ * @method $this filterWhereIn($column, $values, $boolean = 'and', $not = false)
  * @package DesignMyNight\Elasticsearch
  */
 class QueryBuilder extends BaseBuilder
