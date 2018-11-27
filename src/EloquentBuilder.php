@@ -2,6 +2,7 @@
 
 namespace DesignMyNight\Elasticsearch;
 
+use DesignMyNight\Elasticsearch\Contracts\FilterInterface;
 use Generator;
 use Illuminate\Database\Eloquent\Builder as BaseBuilder;
 use Illuminate\Database\Eloquent\Model;
@@ -9,6 +10,11 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 
+/**
+ * Class EloquentBuilder
+ * @method QueryBuilder filter(FilterInterface $filters)
+ * @package DesignMyNight\Elasticsearch
+ */
 class EloquentBuilder extends BaseBuilder
 {
     protected $type;
@@ -50,6 +56,16 @@ class EloquentBuilder extends BaseBuilder
         }
 
         return $builder->getModel()->newCollection($models);
+    }
+
+    /**
+     * @param string $columns
+     *
+     * @return int
+     */
+    public function count($columns = '*'): int
+    {
+        return $this->toBase()->getCountForPagination($columns);
     }
 
     public function getAggregations(string $collectionClass = ''): Collection
