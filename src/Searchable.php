@@ -2,6 +2,9 @@
 
 namespace DesignMyNight\Elasticsearch;
 
+use DesignMyNight\Elasticsearch\Contracts\FilterInterface;
+use Illuminate\Database\Eloquent\Builder;
+
 trait Searchable
 {
     public static function getElasticsearchConnectionName(): string
@@ -211,6 +214,17 @@ trait Searchable
     public function newCollection(array $models = array())
     {
         return new Collection($models);
+    }
+
+    /**
+     * @param Builder         $query
+     * @param FilterInterface $filters
+     *
+     * @return Builder
+     */
+    public function scopeFilter(Builder $query, FilterInterface $filters): Builder
+    {
+        return $filters->apply($query);
     }
 
     public static function newElasticsearchQuery(): EloquentBuilder
