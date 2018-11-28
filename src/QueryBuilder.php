@@ -32,6 +32,8 @@ class QueryBuilder extends BaseBuilder
 
     protected $rawResponse;
 
+    protected $routing;
+
     /**
      * All of the supported clause operators.
      *
@@ -74,6 +76,25 @@ class QueryBuilder extends BaseBuilder
     public function getParentId(): ?string
     {
         return $this->parentId;
+    }
+
+    /**
+     * @param string $routing
+     * @return QueryBuilder
+     */
+    public function routing(string $routing): self
+    {
+        $this->routing = $routing;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRouting(): ?string
+    {
+        return $this->routing;
     }
 
     /**
