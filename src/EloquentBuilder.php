@@ -12,7 +12,7 @@ use Illuminate\Support\Collection;
 
 /**
  * Class EloquentBuilder
- * @method QueryBuilder filter(FilterInterface $filters)
+ * @method QueryBuilder filter(FilterInterface $filters) Support for Searchable::scopeFilter()
  * @package DesignMyNight\Elasticsearch
  */
 class EloquentBuilder extends BaseBuilder
@@ -60,7 +60,6 @@ class EloquentBuilder extends BaseBuilder
 
     /**
      * @param string $columns
-     *
      * @return int
      */
     public function count($columns = '*'): int
@@ -68,6 +67,10 @@ class EloquentBuilder extends BaseBuilder
         return $this->toBase()->getCountForPagination($columns);
     }
 
+    /**
+     * @param string $collectionClass
+     * @return Collection
+     */
     public function getAggregations(string $collectionClass = ''): Collection
     {
         $collectionClass = $collectionClass ?: Collection::class;
@@ -132,7 +135,7 @@ class EloquentBuilder extends BaseBuilder
 
         $results = $this->forPage($page, $perPage)->get($columns);
 
-        $total = $this->toBase()->getCountForPagination();
+        $total = $this->count();
 
         return new LengthAwarePaginator($results, $total, $perPage, $page, [
             'path'     => Paginator::resolveCurrentPath(),
