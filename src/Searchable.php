@@ -4,6 +4,7 @@ namespace DesignMyNight\Elasticsearch;
 
 use DesignMyNight\Elasticsearch\Contracts\FilterInterface;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 trait Searchable
 {
@@ -46,8 +47,7 @@ trait Searchable
 
         try {
             $result = $callback(...array_slice(func_get_args(), 1));
-        }
-        finally {
+        } finally {
             $this->setConnection($originalConnection);
         }
 
@@ -74,7 +74,7 @@ trait Searchable
      */
     public function addToIndex()
     {
-        return $this->onSearchConnection(function($model) {
+        return $this->onSearchConnection(function ($model) {
             $query = $model->setKeysForSaveQuery($this->newQueryWithoutScopes());
 
             $this->setKeysForSearch($query);
@@ -100,7 +100,7 @@ trait Searchable
      */
     public function removeFromIndex()
     {
-        return $this->onSearchConnection(function($model) {
+        return $this->onSearchConnection(function ($model) {
             $query = $model->setKeysForSaveQuery($this->newQueryWithoutScopes());
 
             $this->setKeysForSearch($query);
@@ -152,12 +152,11 @@ trait Searchable
         foreach ($this->getArrayableRelations() as $key => $value) {
             $attributeName = snake_case($key);
 
-            if (isset($array[$attributeName]) && $value instanceof \Illuminate\Database\Eloquent\Model) {
+            if (isset($array[$attributeName]) && $value instanceof Model) {
                 $array[$attributeName] = $value->datesToSearchable($array[$attributeName]);
-            }
-            else if (isset($array[$attributeName]) && $value instanceof \Illuminate\Support\Collection) {
-                $array[$attributeName] = $value->map(function($item, $i) use ($array, $attributeName) {
-                    if ($item instanceof \Illuminate\Database\Eloquent\Model) {
+            } elseif (isset($array[$attributeName]) && $value instanceof \Illuminate\Support\Collection) {
+                $array[$attributeName] = $value->map(function ($item, $i) use ($array, $attributeName) {
+                    if ($item instanceof Model) {
                         return $item->datesToSearchable($array[$attributeName][$i]);
                     }
 
@@ -172,7 +171,7 @@ trait Searchable
     /**
      * Convert a DateTime to a string in ES format.
      *
-     * @param  \DateTime|int  $value
+     * @param  \DateTime|int $value
      * @return string
      */
     public function fromDateTimeSearchable($value): string
@@ -209,9 +208,9 @@ trait Searchable
      * New Collection
      *
      * @param array $models
-     * @return DesignMyNight\Elasticsearch\Collection
+     * @return Collection
      */
-    public function newCollection(array $models = array())
+    public function newCollection(array $models = [])
     {
         return new Collection($models);
     }
@@ -219,7 +218,6 @@ trait Searchable
     /**
      * @param Builder         $query
      * @param FilterInterface $filters
-     *
      * @return Builder
      */
     public function scopeFilter(Builder $query, FilterInterface $filters): Builder
