@@ -43,8 +43,7 @@ trait Searchable
 
         try {
             $result = $callback(...array_slice(func_get_args(), 1));
-        }
-        finally {
+        } finally {
             $this->setConnection($originalConnection);
         }
 
@@ -71,7 +70,7 @@ trait Searchable
      */
     public function addToIndex()
     {
-        return $this->onSearchConnection(function($model) {
+        return $this->onSearchConnection(function ($model) {
             $query = $model->setKeysForSaveQuery($this->newQueryWithoutScopes());
 
             $this->setKeysForSearch($query);
@@ -97,7 +96,7 @@ trait Searchable
      */
     public function removeFromIndex()
     {
-        return $this->onSearchConnection(function($model) {
+        return $this->onSearchConnection(function ($model) {
             $query = $model->setKeysForSaveQuery($this->newQueryWithoutScopes());
 
             $this->setKeysForSearch($query);
@@ -151,9 +150,8 @@ trait Searchable
 
             if (isset($array[$attributeName]) && $value instanceof \Illuminate\Database\Eloquent\Model) {
                 $array[$attributeName] = $value->datesToSearchable($array[$attributeName]);
-            }
-            else if (isset($array[$attributeName]) && $value instanceof \Illuminate\Support\Collection) {
-                $array[$attributeName] = $value->map(function($item, $i) use ($array, $attributeName) {
+            } else if (isset($array[$attributeName]) && $value instanceof \Illuminate\Support\Collection) {
+                $array[$attributeName] = $value->map(function ($item, $i) use ($array, $attributeName) {
                     if ($item instanceof \Illuminate\Database\Eloquent\Model) {
                         return $item->datesToSearchable($array[$attributeName][$i]);
                     }

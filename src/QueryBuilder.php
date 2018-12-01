@@ -147,7 +147,9 @@ class QueryBuilder extends BaseBuilder
     public function whereDate($column, $operator, $value = null, $boolean = 'and', $not = false): self
     {
         list($value, $operator) = $this->prepareValueAndOperator(
-            $value, $operator, func_num_args() == 2
+            $value,
+            $operator,
+            func_num_args() == 2
         );
 
         $type = 'Date';
@@ -169,7 +171,7 @@ class QueryBuilder extends BaseBuilder
     {
         $type = 'NestedDoc';
 
-        if (!is_string($query) && is_callable($query)){
+        if (!is_string($query) && is_callable($query)) {
             call_user_func($query, $query = $this->newQuery());
         }
 
@@ -225,7 +227,9 @@ class QueryBuilder extends BaseBuilder
     public function whereWeekday($column, $operator, $value = null, $boolean = 'and')
     {
         [$value, $operator] = $this->prepareValueAndOperator(
-            $value, $operator, func_num_args() === 2
+            $value,
+            $operator,
+            func_num_args() === 2
         );
 
         if ($value instanceof DateTimeInterface) {
@@ -246,7 +250,9 @@ class QueryBuilder extends BaseBuilder
     public function orWhereWeekday($column, $operator, $value = null)
     {
         [$value, $operator] = $this->prepareValueAndOperator(
-            $value, $operator, func_num_args() === 2
+            $value,
+            $operator,
+            func_num_args() === 2
         );
 
         return $this->addDateBasedWhere('Weekday', $column, $operator, $value, 'or');
@@ -355,7 +361,7 @@ class QueryBuilder extends BaseBuilder
 
         $filterType = array_pop($args) === 'postFilter' ? 'postFilters' : 'filters';
 
-        if ( count($this->wheres) > $numWheres ){
+        if (count($this->wheres) > $numWheres) {
             $this->$filterType[] = array_pop($this->wheres);
         }
 
@@ -476,16 +482,19 @@ class QueryBuilder extends BaseBuilder
             return $this;
         }
 
-        if (!is_string($args) && is_callable($args)){
+        if (!is_string($args) && is_callable($args)) {
             call_user_func($args, $args = $this->newQuery());
         }
 
-        if (!is_string($aggregations) && is_callable($aggregations)){
+        if (!is_string($aggregations) && is_callable($aggregations)) {
             call_user_func($aggregations, $aggregations = $this->newQuery());
         }
 
         $this->aggregations[] = compact(
-            'key', 'type', 'args', 'aggregations'
+            'key',
+            'type',
+            'args',
+            'aggregations'
         );
 
         return $this;
