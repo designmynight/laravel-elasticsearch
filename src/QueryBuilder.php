@@ -178,11 +178,119 @@ class QueryBuilder extends BaseBuilder
         return $this;
     }
 
+    /**
+     * Add a prefix query
+     *
+     * @param  string  $column
+     * @param  string  $value
+     * @param  string  $boolean
+     * @param  boolean $not
+     * @return self
+     */
     public function whereStartsWith($column, string $value, $boolean = 'and', $not = false): self
     {
         $type = 'Prefix';
 
         $this->wheres[] = compact('column', 'value', 'type', 'boolean', 'not');
+
+        return $this;
+    }
+
+    /**
+     * Add a script query
+     *
+     * @param  string  $script
+     * @param  array   $options
+     * @param  string  $boolean
+     * @return self
+     */
+    public function whereScript(string $script, array $options = [], $boolean = 'and'): self
+    {
+        $type = 'Script';
+
+        $this->wheres[] = compact('script', 'options', 'type', 'boolean');
+
+        return $this;
+    }
+
+    /**
+     * Add a "where weekday" statement to the query.
+     *
+     * @param  string  $column
+     * @param  string  $operator
+     * @param  \DateTimeInterface|string  $value
+     * @param  string  $boolean
+     * @return \Illuminate\Database\Query\Builder|static
+     */
+    public function whereWeekday($column, $operator, $value = null, $boolean = 'and')
+    {
+        [$value, $operator] = $this->prepareValueAndOperator(
+            $value, $operator, func_num_args() === 2
+        );
+
+        if ($value instanceof DateTimeInterface) {
+            $value = $value->format('N');
+        }
+
+        return $this->addDateBasedWhere('Weekday', $column, $operator, $value, $boolean);
+    }
+
+    /**
+     * Add an "or where weekday" statement to the query.
+     *
+     * @param  string  $column
+     * @param  string  $operator
+     * @param  \DateTimeInterface|string  $value
+     * @return \Illuminate\Database\Query\Builder|static
+     */
+    public function orWhereWeekday($column, $operator, $value = null)
+    {
+        [$value, $operator] = $this->prepareValueAndOperator(
+            $value, $operator, func_num_args() === 2
+        );
+
+        return $this->addDateBasedWhere('Weekday', $column, $operator, $value, 'or');
+    }
+
+    /**
+     * Add a date based (year, month, day, time) statement to the query.
+     *
+     * @param  string  $type
+     * @param  string  $column
+     * @param  string  $operator
+     * @param  mixed  $value
+     * @param  string  $boolean
+     * @return $this
+     */
+    protected function addDateBasedWhere($type, $column, $operator, $value, $boolean = 'and')
+    {
+        switch ($type) {
+            case 'Year':
+                $dateType = 'year';
+                break;
+
+            case 'Month':
+                $dateType = 'monthOfYear';
+                break;
+
+            case 'Day':
+                $dateType = 'dayOfMonth';
+                break;
+
+            case 'Weekday':
+                $dateType = 'dayOfWeek';
+                break;
+        }
+
+        $type = 'Script';
+
+        $operator = $operator == '=' ? '==' : $operator;
+
+        $script = "doc.{$column}.date.{$dateType} {$operator} params.value";
+
+        $options['params'] = ['value' => (int) $value];
+
+        $this->wheres[] = compact('script', 'options', 'type', 'boolean');
 
         return $this;
     }
