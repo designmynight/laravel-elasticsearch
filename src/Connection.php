@@ -217,7 +217,7 @@ class Connection extends BaseConnection
             yield $result;
         }
 
-        if ( $limit >= $numResults ){
+        if ( $limit > $numResults ){
             foreach ($this->scroll($scrollId, $scrollTimeout, $limit - $numResults) as $result) {
                 yield $result;
             }
