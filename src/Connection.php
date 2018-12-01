@@ -200,7 +200,7 @@ class Connection extends BaseConnection
 
         $scrollParams = array(
             'scroll' => $scrollTimeout,
-            'size'   => 500,
+            'size'   => min(100, $limit),
             'index'  => $query['index'],
             'body'   => $query['body']
         );
