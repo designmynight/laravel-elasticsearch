@@ -541,6 +541,22 @@ class QueryGrammar extends BaseGrammar
     }
 
     /**
+     * Compile a script clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return array
+     */
+    protected function compileWhereScript(Builder $builder, array $where): array
+    {
+        return [
+            'script' => [
+                'script' => array_merge($where['options'], ['source' => $where['script']]),
+            ],
+        ];
+    }
+
+    /**
      * Compile a geo distance clause
      *
      * @param  Builder  $builder
