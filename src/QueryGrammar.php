@@ -472,7 +472,7 @@ class QueryGrammar extends BaseGrammar
     }
 
     /**
-     * Compile a where nested geo distance clause
+     * Compile a search clause
      *
      * @param  Builder  $builder
      * @param  array  $where
@@ -482,7 +482,7 @@ class QueryGrammar extends BaseGrammar
     {
         $fields = '_all';
 
-        if (!empty($where['options']['fields'])) {
+        if (! empty($where['options']['fields'])) {
             $fields = $where['options']['fields'];
         }
 
@@ -499,24 +499,37 @@ class QueryGrammar extends BaseGrammar
         if (is_array($fields) && count($fields) > 1) {
             $type = isset($where['options']['matchType']) ? $where['options']['matchType'] : 'most_fields';
 
-            $query = array(
-                'multi_match' => array(
+            $query = [
+                'multi_match' => [
                     'query'  => $where['value'],
                     'type'   => $type,
                     'fields' => $fields,
-                ),
-            );
+                ],
+            ];
         } else {
-            $fields = is_array($fields) ? reset($fields) : $fields;
+            $field = is_array($fields) ? reset($fields) : $fields;
 
-            $query = array(
-                'match' => array(
-                    $fields => $where['value'],
-                ),
-            );
+            $query = [
+                'match' => [
+                    $field => [
+                        'query' => $where['value'],
+                    ]
+                ],
+            ];
         }
 
-        if (!empty($where['options']['constant_score'])) {
+        if (! empty($where['options']['fuzziness'])) {
+            $matchType = array_keys($query)[0];
+
+            if ($matchType === 'multi_match') {
+                $query[$matchType]['fuzziness'] = $where['options']['fuzziness'];
+            }
+            else {
+                $query[$matchType][$field]['fuzziness'] = $where['options']['fuzziness'];
+            }
+        }
+
+        if (! empty($where['options']['constant_score'])) {
             $query = [
                 'constant_score' => [
                     'query' => $query,
@@ -524,16 +537,27 @@ class QueryGrammar extends BaseGrammar
             ];
         }
 
-        if (!empty($where['options']['fuzziness'])) {
-            $firstKey = array_keys($query)[0];
-            $query[$firstKey]['fuzziness'] = $where['options']['fuzziness'];
-        }
-
         return $query;
     }
 
     /**
-     * Compile a where nested geo distance clause
+     * Compile a script clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return array
+     */
+    protected function compileWhereScript(Builder $builder, array $where): array
+    {
+        return [
+            'script' => [
+                'script' => array_merge($where['options'], ['source' => $where['script']]),
+            ],
+        ];
+    }
+
+    /**
+     * Compile a geo distance clause
      *
      * @param  Builder  $builder
      * @param  array  $where

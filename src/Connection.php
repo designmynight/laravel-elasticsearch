@@ -200,7 +200,7 @@ class Connection extends BaseConnection
 
         $scrollParams = array(
             'scroll' => $scrollTimeout,
-            'size'   => 500,
+            'size'   => min(100, $limit),
             'index'  => $query['index'],
             'body'   => $query['body']
         );
@@ -217,7 +217,7 @@ class Connection extends BaseConnection
             yield $result;
         }
 
-        if ( $limit >= $numResults ){
+        if ( $limit > $numResults ){
             foreach ($this->scroll($scrollId, $scrollTimeout, $limit - $numResults) as $result) {
                 yield $result;
             }
