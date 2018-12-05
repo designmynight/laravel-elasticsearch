@@ -22,8 +22,7 @@ trait UpdatesAlias
     {
         try {
             $aliases = collect($this->client->cat()->aliases());
-        }
-        catch (\Exception $exception) {
+        } catch (\Exception $exception) {
             $this->error('Failed to retrieve the current active index.');
         }
 
@@ -61,8 +60,7 @@ trait UpdatesAlias
     {
         try {
             $indices = collect($this->client->cat()->indices());
-        }
-        catch (\Exception $exception) {
+        } catch (\Exception $exception) {
             $this->error('An error occurred attempting to retrieve indices.');
         }
 
@@ -107,8 +105,7 @@ trait UpdatesAlias
 
         try {
             $this->client->indices()->updateAliases(['body' => $body]);
-        }
-        catch (\Exception $exception) {
+        } catch (\Exception $exception) {
             $this->error("Failed to update alias: {$alias}. {$exception->getMessage()}");
 
             return;

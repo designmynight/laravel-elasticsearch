@@ -60,8 +60,7 @@ class IndexRemoveCommand extends Command
 
         try {
             $this->client->indices()->delete(['index' => $index]);
-        }
-        catch (\Exception $exception) {
+        } catch (\Exception $exception) {
             $message = json_decode($exception->getMessage(), true);
             $this->error("Failed to remove index: {$index}. Reason: {$message['error']['root_cause'][0]['reason']}");
 

@@ -34,11 +34,11 @@ class QueryGrammar extends BaseGrammar
             ],
         ];
 
-        if ($query['filter']){
+        if ($query['filter']) {
             $params['body']['query']['bool']['filter'] = $query['filter'];
         }
 
-        if ($query['postFilter']){
+        if ($query['postFilter']) {
             $params['body']['post_filter'] = $query['postFilter'];
         }
 
@@ -86,7 +86,7 @@ class QueryGrammar extends BaseGrammar
 
         $compiled = [];
 
-        foreach ( $queryParts as $queryPart => $builderVar ){
+        foreach ($queryParts as $queryPart => $builderVar) {
             $clauses = $builder->$builderVar ?: [];
 
             $compiled[$queryPart] = $this->compileClauses($builder, $clauses);
@@ -166,8 +166,7 @@ class QueryGrammar extends BaseGrammar
             ];
 
             $where['not'] = !$value;
-        }
-        else if (in_array($where['operator'], array_keys($operatorsMap))) {
+        } else if (in_array($where['operator'], array_keys($operatorsMap))) {
             $operator = $operatorsMap[$where['operator']];
             $query    = [
                 'range' => [
@@ -176,8 +175,7 @@ class QueryGrammar extends BaseGrammar
                     ],
                 ],
             ];
-        }
-        else {
+        } else {
             $query = [
                 'term' => [
                     $where['column'] => $value,
@@ -209,7 +207,7 @@ class QueryGrammar extends BaseGrammar
      */
     protected function compileWhereDate(Builder $builder, array $where): array
     {
-        if ( $where['operator'] == '=' ){
+        if ($where['operator'] == '=') {
             $value = $this->getValueForWhere($builder, $where);
 
             $where['value'] = [$value, $value];
@@ -231,9 +229,9 @@ class QueryGrammar extends BaseGrammar
     {
         $compiled = $this->compileWheres($where['query']);
 
-        foreach ( $compiled as $queryPart => $clauses ){
-            $compiled[$queryPart] = array_map(function($clause) use ($where){
-                if ($clause){
+        foreach ($compiled as $queryPart => $clauses) {
+            $compiled[$queryPart] = array_map(function ($clause) use ($where) {
+                if ($clause) {
                     $this->applyOptionsToClause($clause, $where);
                 }
 
@@ -523,8 +521,7 @@ class QueryGrammar extends BaseGrammar
 
             if ($matchType === 'multi_match') {
                 $query[$matchType]['fuzziness'] = $where['options']['fuzziness'];
-            }
-            else {
+            } else {
                 $query[$matchType][$field]['fuzziness'] = $where['options']['fuzziness'];
             }
         }
@@ -678,7 +675,7 @@ class QueryGrammar extends BaseGrammar
         foreach ($options as $option => $value) {
             $method = 'apply' . studly_case($option) . 'Option';
 
-            if (method_exists($this, $method)){
+            if (method_exists($this, $method)) {
                 $clause = $this->$method($clause, $value, $where);
             }
         }
@@ -698,7 +695,7 @@ class QueryGrammar extends BaseGrammar
     {
         $firstKey = key($clause);
 
-        if ($firstKey !== 'term'){
+        if ($firstKey !== 'term') {
             return $clause[$firstKey]['boost'] = $value;
         }
 
@@ -832,7 +829,7 @@ class QueryGrammar extends BaseGrammar
             ]
         ];
 
-        if ( is_array($aggregation['args']) && isset($aggregation['args']['size']) ){
+        if (is_array($aggregation['args']) && isset($aggregation['args']['size'])) {
             $compiled['terms']['size'] = $aggregation['args']['size'];
         }
 
@@ -855,16 +852,16 @@ class QueryGrammar extends BaseGrammar
             ]
         ];
 
-        if ( is_array($aggregation['args']) ){
-            if ( isset($aggregation['args']['interval']) ){
+        if (is_array($aggregation['args'])) {
+            if (isset($aggregation['args']['interval'])) {
                 $compiled['date_histogram']['interval'] = $aggregation['args']['interval'];
             }
 
-            if ( isset($aggregation['args']['min_doc_count']) ){
+            if (isset($aggregation['args']['min_doc_count'])) {
                 $compiled['date_histogram']['min_doc_count'] = $aggregation['args']['min_doc_count'];
             }
 
-            if ( isset($aggregation['args']['extended_bounds']) && is_array($aggregation['args']['extended_bounds']) ){
+            if (isset($aggregation['args']['extended_bounds']) && is_array($aggregation['args']['extended_bounds'])) {
                 $compiled['date_histogram']['extended_bounds'] = [];
                 $compiled['date_histogram']['extended_bounds']['min'] = $this->convertDateTime($aggregation['args']['extended_bounds'][0]);
                 $compiled['date_histogram']['extended_bounds']['max'] = $this->convertDateTime($aggregation['args']['extended_bounds'][1]);
@@ -996,7 +993,7 @@ class QueryGrammar extends BaseGrammar
             $type = $order['type'] ?? 'basic';
 
             switch ($type) {
-                case 'geoDistance' :
+                case 'geoDistance':
                     $orderSettings = [
                         $column         => $order['options']['coordinates'],
                         'order'         => $order['direction'] < 0 ? 'desc' : 'asc',
@@ -1007,7 +1004,7 @@ class QueryGrammar extends BaseGrammar
                     $column = '_geo_distance';
                     break;
 
-                default :
+                default:
                     $orderSettings = [
                         'order' => $order['direction'] < 0 ? 'desc' : 'asc'
                     ];
@@ -1064,8 +1061,7 @@ class QueryGrammar extends BaseGrammar
 
             if ($parentId = $builder->getParentId()) {
                 $index['parent'] = $parentId;
-            }
-            else if (isset($doc['_parent'])) {
+            } else if (isset($doc['_parent'])) {
                 $index['parent'] = $doc['_parent'];
                 unset($doc['_parent']);
             }

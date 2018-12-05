@@ -47,8 +47,7 @@ class MappingMakeCommand extends Command
             $template = $this->files->get($this->getTemplate());
 
             $this->files->put($mapping, $template);
-        }
-        catch (\Exception $exception) {
+        } catch (\Exception $exception) {
             $this->error($exception->getMessage());
 
             return;

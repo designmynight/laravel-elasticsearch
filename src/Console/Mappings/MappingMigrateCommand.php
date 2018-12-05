@@ -185,8 +185,7 @@ class MappingMigrateCommand extends Command
 
             try {
                 $this->putMapping($mapping);
-            }
-            catch (\Exception $exception) {
+            } catch (\Exception $exception) {
                 $this->error("Failed to put mapping: {$index} because {$exception->getMessage()}");
 
                 return;
@@ -201,8 +200,7 @@ class MappingMigrateCommand extends Command
                 ]);
 
                 $createdAliases[] = $aliasName;
-            }
-            catch (\Exception $e) {
+            } catch (\Exception $e) {
                 $this->info("Migrating mapping alias error: {$e->getMessage()}");
             }
 

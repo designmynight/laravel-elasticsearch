@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="PHP_CodeSniffer" xsi:noNamespaceSchemaLocation="phpcs.xsd">
+    <!-- Files/directories to include -->
+    <file>app/</file>
+
+    <!-- Rules to use -->
+    <rule ref="PSR1"/>
+    <rule ref="PSR2"/>
+
+    <!-- Don't report warnings -->
+    <arg value="n"/>
+</ruleset>
