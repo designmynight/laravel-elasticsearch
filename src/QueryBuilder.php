@@ -292,7 +292,7 @@ class QueryBuilder extends BaseBuilder
 
         $operator = $operator == '=' ? '==' : $operator;
 
-        $script = "doc.{$column}.date.{$dateType} {$operator} params.value";
+        $script = "doc.{$column}.size() > 0 && doc.{$column}.date.{$dateType} {$operator} params.value";
 
         $options['params'] = ['value' => (int) $value];
 
