@@ -2,6 +2,7 @@
 
 namespace DesignMyNight\Elasticsearch;
 
+use DesignMyNight\Elasticsearch\Contracts\FilterInterface;
 use Generator;
 use Illuminate\Database\Eloquent\Builder as BaseBuilder;
 use Illuminate\Database\Eloquent\Model;
@@ -9,6 +10,11 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 
+/**
+ * Class EloquentBuilder
+ * @method QueryBuilder filter(FilterInterface $filters) Support for Searchable::scopeFilter()
+ * @package DesignMyNight\Elasticsearch
+ */
 class EloquentBuilder extends BaseBuilder
 {
     protected $type;
@@ -52,6 +58,19 @@ class EloquentBuilder extends BaseBuilder
         return $builder->getModel()->newCollection($models);
     }
 
+    /**
+     * @param string $columns
+     * @return int
+     */
+    public function count($columns = '*'): int
+    {
+        return $this->toBase()->getCountForPagination($columns);
+    }
+
+    /**
+     * @param string $collectionClass
+     * @return Collection
+     */
     public function getAggregations(string $collectionClass = ''): Collection
     {
         $collectionClass = $collectionClass ?: Collection::class;
@@ -116,7 +135,7 @@ class EloquentBuilder extends BaseBuilder
 
         $results = $this->forPage($page, $perPage)->get($columns);
 
-        $total = $this->toBase()->getCountForPagination();
+        $total = $this->toBase()->getCountForPagination($columns);
 
         return new LengthAwarePaginator($results, $total, $perPage, $page, [
             'path'     => Paginator::resolveCurrentPath(),

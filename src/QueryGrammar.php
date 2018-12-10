@@ -19,7 +19,7 @@ class QueryGrammar extends BaseGrammar
     /**
      * Compile a select statement
      *
-     * @param  Builder  $builder
+     * @param  Builder|QueryBuilder  $builder
      * @return array
      */
     public function compileSelect(Builder $builder): array
@@ -1027,7 +1027,7 @@ class QueryGrammar extends BaseGrammar
     /**
      * Compile the given values to an Elasticsearch insert statement
      *
-     * @param  Builder  $builder
+     * @param  Builder|QueryBuilder  $builder
      * @param  array  $values
      * @return array
      */
@@ -1059,6 +1059,10 @@ class QueryGrammar extends BaseGrammar
                 '_id'    => $doc['id'],
             ];
 
+            if ($routing = $builder->getRouting()) {
+                $index['routing'] = $routing;
+            }
+
             if ($parentId = $builder->getParentId()) {
                 $index['parent'] = $parentId;
             } else if (isset($doc['_parent'])) {
@@ -1079,7 +1083,7 @@ class QueryGrammar extends BaseGrammar
     /**
      * Compile a delete query
      *
-     * @param  Builder  $builder
+     * @param  Builder|QueryBuilder  $builder
      * @return array
      */
     public function compileDelete(Builder $builder): array
@@ -1089,6 +1093,10 @@ class QueryGrammar extends BaseGrammar
             'type'  => $builder->type,
             'id'    => (string) $builder->wheres[0]['value']
         ];
+
+        if ($routing = $builder->getRouting()) {
+            $params['routing'] = $routing;
+        }
 
         if ($parentId = $builder->getParentId()) {
             $params['parent'] = $parentId;
