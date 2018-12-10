@@ -143,7 +143,6 @@ class Connection extends BaseConnection
      */
     public function table($table)
     {
-
     }
 
     /**
@@ -154,7 +153,6 @@ class Connection extends BaseConnection
      */
     public function raw($value)
     {
-
     }
 
     /**
@@ -166,7 +164,6 @@ class Connection extends BaseConnection
      */
     public function selectOne($query, $bindings = [], $useReadPdo = true)
     {
-
     }
 
     /**
@@ -200,7 +197,7 @@ class Connection extends BaseConnection
 
         $scrollParams = array(
             'scroll' => $scrollTimeout,
-            'size'   => 500,
+            'size'   => min(100, $limit),
             'index'  => $query['index'],
             'body'   => $query['body']
         );
@@ -217,7 +214,7 @@ class Connection extends BaseConnection
             yield $result;
         }
 
-        if ( $limit >= $numResults ){
+        if ($limit > $numResults) {
             foreach ($this->scroll($scrollId, $scrollTimeout, $limit - $numResults) as $result) {
                 yield $result;
             }
@@ -252,10 +249,10 @@ class Connection extends BaseConnection
                 break;
             }
 
-            foreach ( $results['hits']['hits'] as $result ){
+            foreach ($results['hits']['hits'] as $result) {
                 $numResults++;
 
-                if ( $numResults > $limit){
+                if ($numResults > $limit) {
                     break;
                 }
 
@@ -321,7 +318,6 @@ class Connection extends BaseConnection
      */
     public function statement($query, $bindings = [])
     {
-
     }
 
     /**
@@ -333,7 +329,6 @@ class Connection extends BaseConnection
      */
     public function affectingStatement($query, $bindings = [])
     {
-
     }
 
     /**
@@ -344,7 +339,6 @@ class Connection extends BaseConnection
      */
     public function unprepared($query)
     {
-
     }
 
     /**
@@ -372,8 +366,7 @@ class Connection extends BaseConnection
     {
         try {
             $result = $callback($query, $bindings);
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             throw new QueryException($query, null, $e);
         }
 
@@ -391,7 +384,6 @@ class Connection extends BaseConnection
      */
     public function transaction(Closure $callback, $attempts = 1)
     {
-
     }
 
     /**
@@ -401,7 +393,6 @@ class Connection extends BaseConnection
      */
     public function beginTransaction()
     {
-
     }
 
     /**
@@ -411,7 +402,6 @@ class Connection extends BaseConnection
      */
     public function commit()
     {
-
     }
 
     /**
@@ -421,7 +411,6 @@ class Connection extends BaseConnection
      */
     public function rollBack($toLevel = null)
     {
-
     }
 
     /**
@@ -431,7 +420,6 @@ class Connection extends BaseConnection
      */
     public function transactionLevel()
     {
-
     }
 
     /**
@@ -442,7 +430,6 @@ class Connection extends BaseConnection
      */
     public function pretend(Closure $callback)
     {
-
     }
 
     /**
@@ -473,7 +460,7 @@ class Connection extends BaseConnection
      */
     protected function addClientParams(array $params): array
     {
-        if ($this->requestTimeout){
+        if ($this->requestTimeout) {
             $params['client']['timeout'] = $this->requestTimeout;
         }
 

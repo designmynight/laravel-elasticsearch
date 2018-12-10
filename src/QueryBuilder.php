@@ -168,7 +168,9 @@ class QueryBuilder extends BaseBuilder
     public function whereDate($column, $operator, $value = null, $boolean = 'and', $not = false): self
     {
         list($value, $operator) = $this->prepareValueAndOperator(
-            $value, $operator, func_num_args() == 2
+            $value,
+            $operator,
+            func_num_args() == 2
         );
 
         $type = 'Date';
@@ -190,7 +192,7 @@ class QueryBuilder extends BaseBuilder
     {
         $type = 'NestedDoc';
 
-        if (!is_string($query) && is_callable($query)){
+        if (!is_string($query) && is_callable($query)) {
             call_user_func($query, $query = $this->newQuery());
         }
 
@@ -199,11 +201,123 @@ class QueryBuilder extends BaseBuilder
         return $this;
     }
 
+    /**
+     * Add a prefix query
+     *
+     * @param  string  $column
+     * @param  string  $value
+     * @param  string  $boolean
+     * @param  boolean $not
+     * @return self
+     */
     public function whereStartsWith($column, string $value, $boolean = 'and', $not = false): self
     {
         $type = 'Prefix';
 
         $this->wheres[] = compact('column', 'value', 'type', 'boolean', 'not');
+
+        return $this;
+    }
+
+    /**
+     * Add a script query
+     *
+     * @param  string  $script
+     * @param  array   $options
+     * @param  string  $boolean
+     * @return self
+     */
+    public function whereScript(string $script, array $options = [], $boolean = 'and'): self
+    {
+        $type = 'Script';
+
+        $this->wheres[] = compact('script', 'options', 'type', 'boolean');
+
+        return $this;
+    }
+
+    /**
+     * Add a "where weekday" statement to the query.
+     *
+     * @param  string  $column
+     * @param  string  $operator
+     * @param  \DateTimeInterface|string  $value
+     * @param  string  $boolean
+     * @return \Illuminate\Database\Query\Builder|static
+     */
+    public function whereWeekday($column, $operator, $value = null, $boolean = 'and')
+    {
+        [$value, $operator] = $this->prepareValueAndOperator(
+            $value,
+            $operator,
+            func_num_args() === 2
+        );
+
+        if ($value instanceof DateTimeInterface) {
+            $value = $value->format('N');
+        }
+
+        return $this->addDateBasedWhere('Weekday', $column, $operator, $value, $boolean);
+    }
+
+    /**
+     * Add an "or where weekday" statement to the query.
+     *
+     * @param  string  $column
+     * @param  string  $operator
+     * @param  \DateTimeInterface|string  $value
+     * @return \Illuminate\Database\Query\Builder|static
+     */
+    public function orWhereWeekday($column, $operator, $value = null)
+    {
+        [$value, $operator] = $this->prepareValueAndOperator(
+            $value,
+            $operator,
+            func_num_args() === 2
+        );
+
+        return $this->addDateBasedWhere('Weekday', $column, $operator, $value, 'or');
+    }
+
+    /**
+     * Add a date based (year, month, day, time) statement to the query.
+     *
+     * @param  string  $type
+     * @param  string  $column
+     * @param  string  $operator
+     * @param  mixed  $value
+     * @param  string  $boolean
+     * @return $this
+     */
+    protected function addDateBasedWhere($type, $column, $operator, $value, $boolean = 'and')
+    {
+        switch ($type) {
+            case 'Year':
+                $dateType = 'year';
+                break;
+
+            case 'Month':
+                $dateType = 'monthOfYear';
+                break;
+
+            case 'Day':
+                $dateType = 'dayOfMonth';
+                break;
+
+            case 'Weekday':
+                $dateType = 'dayOfWeek';
+                break;
+        }
+
+        $type = 'Script';
+
+        $operator = $operator == '=' ? '==' : $operator;
+
+        $script = "doc.{$column}.size() > 0 && doc.{$column}.date.{$dateType} {$operator} params.value";
+
+        $options['params'] = ['value' => (int) $value];
+
+        $this->wheres[] = compact('script', 'options', 'type', 'boolean');
 
         return $this;
     }
@@ -268,7 +382,7 @@ class QueryBuilder extends BaseBuilder
 
         $filterType = array_pop($args) === 'postFilter' ? 'postFilters' : 'filters';
 
-        if ( count($this->wheres) > $numWheres ){
+        if (count($this->wheres) > $numWheres) {
             $this->$filterType[] = array_pop($this->wheres);
         }
 
@@ -389,16 +503,19 @@ class QueryBuilder extends BaseBuilder
             return $this;
         }
 
-        if (!is_string($args) && is_callable($args)){
+        if (!is_string($args) && is_callable($args)) {
             call_user_func($args, $args = $this->newQuery());
         }
 
-        if (!is_string($aggregations) && is_callable($aggregations)){
+        if (!is_string($aggregations) && is_callable($aggregations)) {
             call_user_func($aggregations, $aggregations = $this->newQuery());
         }
 
         $this->aggregations[] = compact(
-            'key', 'type', 'args', 'aggregations'
+            'key',
+            'type',
+            'args',
+            'aggregations'
         );
 
         return $this;

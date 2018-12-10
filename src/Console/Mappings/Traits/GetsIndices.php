@@ -17,8 +17,7 @@ trait GetsIndices
     {
         try {
             return collect($this->client->cat()->indices())->sortBy('index')->toArray();
-        }
-        catch (\Exception $exception) {
+        } catch (\Exception $exception) {
             $this->error('Failed to retrieve indices.');
         }
 

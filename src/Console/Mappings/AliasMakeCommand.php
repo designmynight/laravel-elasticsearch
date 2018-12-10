@@ -35,7 +35,7 @@ class AliasMakeCommand extends Command
             $aliasName = $this->argument('name');
             $indexName = $this->getIndexName();
 
-            if($this->client->indices()->existsAlias(['name' => $aliasName])){
+            if ($this->client->indices()->existsAlias(['name' => $aliasName])) {
                 throw new Exception("Alias $aliasName already exists");
             }
 
@@ -43,8 +43,7 @@ class AliasMakeCommand extends Command
               'index' => $indexName,
               'name' => $aliasName
             ]);
-        }
-        catch (Exception $exception) {
+        } catch (Exception $exception) {
             $this->error($exception->getMessage());
 
             return;

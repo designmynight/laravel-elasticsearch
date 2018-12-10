@@ -83,8 +83,7 @@ class IndexListCommand extends Command
                 })
                 ->values()
                 ->toArray();
-        }
-        catch (\Exception $exception) {
+        } catch (\Exception $exception) {
             $this->error("Failed to retrieve alias {$alias}");
         }
 

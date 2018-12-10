@@ -154,7 +154,7 @@ trait Searchable
 
             if (isset($array[$attributeName]) && $value instanceof Model) {
                 $array[$attributeName] = $value->datesToSearchable($array[$attributeName]);
-            } elseif (isset($array[$attributeName]) && $value instanceof \Illuminate\Support\Collection) {
+            } else if (isset($array[$attributeName]) && $value instanceof \Illuminate\Support\Collection) {
                 $array[$attributeName] = $value->map(function ($item, $i) use ($array, $attributeName) {
                     if ($item instanceof Model) {
                         return $item->datesToSearchable($array[$attributeName][$i]);
