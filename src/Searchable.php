@@ -114,6 +114,22 @@ trait Searchable
     {
         $array = $this->toArray();
 
+        foreach ($this->getArrayableRelations() as $key => $value) {
+            $attributeName = snake_case($key);
+
+            if (isset($array[$attributeName]) && method_exists($value, 'toSearchableArray')) {
+                $array[$attributeName] = $value->toSearchableArray($array[$attributeName]);
+            } elseif (isset($array[$attributeName]) && $value instanceof \Illuminate\Support\Collection) {
+                $array[$attributeName] = $value->map(function ($item, $i) use ($array, $attributeName) {
+                    if (method_exists($item, 'toSearchableArray')) {
+                        return $item->toSearchableArray($array[$attributeName][$i]);
+                    }
+
+                    return $item;
+                })->all();
+            }
+        }
+
         $array['id'] = $this->id;
 
         unset($array['_id']);
