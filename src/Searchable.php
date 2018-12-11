@@ -152,11 +152,11 @@ trait Searchable
         foreach ($this->getArrayableRelations() as $key => $value) {
             $attributeName = snake_case($key);
 
-            if (isset($array[$attributeName]) && $value instanceof Model) {
+            if (isset($array[$attributeName]) && method_exists($value, 'toSearchableArray')) {
                 $array[$attributeName] = $value->datesToSearchable($array[$attributeName]);
-            } else if (isset($array[$attributeName]) && $value instanceof \Illuminate\Support\Collection) {
+            } elseif (isset($array[$attributeName]) && $value instanceof \Illuminate\Support\Collection) {
                 $array[$attributeName] = $value->map(function ($item, $i) use ($array, $attributeName) {
-                    if ($item instanceof Model) {
+                    if (method_exists($item, 'toSearchableArray')) {
                         return $item->datesToSearchable($array[$attributeName][$i]);
                     }
 
