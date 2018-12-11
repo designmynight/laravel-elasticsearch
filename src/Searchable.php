@@ -215,16 +215,6 @@ trait Searchable
         return new Collection($models);
     }
 
-    /**
-     * @param Builder         $query
-     * @param FilterInterface $filters
-     * @return Builder
-     */
-    public function scopeFilter(Builder $query, FilterInterface $filters): Builder
-    {
-        return $filters->apply($query);
-    }
-
     public static function newElasticsearchQuery(): EloquentBuilder
     {
         $model = new static();
