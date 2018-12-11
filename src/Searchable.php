@@ -2,10 +2,6 @@
 
 namespace DesignMyNight\Elasticsearch;
 
-use DesignMyNight\Elasticsearch\Contracts\FilterInterface;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-
 trait Searchable
 {
     public static function getElasticsearchConnectionName(): string
@@ -192,7 +188,7 @@ trait Searchable
     /**
      * Build index details for a sub document
      *
-     * @param  Model $document
+     * @param  \Illuminate\Database\Eloquent\Model $document
      * @return array
      */
     public function getSubDocumentIndexData($document)
