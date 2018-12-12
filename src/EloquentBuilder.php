@@ -2,7 +2,6 @@
 
 namespace DesignMyNight\Elasticsearch;
 
-use DesignMyNight\Elasticsearch\Contracts\FilterInterface;
 use Generator;
 use Illuminate\Database\Eloquent\Builder as BaseBuilder;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +11,7 @@ use Illuminate\Support\Collection;
 
 /**
  * Class EloquentBuilder
- * @method QueryBuilder filter(FilterInterface $filters) Support for Searchable::scopeFilter()
+ * @method QueryBuilder filter($filters) Support for Searchable::scopeFilter()
  * @package DesignMyNight\Elasticsearch
  */
 class EloquentBuilder extends BaseBuilder

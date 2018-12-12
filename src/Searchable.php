@@ -2,10 +2,6 @@
 
 namespace DesignMyNight\Elasticsearch;
 
-use DesignMyNight\Elasticsearch\Contracts\FilterInterface;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-
 trait Searchable
 {
     public static function getElasticsearchConnectionName(): string
@@ -118,6 +114,22 @@ trait Searchable
     {
         $array = $this->toArray();
 
+        foreach ($this->getArrayableRelations() as $key => $relation) {
+            $attributeName = snake_case($key);
+
+            if (isset($array[$attributeName]) && method_exists($relation, 'toSearchableArray')) {
+                $array[$attributeName] = $relation->toSearchableArray($array[$attributeName]);
+            } elseif (isset($array[$attributeName]) && $relation instanceof \Illuminate\Support\Collection) {
+                $array[$attributeName] = $relation->map(function ($item, $i) use ($array, $attributeName) {
+                    if (method_exists($item, 'toSearchableArray')) {
+                        return $item->toSearchableArray($array[$attributeName][$i]);
+                    }
+
+                    return $item;
+                })->all();
+            }
+        }
+
         $array['id'] = $this->id;
 
         unset($array['_id']);
@@ -149,14 +161,14 @@ trait Searchable
             }
         }
 
-        foreach ($this->getArrayableRelations() as $key => $value) {
+        foreach ($this->getArrayableRelations() as $key => $relation) {
             $attributeName = snake_case($key);
 
-            if (isset($array[$attributeName]) && $value instanceof Model) {
-                $array[$attributeName] = $value->datesToSearchable($array[$attributeName]);
-            } else if (isset($array[$attributeName]) && $value instanceof \Illuminate\Support\Collection) {
-                $array[$attributeName] = $value->map(function ($item, $i) use ($array, $attributeName) {
-                    if ($item instanceof Model) {
+            if (isset($array[$attributeName]) && method_exists($relation, 'toSearchableArray')) {
+                $array[$attributeName] = $relation->datesToSearchable($array[$attributeName]);
+            } elseif (isset($array[$attributeName]) && $relation instanceof \Illuminate\Support\Collection) {
+                $array[$attributeName] = $relation->map(function ($item, $i) use ($array, $attributeName) {
+                    if (method_exists($item, 'toSearchableArray')) {
                         return $item->datesToSearchable($array[$attributeName][$i]);
                     }
 
@@ -192,7 +204,7 @@ trait Searchable
     /**
      * Build index details for a sub document
      *
-     * @param  Model $document
+     * @param  \Illuminate\Database\Eloquent\Model $document
      * @return array
      */
     public function getSubDocumentIndexData($document)
@@ -213,16 +225,6 @@ trait Searchable
     public function newCollection(array $models = [])
     {
         return new Collection($models);
-    }
-
-    /**
-     * @param Builder         $query
-     * @param FilterInterface $filters
-     * @return Builder
-     */
-    public function scopeFilter(Builder $query, FilterInterface $filters): Builder
-    {
-        return $filters->apply($query);
     }
 
     public static function newElasticsearchQuery(): EloquentBuilder
