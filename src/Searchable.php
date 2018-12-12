@@ -114,13 +114,13 @@ trait Searchable
     {
         $array = $this->toArray();
 
-        foreach ($this->getArrayableRelations() as $key => $value) {
+        foreach ($this->getArrayableRelations() as $key => $relation) {
             $attributeName = snake_case($key);
 
-            if (isset($array[$attributeName]) && method_exists($value, 'toSearchableArray')) {
-                $array[$attributeName] = $value->toSearchableArray($array[$attributeName]);
-            } elseif (isset($array[$attributeName]) && $value instanceof \Illuminate\Support\Collection) {
-                $array[$attributeName] = $value->map(function ($item, $i) use ($array, $attributeName) {
+            if (isset($array[$attributeName]) && method_exists($relation, 'toSearchableArray')) {
+                $array[$attributeName] = $relation->toSearchableArray($array[$attributeName]);
+            } elseif (isset($array[$attributeName]) && $relation instanceof \Illuminate\Support\Collection) {
+                $array[$attributeName] = $relation->map(function ($item, $i) use ($array, $attributeName) {
                     if (method_exists($item, 'toSearchableArray')) {
                         return $item->toSearchableArray($array[$attributeName][$i]);
                     }
@@ -161,13 +161,13 @@ trait Searchable
             }
         }
 
-        foreach ($this->getArrayableRelations() as $key => $value) {
+        foreach ($this->getArrayableRelations() as $key => $relation) {
             $attributeName = snake_case($key);
 
-            if (isset($array[$attributeName]) && method_exists($value, 'toSearchableArray')) {
-                $array[$attributeName] = $value->datesToSearchable($array[$attributeName]);
-            } elseif (isset($array[$attributeName]) && $value instanceof \Illuminate\Support\Collection) {
-                $array[$attributeName] = $value->map(function ($item, $i) use ($array, $attributeName) {
+            if (isset($array[$attributeName]) && method_exists($relation, 'toSearchableArray')) {
+                $array[$attributeName] = $relation->datesToSearchable($array[$attributeName]);
+            } elseif (isset($array[$attributeName]) && $relation instanceof \Illuminate\Support\Collection) {
+                $array[$attributeName] = $relation->map(function ($item, $i) use ($array, $attributeName) {
                     if (method_exists($item, 'toSearchableArray')) {
                         return $item->datesToSearchable($array[$attributeName][$i]);
                     }
