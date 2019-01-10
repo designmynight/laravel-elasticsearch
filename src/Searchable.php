@@ -37,17 +37,14 @@ trait Searchable
      */
     public function onSearchConnection(\Closure $callback)
     {
-        $originalConnection = $this->getConnectionName();
+        $arguments = array_slice(func_get_args(), 1);
 
-        $this->setConnection(static::getElasticsearchConnectionName());
+        $elasticModel = clone $arguments[0];
+        $elasticModel->setConnectionName(static::getElasticsearchConnectionName());
 
-        try {
-            $result = $callback(...array_slice(func_get_args(), 1));
-        } finally {
-            $this->setConnection($originalConnection);
-        }
+        $arguments[0] = $elasticModel;
 
-        return $result;
+        return $callback(...$arguments);
     }
 
     /**
