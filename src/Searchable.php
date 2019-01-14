@@ -2,8 +2,6 @@
 
 namespace DesignMyNight\Elasticsearch;
 
-use Illuminate\Database\Eloquent\Builder;
-
 trait Searchable
 {
     public static function getElasticsearchConnectionName(): string
@@ -53,10 +51,10 @@ trait Searchable
      * Implementing models can override this method to set additional query
      * parameters to be used when searching
      *
-     * @param  Builder $query
-     * @return Builder
+     * @param  \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function setKeysForSearch(Builder $query)
+    public function setKeysForSearch($query)
     {
         return $query;
     }
