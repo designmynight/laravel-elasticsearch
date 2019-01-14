@@ -54,7 +54,7 @@ trait Searchable
      * @param  EloquentBuilder $query
      * @return EloquentBuilder
      */
-    public function setKeysForSearch(EloquentBuilder $query): EloquentBuilder
+    public function setKeysForSearch(EloquentBuilder $query)
     {
         return $query;
     }
