@@ -40,7 +40,7 @@ trait Searchable
         $arguments = array_slice(func_get_args(), 1);
 
         $elasticModel = clone $arguments[0];
-        $elasticModel->setConnectionName(static::getElasticsearchConnectionName());
+        $elasticModel->setConnection(static::getElasticsearchConnectionName());
 
         $arguments[0] = $elasticModel;
 
