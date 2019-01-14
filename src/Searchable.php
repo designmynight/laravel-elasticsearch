@@ -68,9 +68,9 @@ trait Searchable
     public function addToIndex()
     {
         return $this->onSearchConnection(function ($model) {
-            $query = $model->setKeysForSaveQuery($this->newQueryWithoutScopes());
+            $query = $model->setKeysForSaveQuery($model->newQueryWithoutScopes());
 
-            $this->setKeysForSearch($query);
+            $model->setKeysForSearch($query);
 
             return $query->insert($model->toSearchableArray());
         }, $this);
@@ -94,9 +94,9 @@ trait Searchable
     public function removeFromIndex()
     {
         return $this->onSearchConnection(function ($model) {
-            $query = $model->setKeysForSaveQuery($this->newQueryWithoutScopes());
+            $query = $model->setKeysForSaveQuery($model->newQueryWithoutScopes());
 
-            $this->setKeysForSearch($query);
+            $model->setKeysForSearch($query);
 
             return $query->delete();
         }, $this);
