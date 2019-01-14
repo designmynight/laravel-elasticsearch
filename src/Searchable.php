@@ -51,10 +51,10 @@ trait Searchable
      * Implementing models can override this method to set additional query
      * parameters to be used when searching
      *
-     * @param  EloquentBuilder $query
-     * @return EloquentBuilder
+     * @param  \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function setKeysForSearch(EloquentBuilder $query)
+    public function setKeysForSearch($query)
     {
         return $query;
     }
