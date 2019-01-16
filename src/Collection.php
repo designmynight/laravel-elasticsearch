@@ -18,10 +18,10 @@ class Collection extends BaseCollection
             return $model->toSearchableArray();
         });
 
-        return $instance->onSearchConnection(function ($docs, $instance) {
+        return $instance->onSearchConnection(function ($instance) use ($docs) {
             $query = $instance->newQueryWithoutScopes();
 
             return $query->insert($docs->all());
-        }, $docs, $instance);
+        }, $instance);
     }
 }
