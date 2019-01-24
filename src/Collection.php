@@ -14,11 +14,13 @@ class Collection extends BaseCollection
 
         $instance = $this->first();
 
-        $docs = $this->map(function ($model) {
-            return $model->toSearchableArray();
-        });
+        return $instance->onSearchConnection(function ($instance) {
+            $docs = $this->map(function ($model) {
+                return $model->onSearchConnection(function ($model) {
+                    return $model->toSearchableArray();
+                }, $model);
+            });
 
-        return $instance->onSearchConnection(function ($instance) use ($docs) {
             $query = $instance->newQueryWithoutScopes();
 
             return $query->insert($docs->all());
