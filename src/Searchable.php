@@ -139,63 +139,7 @@ trait Searchable
             }
         }
 
-        $array = $this->datesToSearchable($array);
-
         return $array;
-    }
-
-    /**
-     * Convert all dates to searchable format
-     *
-     * @param  array $array
-     * @return array
-     */
-    public function datesToSearchable(array $array): array
-    {
-        foreach ($this->getDates() as $dateField) {
-            if (isset($array[$dateField])) {
-                $array[$dateField] = $this->fromDateTimeSearchable($array[$dateField]);
-            }
-        }
-
-        foreach ($this->getArrayableRelations() as $key => $relation) {
-            $attributeName = snake_case($key);
-
-            if (isset($array[$attributeName]) && method_exists($relation, 'toSearchableArray')) {
-                $array[$attributeName] = $relation->datesToSearchable($array[$attributeName]);
-            } elseif (isset($array[$attributeName]) && $relation instanceof \Illuminate\Support\Collection) {
-                $array[$attributeName] = $relation->map(function ($item, $i) use ($array, $attributeName) {
-                    if (method_exists($item, 'toSearchableArray')) {
-                        return $item->datesToSearchable($array[$attributeName][$i]);
-                    }
-
-                    return $item;
-                })->all();
-            }
-        }
-
-        return $array;
-    }
-
-    /**
-     * Convert a DateTime to a string in ES format.
-     *
-     * @param  \DateTime|int $value
-     * @return string
-     */
-    public function fromDateTimeSearchable($value): string
-    {
-        return empty($value) ? $value : $this->asDateTime($value)->format($this->getSearchableDateFormat());
-    }
-
-    /**
-     * Return the format to be used for dates in Elasticsearch
-     *
-     * @return string
-     */
-    public function getSearchableDateFormat(): string
-    {
-        return 'Y-m-d\TH:i:s';
     }
 
     /**
