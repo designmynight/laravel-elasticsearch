@@ -109,17 +109,28 @@ trait Searchable
      */
     public function toSearchableArray()
     {
+        // Run this on the search connection if it's not the current connection
+        if ($this->getConnectionName() !== static::getElasticsearchConnectionName()) {
+            return $this->onSearchConnection(function ($model) {
+                return $model->toSearchableArray();
+            }, $this);
+        }
+
         $array = $this->toArray();
 
         foreach ($this->getArrayableRelations() as $key => $relation) {
             $attributeName = snake_case($key);
 
             if (isset($array[$attributeName]) && method_exists($relation, 'toSearchableArray')) {
-                $array[$attributeName] = $relation->toSearchableArray($array[$attributeName]);
+                $array[$attributeName] = $relation->onSearchConnection(function ($model) {
+                    return $model->toSearchableArray();
+                }, $relation);
             } elseif (isset($array[$attributeName]) && $relation instanceof \Illuminate\Support\Collection) {
-                $array[$attributeName] = $relation->map(function ($item, $i) use ($array, $attributeName) {
+                $array[$attributeName] = $relation->map(function ($item, $i) {
                     if (method_exists($item, 'toSearchableArray')) {
-                        return $item->toSearchableArray($array[$attributeName][$i]);
+                        return $item->onSearchConnection(function ($model) {
+                            return $model->toSearchableArray();
+                        }, $item);
                     }
 
                     return $item;
@@ -135,7 +146,9 @@ trait Searchable
             $subDocuments = $this->$field ?? [];
 
             foreach ($subDocuments as $subDocument) {
-                $array['child_documents'][] = $this->getSubDocumentIndexData($subDocument, $field);
+                $array['child_documents'][] = $this->onSearchConnection(function ($model) {
+                    return $model->getSubDocumentIndexData($model);
+                }, $subDocument);
             }
         }
 
