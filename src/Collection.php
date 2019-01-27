@@ -13,17 +13,17 @@ class Collection extends BaseCollection
         }
 
         $instance = $this->first();
+        $instance->setConnection($instance->getElasticsearchConnectionName());
+        $query = $this->first()->newQueryWithoutScopes();
 
-        return $instance->onSearchConnection(function ($instance) {
-            $docs = $this->map(function ($model) {
-                return $model->onSearchConnection(function ($model) {
-                    return $model->toSearchableArray();
-                }, $model);
-            });
+        $docs = $this->map(function ($model, $i) {
+            return $model->toSearchableArray();
+        });
 
-            $query = $instance->newQueryWithoutScopes();
+        $success = $query->insert($docs->all());
 
-            return $query->insert($docs->all());
-        }, $instance);
+        unset($docs);
+
+        return $success;
     }
 }
