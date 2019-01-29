@@ -22,11 +22,14 @@ trait Searchable
     /**
      * Set the index this model is to be added to
      *
-     * @param string
+     * @param  string
+     * @return self
      */
     public function setSearchIndex(string $index)
     {
-        return $this->searchIndex = $index;
+        $this->searchIndex = $index;
+
+        return $this;
     }
 
     /**
