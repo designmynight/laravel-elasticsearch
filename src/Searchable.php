@@ -20,6 +20,19 @@ trait Searchable
     }
 
     /**
+     * Set the index this model is to be added to
+     *
+     * @param  string
+     * @return self
+     */
+    public function setSearchIndex(string $index)
+    {
+        $this->searchIndex = $index;
+
+        return $this;
+    }
+
+    /**
      * Get the search type associated with the model.
      *
      * @return string
