@@ -5,7 +5,7 @@ namespace DesignMyNight\Elasticsearch\Console\Mappings;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Class IndexListCommand
+ * Class IndexCopyCommand
  *
  * @package DesignMyNight\Elasticsearch\Console\Mappings
  */
@@ -33,13 +33,9 @@ class IndexCopyCommand extends Command
      */
     public function handle()
     {
-        ['from' => $from, 'to' => $to] = $this->arguments();
-        $toIndex = $this->option('to');
+        ['from' => $fromIndex, 'to' => $toIndex] = $this->arguments();
 
-        if (! $fromIndex || ! $toIndex) {
-            $this->line('You must specify a from and a to index.');
-            exit;
-        }
+        dd($fromIndex, $toIndex);
 
         $bulkParams = ['body' => []];
         $connection = DB::connection('elasticsearch');
