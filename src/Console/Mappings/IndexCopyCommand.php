@@ -35,8 +35,6 @@ class IndexCopyCommand extends Command
     {
         ['from' => $fromIndex, 'to' => $toIndex] = $this->arguments();
 
-        dd($fromIndex, $toIndex);
-
         $bulkParams = ['body' => []];
         $connection = DB::connection('elasticsearch');
 
