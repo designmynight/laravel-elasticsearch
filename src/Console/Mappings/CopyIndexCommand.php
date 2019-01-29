@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
  *
  * @package DesignMyNight\Elasticsearch\Console\Mappings
  */
-class CopyIndexCommand extends Command
+class IndexCopyCommand extends Command
 {
     /**
      * @var string $description
@@ -19,7 +19,7 @@ class CopyIndexCommand extends Command
     /**
      * @var string $signature
      */
-    protected $signature = 'index:copy {--from= } {--to= }';
+    protected $signature = 'index:copy {from} {to}';
 
     /**
      * @var int
@@ -33,7 +33,7 @@ class CopyIndexCommand extends Command
      */
     public function handle()
     {
-        $fromIndex = $this->option('from');
+        ['from' => $from, 'to' => $to] = $this->arguments();
         $toIndex = $this->option('to');
 
         if (! $fromIndex || ! $toIndex) {
