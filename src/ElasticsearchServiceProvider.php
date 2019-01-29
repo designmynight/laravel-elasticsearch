@@ -3,6 +3,7 @@
 namespace DesignMyNight\Elasticsearch;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\AliasMakeCommand;
+use DesignMyNight\Elasticsearch\Console\Mappings\CopyIndexCommand;
 use DesignMyNight\Elasticsearch\Console\Mappings\MappingMakeCommand;
 use DesignMyNight\Elasticsearch\Console\Mappings\MappingMigrateCommand;
 use DesignMyNight\Elasticsearch\Console\Mappings\IndexRemoveCommand;
@@ -23,12 +24,13 @@ class ElasticsearchServiceProvider extends ServiceProvider
     /** @var array $commands */
     private $commands = [
         AliasMakeCommand::class,
+        CopyIndexCommand::class,
         MappingMakeCommand::class,
         MappingMigrateCommand::class,
         IndexSwapCommand::class,
         IndexRemoveCommand::class,
         IndexRollbackCommand::class,
-        IndexListCommand::class
+        IndexListCommand::class,
     ];
 
     /**
