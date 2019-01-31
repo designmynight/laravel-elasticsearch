@@ -206,8 +206,6 @@ class Connection extends BaseConnection
 
         $scrollId = $results['_scroll_id'];
 
-        $numFound = $results['hits']['total'];
-
         $numResults = count($results['hits']['hits']);
 
         foreach ($results['hits']['hits'] as $result) {
