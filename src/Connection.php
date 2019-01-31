@@ -193,11 +193,11 @@ class Connection extends BaseConnection
     public function cursor($query, $bindings = [], $useReadPdo = false)
     {
         $scrollTimeout = '30s';
-        $limit = min($params['body']['size'] ?? 100000, 100000);
+        $limit = $query['size'] ?? 0;
 
         $scrollParams = array(
             'scroll' => $scrollTimeout,
-            'size'   => min(100, $limit),
+            'size'   => 100, // Number of results per shard
             'index'  => $query['index'],
             'body'   => $query['body']
         );
@@ -206,16 +206,16 @@ class Connection extends BaseConnection
 
         $scrollId = $results['_scroll_id'];
 
-        $numFound = $results['hits']['total'];
-
         $numResults = count($results['hits']['hits']);
 
         foreach ($results['hits']['hits'] as $result) {
             yield $result;
         }
 
-        if ($limit > $numResults) {
-            foreach ($this->scroll($scrollId, $scrollTimeout, $limit - $numResults) as $result) {
+        if (! $limit || $limit > $numResults) {
+            $limit = $limit ? $limit - $numResults : $limit;
+
+            foreach ($this->scroll($scrollId, $scrollTimeout, $limit) as $result) {
                 yield $result;
             }
         }
@@ -234,7 +234,7 @@ class Connection extends BaseConnection
         $numResults = 0;
 
         // Loop until the scroll 'cursors' are exhausted or we have enough results
-        while (!$limit || $numResults < $limit) {
+        while (! $limit || $numResults < $limit) {
             // Execute a Scroll request
             $results = $this->connection->scroll(array(
                 'scroll_id' => $scrollId,
@@ -252,7 +252,7 @@ class Connection extends BaseConnection
             foreach ($results['hits']['hits'] as $result) {
                 $numResults++;
 
-                if ($numResults > $limit) {
+                if ($limit && $numResults > $limit) {
                     break;
                 }
 

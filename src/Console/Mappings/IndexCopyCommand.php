@@ -40,6 +40,7 @@ class IndexCopyCommand extends Command
 
         $query = [
             'index' => $fromIndex,
+            'size' => 0,
             'body' => [
                 'query' => [
                     'match_all' => (object) []
@@ -47,10 +48,7 @@ class IndexCopyCommand extends Command
             ],
         ];
 
-        $numResultsQuery = $query;
-        $numResultsQuery['size'] = 0;
-
-        $numResults = $connection->select($numResultsQuery)['hits']['total'];
+        $numResults = $connection->select($query)['hits']['total'];
         $bar = $this->output->createProgressBar($numResults);
         $bar->start();
 
