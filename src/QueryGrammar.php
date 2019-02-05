@@ -609,7 +609,35 @@ class QueryGrammar extends BaseGrammar
 
         $query['nested'] = array_merge($query['nested'], array_filter($wheres));
 
+        if (isset($where['operator']) && $where['operator'] === '!=') {
+            $query = [
+                'bool' => [
+                    'must_not' => [
+                        $query
+                    ]
+                ]
+            ];
+        }
+
         return $query;
+    }
+
+    /**
+     * Compile a where not clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return array
+     */
+    protected function compileWhereNot(Builder $builder, $where): array
+    {
+        return [
+            'bool' => [
+                'must_not' => [
+                    $this->compileWheres($where['query'])['query']
+                ]
+            ]
+        ];
     }
 
     /**
