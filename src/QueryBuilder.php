@@ -202,6 +202,24 @@ class QueryBuilder extends BaseBuilder
     }
 
     /**
+     * Add a 'must not' statement to the query.
+     *
+     * @param  \Illuminate\Database\Query\Builder|static $query
+     * @param  string  $boolean
+     * @return self
+     */
+    public function whereNot($query, $boolean = 'and'): self
+    {
+        $type = 'Not';
+
+        call_user_func($query, $query = $this->newQuery());
+
+        $this->wheres[] = compact('query', 'type', 'boolean');
+
+        return $this;
+    }
+
+    /**
      * Add a prefix query
      *
      * @param  string  $column
