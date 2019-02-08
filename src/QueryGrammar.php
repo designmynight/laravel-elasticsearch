@@ -857,8 +857,22 @@ class QueryGrammar extends BaseGrammar
             ]
         ];
 
-        if (is_array($aggregation['args']) && isset($aggregation['args']['size'])) {
-            $compiled['terms']['size'] = $aggregation['args']['size'];
+        $allowedArgs = [
+            'show_term_doc_count_error',
+            'order',
+            'min_doc_count',
+            'size',
+            'script',
+            'include',
+            'exclude',
+            'collect_mode',
+            'execution_hint',
+            'missing',
+        ];
+
+        if (is_array($aggregation['args'])) {
+            $validArgs = array_intersect_key($aggregation['args'], array_flip($allowedArgs));
+            $compiled['terms'] = array_merge($compiled['terms'], $validArgs);
         }
 
         return $compiled;
