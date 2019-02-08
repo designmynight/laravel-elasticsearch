@@ -858,16 +858,16 @@ class QueryGrammar extends BaseGrammar
         ];
 
         $allowedArgs = [
-            'show_term_doc_count_error',
-            'order',
-            'min_doc_count',
-            'size',
-            'script',
-            'include',
-            'exclude',
             'collect_mode',
+            'exclude',
             'execution_hint',
+            'include',
+            'min_doc_count',
             'missing',
+            'order',
+            'script',
+            'show_term_doc_count_error',
+            'size',
         ];
 
         if (is_array($aggregation['args'])) {
