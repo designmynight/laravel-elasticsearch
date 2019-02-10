@@ -145,6 +145,7 @@ This package ships with the following commands to be used as utilities or as par
 | `index:remove` | `index`: (Optional) Name of the index to remove from your Elasticsearch cluster. |  | Removes an index from your Elasticsearch cluster. |
 | `index:swap` | `alias`: Name of alias to update. `index`: Name of index to update alias to. `old-index`: (Optional) Name of old index. | `--remove-old-index`: Remove old index from your Elasticsearch cluster. | Swap the index your alias points to. |
 | `index:list` |  | `--alias`: List active aliases. Pass `"*"` to view all. Other values filter the returned aliases. | Display a list of all indexes in your Elasticsearch cluster. |
+| `index:copy` | `from`: index to copy from. `to`: the index to copy from | | Populate an index with all documents from another index
 
 
 ### Mappings and Aliases
