@@ -57,7 +57,7 @@ class Connection extends BaseConnection
     protected function createConnection($hosts, array $config, array $options)
     {
         // apply config to each host
-        $hosts = array_map(function(string $host) use ($config):array {
+        $hosts = array_map(function($host) use ($config) {
             $port = !empty($config['port']) ? $config['port'] : 9200;
 
             $scheme = !empty($config['scheme']) ? $config['scheme'] : 'http';
