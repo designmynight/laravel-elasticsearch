@@ -56,6 +56,24 @@ class Connection extends BaseConnection
      */
     protected function createConnection($hosts, array $config, array $options)
     {
+        // apply config to each host
+        $hosts = array_map(function(string $host) use ($config):array {
+            $port = !empty($config['port']) ? $config['port'] : 9200;
+
+            $scheme = !empty($config['scheme']) ? $config['scheme'] : 'http';
+
+            // force https for port 443
+            $scheme = (int) $port === 443 ? 'https' : $scheme;
+
+            return [
+                'host'   => $host,
+                'port'   => $port,
+                'scheme' => $scheme,
+                'user'   => !empty($config['username']) ? $config['username'] : null,
+                'pass'   => !empty($config['password']) ? $config['password'] : null,
+            ];
+        }, $hosts);
+
         return ClientBuilder::create()
             ->setHosts($hosts)
             ->setSelector('\Elasticsearch\ConnectionPool\Selectors\StickyRoundRobinSelector')
