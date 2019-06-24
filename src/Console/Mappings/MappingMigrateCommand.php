@@ -7,6 +7,7 @@ use DesignMyNight\Elasticsearch\Console\Mappings\Traits\UpdatesAlias;
 use Elasticsearch\ClientBuilder;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Symfony\Component\Finder\SplFileInfo;
 
 /**
@@ -48,8 +49,8 @@ class MappingMigrateCommand extends Command
     {
         $mappings = $this->getMappingFiles();
         $mappingMigrations = $this->connection->orderBy('mapping')
-          ->orderBy('batch')
-          ->pluck('mapping');
+            ->orderBy('batch')
+            ->pluck('mapping');
         $pendingMappings = $this->pendingMappings($mappings, $mappingMigrations->toArray());
 
         $this->runPending($pendingMappings);
@@ -64,10 +65,10 @@ class MappingMigrateCommand extends Command
         $this->line("Creating index $index");
 
         $this->client->indices()
-          ->create([
-            'index' => $index,
-            'body'  => $body,
-          ]);
+            ->create([
+                'index' => $index,
+                'body'  => $body,
+            ]);
 
         $this->info("Created index $index");
     }
@@ -121,8 +122,8 @@ class MappingMigrateCommand extends Command
     protected function migrateMapping(int $batch, string $mapping):void
     {
         $this->connection->insert([
-          'batch'   => $batch,
-          'mapping' => $mapping,
+            'batch'   => $batch,
+            'mapping' => $mapping,
         ]);
     }
 
@@ -135,11 +136,11 @@ class MappingMigrateCommand extends Command
     protected function pendingMappings(array $files, array $migrations):array
     {
         return Collection::make($files)
-          ->reject(function (SplFileInfo $file) use ($migrations):bool {
-              return in_array($this->getMappingName($file->getFilename()), $migrations);
-          })
-          ->values()
-          ->toArray();
+            ->reject(function (SplFileInfo $file) use ($migrations):bool {
+                return in_array($this->getMappingName($file->getFilename()), $migrations);
+            })
+            ->values()
+            ->toArray();
     }
 
     /**
@@ -149,16 +150,20 @@ class MappingMigrateCommand extends Command
      */
     protected function putMapping(SplFileInfo $mapping):void
     {
-        $index = $this->getMappingName($mapping->getFileName(), true);
+        $timestamp = Str::substr($this->getMappingName($mapping->getFileName()), 0, 17);
         $mappings = json_decode($mapping->getContents(), true);
 
-        if (str_contains($index, 'update')) {
-            $this->updateIndex($index, $mappings['mappings']);
+        foreach ($mappings['mappings'] as $document => $mapping) {
+            $index = "{$timestamp}_" . $this->getMappingName(Str::plural($document), true);
 
-            return;
+            if (Str::contains($index, 'update')) {
+                $this->updateIndex($index, [$document => $mapping]);
+
+                return;
+            }
+
+            $this->createIndex($index, ['mappings' => [$document => $mapping]]);
         }
-
-        $this->createIndex($index, $mappings);
     }
 
     /**
@@ -195,8 +200,8 @@ class MappingMigrateCommand extends Command
 
             try {
                 $this->call('make:mapping-alias', [
-                  'name'  => $aliasName,
-                  'index' => $indexWithSuffix
+                    'name'  => $aliasName,
+                    'index' => $indexWithSuffix
                 ]);
 
                 $createdAliases[] = $aliasName;
@@ -206,7 +211,7 @@ class MappingMigrateCommand extends Command
 
             $this->info("Migrated mapping: {$index}");
 
-            if (!str_contains($index, 'update') && $this->option('index')) {
+            if (!Str::contains($index, 'update') && $this->option('index')) {
                 $this->index($index);
 
                 if (in_array($aliasName, $createdAliases) || $this->option('swap')) {
@@ -228,11 +233,11 @@ class MappingMigrateCommand extends Command
 
         foreach ($mappings as $type => $body) {
             $this->client->indices()
-              ->putMapping([
-                'index' => $index,
-                'type'  => $type,
-                'body'  => $body,
-              ]);
+                ->putMapping([
+                    'index' => $index,
+                    'type'  => $type,
+                    'body'  => $body,
+                ]);
         }
 
         $this->info("Updated index mapping $index");
