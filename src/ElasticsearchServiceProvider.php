@@ -48,7 +48,7 @@ class ElasticsearchServiceProvider extends ServiceProvider
             __DIR__ . '/Config/laravel-elasticsearch.php' => config_path('laravel-elasticsearch.php')
         ]);
 
-        $this->loadMigrationsFrom(__DIR__ . '/Migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/Database/Migrations');
     }
 
     /**

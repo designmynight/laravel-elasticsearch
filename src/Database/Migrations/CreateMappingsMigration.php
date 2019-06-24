@@ -1,6 +1,6 @@
 <?php
 
-namespace DesignMyNight\Elasticsearch\Migrations;
+namespace DesignMyNight\Elasticsearch\Database\Migrations;
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;

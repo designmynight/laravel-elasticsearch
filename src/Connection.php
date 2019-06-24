@@ -3,6 +3,8 @@
 namespace DesignMyNight\Elasticsearch;
 
 use Closure;
+use DesignMyNight\Elasticsearch\Database\Schema\ElasticsearchBuilder;
+use DesignMyNight\Elasticsearch\Database\Schema\Grammars\ElasticsearchGrammar;
 use Elasticsearch\ClientBuilder;
 use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Database\Events\QueryExecuted;
@@ -29,8 +31,7 @@ class Connection extends BaseConnection
     public function __construct(array $config)
     {
         $this->config = $config;
-
-        $this->indexSuffix = isset($config['suffix']) ? $config['suffix'] : '';
+        $this->indexSuffix = $config['suffix'] ?? '';
 
         // Extract the hosts from config
         $hostsConfig = $config['hosts'] ?? $config['host'];
@@ -88,6 +89,22 @@ class Connection extends BaseConnection
     protected function getDefaultQueryGrammar()
     {
         return $this->withIndexSuffix(new QueryGrammar);
+    }
+
+    /**
+     * @return ElasticsearchBuilder|\Illuminate\Database\Schema\Builder
+     */
+    public function getSchemaBuilder()
+    {
+        return new ElasticsearchBuilder($this);
+    }
+
+    /**
+     * @return ElasticsearchGrammar|\Illuminate\Database\Schema\Grammars\Grammar
+     */
+    public function getSchemaGrammar()
+    {
+        return new ElasticsearchGrammar();
     }
 
     /**
