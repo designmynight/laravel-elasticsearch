@@ -2,8 +2,10 @@
 
 namespace DesignMyNight\Elasticsearch\Database\Schema;
 
+use Carbon\Carbon;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Grammars\Grammar;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 
 /**
@@ -12,6 +14,9 @@ use Illuminate\Support\Str;
  */
 class Blueprint extends \Illuminate\Database\Schema\Blueprint
 {
+    /** @var string */
+    protected $alias;
+
     /** @var string */
     protected $document;
 
@@ -31,6 +36,14 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
         );
 
         return $column;
+    }
+
+    /**
+     * @param string $alias
+     */
+    public function alias(string $alias): void
+    {
+        $this->alias = $alias;
     }
 
     /**
@@ -144,11 +157,30 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
+     * @return string
+     */
+    public function getAlias(): string
+    {
+        return $this->alias ?? $this->getTable();
+    }
+
+    /**
      * @return string|null
      */
     public function getDocument(): ?string
     {
         return $this->document ?? Str::singular($this->getTable());
+    }
+
+    /**
+     * @return string
+     */
+    public function getIndex(): string
+    {
+        $suffix = Config::get('database.connections.elasticsearch.suffix');
+        $timestamp = Carbon::now()->format('Y_m_d_His');
+
+        return "{$timestamp}_{$this->getTable()}" . $suffix;
     }
 
     /**

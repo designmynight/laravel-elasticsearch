@@ -2,6 +2,7 @@
 
 namespace DesignMyNight\Elasticsearch;
 
+use Carbon\Carbon;
 use Closure;
 use DesignMyNight\Elasticsearch\Database\Schema\Blueprint;
 use DesignMyNight\Elasticsearch\Database\Schema\ElasticsearchBuilder;
@@ -10,6 +11,9 @@ use Elasticsearch\ClientBuilder;
 use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\Grammar as BaseGrammar;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class Connection extends BaseConnection
 {
@@ -51,15 +55,15 @@ class Connection extends BaseConnection
     /**
      * Create a new Elasticsearch connection.
      *
-     * @param array  $hosts
-     * @param array  $config
+     * @param array $hosts
+     * @param array $config
      *
      * @return \Elasticsearch\Client
      */
     protected function createConnection($hosts, array $config, array $options)
     {
         // apply config to each host
-        $hosts = array_map(function($host) use ($config) {
+        $hosts = array_map(function ($host) use ($config) {
             $port = !empty($config['port']) ? $config['port'] : 9200;
 
             $scheme = !empty($config['scheme']) ? $config['scheme'] : 'http';
@@ -68,11 +72,11 @@ class Connection extends BaseConnection
             $scheme = (int) $port === 443 ? 'https' : $scheme;
 
             return [
-                'host'   => $host,
-                'port'   => $port,
+                'host' => $host,
+                'port' => $port,
                 'scheme' => $scheme,
-                'user'   => !empty($config['username']) ? $config['username'] : null,
-                'pass'   => !empty($config['password']) ? $config['password'] : null,
+                'user' => !empty($config['username']) ? $config['username'] : null,
+                'pass' => !empty($config['password']) ? $config['password'] : null,
             ];
         }, $hosts);
 
@@ -111,7 +115,8 @@ class Connection extends BaseConnection
     /**
      * Set the table prefix and return the grammar.
      *
-     * @param  \Illuminate\Database\Grammar  $grammar
+     * @param \Illuminate\Database\Grammar $grammar
+     *
      * @return \Illuminate\Database\Grammar
      */
     public function withIndexSuffix(BaseGrammar $grammar)
@@ -144,9 +149,10 @@ class Connection extends BaseConnection
     /**
      * Log a query in the connection's query log.
      *
-     * @param  string  $query
-     * @param  array   $bindings
-     * @param  float|null  $time
+     * @param string     $query
+     * @param array      $bindings
+     * @param float|null $time
+     *
      * @return void
      */
     public function logQuery($query, $bindings, $time = null)
@@ -161,7 +167,8 @@ class Connection extends BaseConnection
     /**
      * Set the table prefix in use by the connection.
      *
-     * @param  string  $prefix
+     * @param string $prefix
+     *
      * @return void
      */
     public function setIndexSuffix($suffix)
@@ -174,42 +181,43 @@ class Connection extends BaseConnection
     /**
      * Begin a fluent query against a database table.
      *
-     * @param  string  $table
+     * @param string $table
+     *
      * @return \Illuminate\Database\Query\Builder
      */
     public function table($table)
     {
-        //
     }
 
     /**
      * Get a new raw query expression.
      *
-     * @param  mixed  $value
+     * @param mixed $value
+     *
      * @return \Illuminate\Database\Query\Expression
      */
     public function raw($value)
     {
-        //
     }
 
     /**
      * Run a select statement and return a single result.
      *
-     * @param  string  $query
-     * @param  array   $bindings
+     * @param string $query
+     * @param array  $bindings
+     *
      * @return mixed
      */
     public function selectOne($query, $bindings = [], $useReadPdo = true)
     {
-        //
     }
 
     /**
      * Run a select statement against the database.
      *
-     * @param  array   $params
-     * @param  array   $bindings
+     * @param array $params
+     * @param array $bindings
+     *
      * @return array
      */
     public function select($params, $bindings = [], $useReadPdo = true)
@@ -224,9 +232,10 @@ class Connection extends BaseConnection
     /**
      * Run a select statement against the database and return a generator.
      *
-     * @param  string  $query
-     * @param  array  $bindings
-     * @param  bool  $useReadPdo
+     * @param string $query
+     * @param array  $bindings
+     * @param bool   $useReadPdo
+     *
      * @return \Generator
      */
     public function cursor($query, $bindings = [], $useReadPdo = false)
@@ -234,12 +243,12 @@ class Connection extends BaseConnection
         $scrollTimeout = '30s';
         $limit = $query['size'] ?? 0;
 
-        $scrollParams = array(
+        $scrollParams = [
             'scroll' => $scrollTimeout,
-            'size'   => 100, // Number of results per shard
-            'index'  => $query['index'],
-            'body'   => $query['body']
-        );
+            'size' => 100, // Number of results per shard
+            'index' => $query['index'],
+            'body' => $query['body'],
+        ];
 
         $results = $this->select($scrollParams);
 
@@ -251,7 +260,7 @@ class Connection extends BaseConnection
             yield $result;
         }
 
-        if (! $limit || $limit > $numResults) {
+        if (!$limit || $limit > $numResults) {
             $limit = $limit ? $limit - $numResults : $limit;
 
             foreach ($this->scroll($scrollId, $scrollTimeout, $limit) as $result) {
@@ -263,9 +272,10 @@ class Connection extends BaseConnection
     /**
      * Run a select statement against the database using an Elasticsearch scroll cursor.
      *
-     * @param  string $scrollId
-     * @param  string $scrollTimeout
-     * @param  int $limit
+     * @param string $scrollId
+     * @param string $scrollTimeout
+     * @param int    $limit
+     *
      * @return \Generator
      */
     public function scroll(string $scrollId, string $scrollTimeout = '30s', int $limit = 0)
@@ -273,12 +283,12 @@ class Connection extends BaseConnection
         $numResults = 0;
 
         // Loop until the scroll 'cursors' are exhausted or we have enough results
-        while (! $limit || $numResults < $limit) {
+        while (!$limit || $numResults < $limit) {
             // Execute a Scroll request
-            $results = $this->connection->scroll(array(
+            $results = $this->connection->scroll([
                 'scroll_id' => $scrollId,
-                'scroll'    => $scrollTimeout,
-            ));
+                'scroll' => $scrollTimeout,
+            ]);
 
             // Get new scroll ID in case it's changed
             $scrollId = $results['_scroll_id'];
@@ -303,8 +313,9 @@ class Connection extends BaseConnection
     /**
      * Run an insert statement against the database.
      *
-     * @param  array  $params
-     * @param  array  $bindings
+     * @param array $params
+     * @param array $bindings
+     *
      * @return bool
      */
     public function insert($params, $bindings = [])
@@ -319,8 +330,9 @@ class Connection extends BaseConnection
     /**
      * Run an update statement against the database.
      *
-     * @param  string  $query
-     * @param  array   $bindings
+     * @param string $query
+     * @param array  $bindings
+     *
      * @return array
      */
     public function update($query, $bindings = [])
@@ -335,8 +347,9 @@ class Connection extends BaseConnection
     /**
      * Run a delete statement against the database.
      *
-     * @param  string  $query
-     * @param  array   $bindings
+     * @param string $query
+     * @param array  $bindings
+     *
      * @return array
      */
     public function delete($query, $bindings = [])
@@ -351,8 +364,9 @@ class Connection extends BaseConnection
     /**
      * Execute an SQL statement and return the boolean result.
      *
-     * @param  string  $query
-     * @param  array   $bindings
+     * @param string $query
+     * @param array  $bindings
+     *
      * @return bool
      */
     public function statement($query, $bindings = [], Blueprint $blueprint = null)
@@ -362,58 +376,53 @@ class Connection extends BaseConnection
                 return true;
             }
 
-            $success = true;
-
-            try {
-                if ($blueprint->getCommands()[0]->name === 'create') {
-                    $this->indices()->create([
-                        'index' => $blueprint->getTable(),
-                        'body' => $query
-                    ]);
-                } else {
-                    $this->indices()->putMapping([
-                        'index' => $blueprint->getTable(),
-                        'type' => $blueprint->getDocument(),
-                        'body' => $query
-                    ]);
-                }
-            } catch (\Exception $exception) {
-                $success = false;
+            if ($blueprint->statement() === 'create') {
+                $this->indices()->create([
+                    'index' => $blueprint->getIndex(),
+                    'body' => $query,
+                ]);
+            } else {
+                $this->indices()->putMapping([
+                    'index' => $blueprint->getTable(),
+                    'type' => $blueprint->getDocument(),
+                    'body' => $query,
+                ]);
             }
 
             $this->recordsHaveBeenModified();
 
-            return $success;
+            return true;
         });
     }
 
     /**
      * Run an SQL statement and get the number of rows affected.
      *
-     * @param  string  $query
-     * @param  array   $bindings
+     * @param string $query
+     * @param array  $bindings
+     *
      * @return int
      */
     public function affectingStatement($query, $bindings = [])
     {
-        //
     }
 
     /**
      * Run a raw, unprepared query against the PDO connection.
      *
-     * @param  string  $query
+     * @param string $query
+     *
      * @return bool
      */
     public function unprepared($query)
     {
-        //
     }
 
     /**
      * Prepare the query bindings for execution.
      *
-     * @param  array  $bindings
+     * @param array $bindings
+     *
      * @return array
      */
     public function prepareBindings(array $bindings)
@@ -424,9 +433,10 @@ class Connection extends BaseConnection
     /**
      * Run a search query.
      *
-     * @param  array     $query
-     * @param  array     $bindings
-     * @param  \Closure  $callback
+     * @param array    $query
+     * @param array    $bindings
+     * @param \Closure $callback
+     *
      * @return mixed
      *
      * @throws \DesignMyNight\Elasticsearch\QueryException
@@ -445,15 +455,15 @@ class Connection extends BaseConnection
     /**
      * Execute a Closure within a transaction.
      *
-     * @param  \Closure  $callback
-     * @param  int  $attempts
+     * @param \Closure $callback
+     * @param int      $attempts
+     *
      * @return mixed
      *
      * @throws \Throwable
      */
     public function transaction(Closure $callback, $attempts = 1)
     {
-        //
     }
 
     /**
@@ -463,7 +473,6 @@ class Connection extends BaseConnection
      */
     public function beginTransaction()
     {
-        //
     }
 
     /**
@@ -473,7 +482,6 @@ class Connection extends BaseConnection
      */
     public function commit()
     {
-        //
     }
 
     /**
@@ -483,7 +491,6 @@ class Connection extends BaseConnection
      */
     public function rollBack($toLevel = null)
     {
-        //
     }
 
     /**
@@ -493,18 +500,17 @@ class Connection extends BaseConnection
      */
     public function transactionLevel()
     {
-        //
     }
 
     /**
      * Execute the given callback in "dry run" mode.
      *
-     * @param  \Closure  $callback
+     * @param \Closure $callback
+     *
      * @return array
      */
     public function pretend(Closure $callback)
     {
-        //
     }
 
     /**
@@ -518,7 +524,9 @@ class Connection extends BaseConnection
 
     /**
      * Get the timeout for the entire Elasticsearch request
+     *
      * @param float $requestTimeout seconds
+     *
      * @return self
      */
     public function setRequestTimeout(float $requestTimeout): self
@@ -530,7 +538,9 @@ class Connection extends BaseConnection
 
     /**
      * Add client-specific parameters to the request params
+     *
      * @param array $params
+     *
      * @return array
      */
     protected function addClientParams(array $params): array
