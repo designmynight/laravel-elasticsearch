@@ -2,10 +2,12 @@
 
 namespace DesignMyNight\Elasticsearch\Database\Schema\Grammars;
 
+use DesignMyNight\Elasticsearch\Connection;
 use DesignMyNight\Elasticsearch\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Blueprint as BaseBlueprint;
 use Illuminate\Database\Schema\Grammars\Grammar;
 use Illuminate\Support\Fluent;
+use Illuminate\Support\Str;
 
 /**
  * Class Grammar
@@ -15,6 +17,44 @@ class ElasticsearchGrammar extends Grammar
 {
     /** @var array */
     protected $modifiers = ['Boost', 'Dynamic', 'Fields', 'Format', 'Index', 'Properties'];
+
+    /**
+     * @param Blueprint  $blueprint
+     * @param Fluent     $command
+     * @param Connection $connection
+     *
+     * @return array
+     */
+    public function compileCreate(Blueprint $blueprint, Fluent $command, Connection $connection)
+    {
+        return [
+            [
+                'mappings' => [
+                    $blueprint->getDocument() => [
+                        'properties' => $this->getColumns($blueprint),
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @param Blueprint  $blueprint
+     * @param Fluent     $command
+     * @param Connection $connection
+     *
+     * @return array
+     */
+    public function compileUpdate(Blueprint $blueprint, Fluent $command, Connection $connection)
+    {
+        return [
+            [
+                $blueprint->getDocument() => [
+                    'properties' => $this->getColumns($blueprint),
+                ]
+            ]
+        ];
+    }
 
     /**
      * @inheritDoc
@@ -31,7 +71,23 @@ class ElasticsearchGrammar extends Grammar
     }
 
     /**
+     * @param Blueprint $blueprint
+     * @param Fluent    $property
+     *
+     * @return Fluent
+     */
+    protected function format(Blueprint $blueprint, Fluent $property)
+    {
+        if (!is_string($property->format)) {
+            throw new \InvalidArgumentException('Format modifier must be a string', 400);
+        }
+
+        return $property;
+    }
+
+    /**
      * @param BaseBlueprint $blueprint
+     *
      * @return array
      */
     protected function getColumns(BaseBlueprint $blueprint)
@@ -40,7 +96,11 @@ class ElasticsearchGrammar extends Grammar
 
         foreach ($blueprint->getAddedColumns() as $property) {
             // Pass empty string as we only need to modify the property and return it.
-            $columns[] = $this->addModifiers('', $blueprint, $property);
+            $column = $this->addModifiers('', $blueprint, $property);
+            $key = Str::snake($column->name);
+            unset($column->name);
+
+            $columns[$key] = $column->toArray();
         }
 
         return $columns;
@@ -49,6 +109,7 @@ class ElasticsearchGrammar extends Grammar
     /**
      * @param Blueprint $blueprint
      * @param Fluent    $property
+     *
      * @return Fluent
      */
     protected function modifyBoost(Blueprint $blueprint, Fluent $property)
@@ -63,6 +124,7 @@ class ElasticsearchGrammar extends Grammar
     /**
      * @param Blueprint $blueprint
      * @param Fluent    $property
+     *
      * @return Fluent
      */
     protected function modifyDynamic(Blueprint $blueprint, Fluent $property)
@@ -77,13 +139,16 @@ class ElasticsearchGrammar extends Grammar
     /**
      * @param Blueprint $blueprint
      * @param Fluent    $property
+     *
      * @return Fluent
      */
     protected function modifyFields(Blueprint $blueprint, Fluent $property)
     {
         if (!is_null($property->fields)) {
             $fields = $property->fields;
-            $property->fields = $fields($blueprint);
+            $fields($blueprint = $this->createBlueprint());
+
+            $property->fields = $this->getColumns($blueprint);
         }
 
         return $property;
@@ -92,29 +157,26 @@ class ElasticsearchGrammar extends Grammar
     /**
      * @param Blueprint $blueprint
      * @param Fluent    $property
-     * @return Fluent
-     */
-    protected function format(Blueprint $blueprint, Fluent $property)
-    {
-        if (!is_string($property->format)) {
-            throw new \InvalidArgumentException('Format modifier must be a string', 400);
-        }
-
-        return $property;
-    }
-
-    /**
-     * @param Blueprint $blueprint
-     * @param Fluent    $property
+     *
      * @return Fluent
      */
     protected function modifyProperties(Blueprint $blueprint, Fluent $property)
     {
         if (!is_null($property->properties)) {
             $properties = $property->properties;
-            $property->properties = $properties($blueprint);
+            $properties($blueprint = $this->createBlueprint());
+
+            $property->properties = $this->getColumns($blueprint);
         }
 
         return $property;
+    }
+
+    /**
+     * @return Blueprint
+     */
+    private function createBlueprint(): Blueprint
+    {
+        return new Blueprint('');
     }
 }

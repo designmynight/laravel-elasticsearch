@@ -7,7 +7,6 @@ use Elasticsearch\Client;
 /**
  * Trait UpdatesAlias
  *
- * @property Client client
  * @package DesignMyNight\Elasticsearch\Console\Mappings\Traits
  */
 trait UpdatesAlias

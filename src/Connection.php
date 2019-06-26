@@ -3,6 +3,7 @@
 namespace DesignMyNight\Elasticsearch;
 
 use Closure;
+use DesignMyNight\Elasticsearch\Database\Schema\Blueprint;
 use DesignMyNight\Elasticsearch\Database\Schema\ElasticsearchBuilder;
 use DesignMyNight\Elasticsearch\Database\Schema\Grammars\ElasticsearchGrammar;
 use Elasticsearch\ClientBuilder;
@@ -178,6 +179,7 @@ class Connection extends BaseConnection
      */
     public function table($table)
     {
+        //
     }
 
     /**
@@ -188,6 +190,7 @@ class Connection extends BaseConnection
      */
     public function raw($value)
     {
+        //
     }
 
     /**
@@ -199,6 +202,7 @@ class Connection extends BaseConnection
      */
     public function selectOne($query, $bindings = [], $useReadPdo = true)
     {
+        //
     }
 
     /**
@@ -351,8 +355,36 @@ class Connection extends BaseConnection
      * @param  array   $bindings
      * @return bool
      */
-    public function statement($query, $bindings = [])
+    public function statement($query, $bindings = [], Blueprint $blueprint = null)
     {
+        return $this->run($query, $bindings, function ($query, $bindings) use ($blueprint) {
+            if ($this->pretending()) {
+                return true;
+            }
+
+            $success = true;
+
+            try {
+                if ($blueprint->getCommands()[0]->name === 'create') {
+                    $this->indices()->create([
+                        'index' => $blueprint->getTable(),
+                        'body' => $query
+                    ]);
+                } else {
+                    $this->indices()->putMapping([
+                        'index' => $blueprint->getTable(),
+                        'type' => $blueprint->getDocument(),
+                        'body' => $query
+                    ]);
+                }
+            } catch (\Exception $exception) {
+                $success = false;
+            }
+
+            $this->recordsHaveBeenModified();
+
+            return $success;
+        });
     }
 
     /**
@@ -364,6 +396,7 @@ class Connection extends BaseConnection
      */
     public function affectingStatement($query, $bindings = [])
     {
+        //
     }
 
     /**
@@ -374,6 +407,7 @@ class Connection extends BaseConnection
      */
     public function unprepared($query)
     {
+        //
     }
 
     /**
@@ -419,6 +453,7 @@ class Connection extends BaseConnection
      */
     public function transaction(Closure $callback, $attempts = 1)
     {
+        //
     }
 
     /**
@@ -428,6 +463,7 @@ class Connection extends BaseConnection
      */
     public function beginTransaction()
     {
+        //
     }
 
     /**
@@ -437,6 +473,7 @@ class Connection extends BaseConnection
      */
     public function commit()
     {
+        //
     }
 
     /**
@@ -446,6 +483,7 @@ class Connection extends BaseConnection
      */
     public function rollBack($toLevel = null)
     {
+        //
     }
 
     /**
@@ -455,6 +493,7 @@ class Connection extends BaseConnection
      */
     public function transactionLevel()
     {
+        //
     }
 
     /**
@@ -465,6 +504,7 @@ class Connection extends BaseConnection
      */
     public function pretend(Closure $callback)
     {
+        //
     }
 
     /**
