@@ -6,6 +6,7 @@ use DesignMyNight\Elasticsearch\Connection;
 use DesignMyNight\Elasticsearch\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Blueprint as BaseBlueprint;
 use Illuminate\Database\Schema\Grammars\Grammar;
+use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
 use Illuminate\Support\Fluent;
 use Illuminate\Support\Str;
 
@@ -15,6 +16,8 @@ use Illuminate\Support\Str;
  */
 class ElasticsearchGrammar extends Grammar
 {
+    use ConditionallyLoadsAttributes;
+
     /** @var array */
     protected $modifiers = ['Boost', 'Dynamic', 'Fields', 'Format', 'Index', 'Properties'];
 
@@ -27,15 +30,18 @@ class ElasticsearchGrammar extends Grammar
      */
     public function compileCreate(Blueprint $blueprint, Fluent $command, Connection $connection)
     {
-        return [
+        $mapping = [
             [
                 'mappings' => [
-                    $blueprint->getDocument() => [
-                        'properties' => $this->getColumns($blueprint),
-                    ],
+                    $blueprint->getDocument() => array_merge(
+                        ['properties' => $this->getColumns($blueprint)],
+                        $blueprint->getMeta()
+                    ),
                 ],
             ],
         ];
+
+        return $mapping;
     }
 
     /**
@@ -49,10 +55,11 @@ class ElasticsearchGrammar extends Grammar
     {
         return [
             [
-                $blueprint->getDocument() => [
-                    'properties' => $this->getColumns($blueprint),
-                ]
-            ]
+                $blueprint->getDocument() => array_merge(
+                    ['properties' => $this->getColumns($blueprint)],
+                    $blueprint->getMeta()
+                ),
+            ],
         ];
     }
 

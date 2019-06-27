@@ -20,6 +20,9 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     /** @var string */
     protected $document;
 
+    /** @var array */
+    protected $meta = [];
+
     /**
      * @inheritDoc
      */
@@ -36,6 +39,15 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
         );
 
         return $column;
+    }
+
+    /**
+     * @param string $key
+     * @param        $value
+     */
+    public function addMetaField(string $key, $value): void
+    {
+        $this->meta[$key] = $value;
     }
 
     /**
@@ -114,6 +126,30 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
+     * @param bool|string $value
+     */
+    public function dynamic($value): void
+    {
+        $this->addMetaField('dynamic', $value);
+    }
+
+    /**
+     * @return void
+     */
+    public function enableAll(): void
+    {
+        $this->addMetaField('_all', ['enabled' => true]);
+    }
+
+    /**
+     * @return void
+     */
+    public function enableFieldNames(): void
+    {
+        $this->addMetaField('_field_names', ['enabled' => true]);
+    }
+
+    /**
      * @param string $name
      *
      * @return PropertyDefinition
@@ -181,6 +217,14 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
         $timestamp = Carbon::now()->format('Y_m_d_His');
 
         return "{$timestamp}_{$this->getTable()}" . $suffix;
+    }
+
+    /**
+     * @return array
+     */
+    public function getMeta(): array
+    {
+        return $this->meta;
     }
 
     /**
@@ -270,6 +314,14 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
+     * @param array $meta
+     */
+    public function meta(array $meta): void
+    {
+        $this->addMetaField('_meta', $meta);
+    }
+
+    /**
      * @param string   $name
      * @param \Closure $parameters
      *
@@ -312,6 +364,14 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     public function range(string $type, string $name, array $parameters = []): PropertyDefinition
     {
         return $this->addColumn($type, $name, $parameters);
+    }
+
+    /**
+     * @return void
+     */
+    public function routingRequired(): void
+    {
+        $this->addMetaField('_routing', ['required' => true]);
     }
 
     /**
