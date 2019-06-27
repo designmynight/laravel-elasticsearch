@@ -2,7 +2,6 @@
 
 namespace DesignMyNight\Elasticsearch;
 
-use Carbon\Carbon;
 use Closure;
 use DesignMyNight\Elasticsearch\Database\Schema\Blueprint;
 use DesignMyNight\Elasticsearch\Database\Schema\ElasticsearchBuilder;
@@ -11,9 +10,6 @@ use Elasticsearch\ClientBuilder;
 use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\Grammar as BaseGrammar;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class Connection extends BaseConnection
 {
@@ -378,9 +374,16 @@ class Connection extends BaseConnection
 
             if ($blueprint->statement() === 'create') {
                 $this->indices()->create([
-                    'index' => $blueprint->getIndex(),
+                    'index' => $index = $blueprint->getIndex(),
                     'body' => $query,
                 ]);
+
+                if (!$this->indices()->existsAlias(['name' => $blueprint->getAlias()])) {
+                    $this->indices()->putAlias([
+                        'index' => $index,
+                        'name' => $blueprint->getAlias()
+                    ]);
+                }
             } else {
                 $this->indices()->putMapping([
                     'index' => $blueprint->getTable(),

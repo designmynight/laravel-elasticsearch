@@ -161,7 +161,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      */
     public function getAlias(): string
     {
-        return $this->alias ?? $this->getTable();
+        return $this->alias ?? $this->getTable() . Config::get('database.connections.elasticsearch.suffix');
     }
 
     /**
