@@ -183,6 +183,7 @@ class Connection extends BaseConnection
      */
     public function table($table)
     {
+        //
     }
 
     /**
@@ -194,6 +195,7 @@ class Connection extends BaseConnection
      */
     public function raw($value)
     {
+        //
     }
 
     /**
@@ -206,6 +208,7 @@ class Connection extends BaseConnection
      */
     public function selectOne($query, $bindings = [], $useReadPdo = true)
     {
+        //
     }
 
     /**
@@ -408,6 +411,7 @@ class Connection extends BaseConnection
      */
     public function affectingStatement($query, $bindings = [])
     {
+        //
     }
 
     /**
@@ -419,6 +423,7 @@ class Connection extends BaseConnection
      */
     public function unprepared($query)
     {
+        //
     }
 
     /**
@@ -467,6 +472,7 @@ class Connection extends BaseConnection
      */
     public function transaction(Closure $callback, $attempts = 1)
     {
+        //
     }
 
     /**
@@ -476,6 +482,7 @@ class Connection extends BaseConnection
      */
     public function beginTransaction()
     {
+        //
     }
 
     /**
@@ -485,6 +492,7 @@ class Connection extends BaseConnection
      */
     public function commit()
     {
+        //
     }
 
     /**
@@ -494,6 +502,7 @@ class Connection extends BaseConnection
      */
     public function rollBack($toLevel = null)
     {
+        //
     }
 
     /**
@@ -503,6 +512,7 @@ class Connection extends BaseConnection
      */
     public function transactionLevel()
     {
+        //
     }
 
     /**
@@ -514,6 +524,7 @@ class Connection extends BaseConnection
      */
     public function pretend(Closure $callback)
     {
+        //
     }
 
     /**
