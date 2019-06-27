@@ -389,7 +389,7 @@ class Connection extends BaseConnection
                 }
             } else {
                 $this->indices()->putMapping([
-                    'index' => $blueprint->getTable(),
+                    'index' => $blueprint->getAlias(),
                     'type' => $blueprint->getDocument(),
                     'body' => $query,
                 ]);
