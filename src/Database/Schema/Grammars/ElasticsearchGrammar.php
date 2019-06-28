@@ -66,8 +66,6 @@ class ElasticsearchGrammar extends Grammar
         };
     }
 
-
-
     /**
      * @param Blueprint  $blueprint
      * @param Fluent     $command
