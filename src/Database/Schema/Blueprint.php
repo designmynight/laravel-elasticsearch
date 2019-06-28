@@ -207,7 +207,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     /**
      * @return string|null
      */
-    public function getDocument(): ?string
+    public function getDocumentType(): ?string
     {
         return $this->document ?? Str::singular($this->getTable());
     }

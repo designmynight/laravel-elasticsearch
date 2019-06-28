@@ -35,7 +35,7 @@ class ElasticsearchGrammar extends Grammar
                 $index = $blueprint->getIndex(),
                 [
                     'mappings' => [
-                        $blueprint->getDocument() => array_merge(
+                        $blueprint->getDocumentType() => array_merge(
                             ['properties' => $this->getColumns($blueprint)],
                             $blueprint->getMeta()
                         ),
@@ -95,9 +95,9 @@ class ElasticsearchGrammar extends Grammar
         return function (Blueprint $blueprint, Connection $connection): void {
             $connection->updateIndex(
                 $blueprint->getAlias(),
-                $blueprint->getDocument(),
+                $blueprint->getDocumentType(),
                 [
-                    $blueprint->getDocument() => array_merge(
+                    $blueprint->getDocumentType() => array_merge(
                         ['properties' => $this->getColumns($blueprint)],
                         $blueprint->getMeta()
                     ),
