@@ -2,6 +2,7 @@
 
 namespace DesignMyNight\Elasticsearch\Database\Schema\Grammars;
 
+use Closure;
 use DesignMyNight\Elasticsearch\Connection;
 use DesignMyNight\Elasticsearch\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Blueprint as BaseBlueprint;
@@ -25,23 +26,63 @@ class ElasticsearchGrammar extends Grammar
      * @param Blueprint  $blueprint
      * @param Fluent     $command
      * @param Connection $connection
-     *
-     * @return array
+     * @return Closure
      */
-    public function compileCreate(Blueprint $blueprint, Fluent $command, Connection $connection)
+    public function compileCreate(Blueprint $blueprint, Fluent $command, Connection $connection): Closure
     {
-        $mapping = [
-            [
-                'mappings' => [
-                    $blueprint->getDocument() => array_merge(
-                        ['properties' => $this->getColumns($blueprint)],
-                        $blueprint->getMeta()
-                    ),
-                ],
-            ],
-        ];
+        return function (Blueprint $blueprint, Connection $connection): void {
+            $connection->createIndex(
+                $index = $blueprint->getIndex(),
+                [
+                    'mappings' => [
+                        $blueprint->getDocument() => array_merge(
+                            ['properties' => $this->getColumns($blueprint)],
+                            $blueprint->getMeta()
+                        ),
+                    ],
+                ]
+            );
 
-        return $mapping;
+            $alias = $blueprint->getAlias();
+
+            if (!$connection->indices()->existsAlias(['name' => $alias])) {
+                $connection->createAlias($index, $alias);
+            }
+        };
+    }
+
+    /**
+     * @param Blueprint  $blueprint
+     * @param Fluent     $command
+     * @param Connection $connection
+     * @return Closure
+     */
+    public function compileDrop(Blueprint $blueprint, Fluent $command, Connection $connection): Closure
+    {
+        return function (Blueprint $blueprint, Connection $connection): void {
+            $connection->dropIndex(
+                collect($connection->cat()->indices())->sort()->last()['index']
+            );
+        };
+    }
+
+
+
+    /**
+     * @param Blueprint  $blueprint
+     * @param Fluent     $command
+     * @param Connection $connection
+     * @return Closure
+     */
+    public function compileDropIfExists(Blueprint $blueprint, Fluent $command, Connection $connection): Closure
+    {
+        return function (Blueprint $blueprint, Connection $connection): void {
+            $index = collect($connection->cat()->indices())->sort()->last();
+
+            if ($index && Str::contains($index['index'], $blueprint->getTable())) {
+                $connection->dropIndex($index['index']);
+            }
+        };
     }
 
     /**
@@ -49,18 +90,22 @@ class ElasticsearchGrammar extends Grammar
      * @param Fluent     $command
      * @param Connection $connection
      *
-     * @return array
+     * @return Closure
      */
-    public function compileUpdate(Blueprint $blueprint, Fluent $command, Connection $connection)
+    public function compileUpdate(Blueprint $blueprint, Fluent $command, Connection $connection): Closure
     {
-        return [
-            [
-                $blueprint->getDocument() => array_merge(
-                    ['properties' => $this->getColumns($blueprint)],
-                    $blueprint->getMeta()
-                ),
-            ],
-        ];
+        return function (Blueprint $blueprint, Connection $connection): void {
+            $connection->updateIndex(
+                $blueprint->getAlias(),
+                $blueprint->getDocument(),
+                [
+                    $blueprint->getDocument() => array_merge(
+                        ['properties' => $this->getColumns($blueprint)],
+                        $blueprint->getMeta()
+                    ),
+                ]
+            );
+        };
     }
 
     /**

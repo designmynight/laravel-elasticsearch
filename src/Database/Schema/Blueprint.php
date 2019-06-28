@@ -80,7 +80,11 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     public function build(Connection $connection, Grammar $grammar)
     {
         foreach ($this->toSql($connection, $grammar) as $statement) {
-            $connection->statement($statement, [], $this);
+            if ($connection->pretending()) {
+                return;
+            }
+
+            $statement($this, $connection);
         }
     }
 
@@ -402,6 +406,35 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     public function text($name, array $parameters = []): PropertyDefinition
     {
         return $this->addColumn('text', $name, $parameters);
+    }
+
+    /**
+     * @param Connection $connection
+     * @param Grammar    $grammar
+     * @return \Closure[]
+     */
+    public function toSql(Connection $connection, Grammar $grammar)
+    {
+        $this->addImpliedCommands($grammar);
+
+        $statements = [];
+
+        // Each type of command has a corresponding compiler function on the schema
+        // grammar which is used to build the necessary SQL statements to build
+        // the blueprint element, so we'll just call that compilers function.
+        $this->ensureCommandsAreValid($connection);
+
+        foreach ($this->commands as $command) {
+            $method = 'compile' . ucfirst($command->name);
+
+            if (method_exists($grammar, $method)) {
+                if (!is_null($statement = $grammar->$method($this, $command, $connection))) {
+                    $statements[] = $statement;
+                }
+            }
+        }
+
+        return $statements;
     }
 
     /**
