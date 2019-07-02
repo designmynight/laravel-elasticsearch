@@ -22,7 +22,6 @@ class TestCase extends BaseTestCase
     public function tearDown()
     {
         parent::tearDown();
-        Carbon::setTestNow();
     }
 
     /**

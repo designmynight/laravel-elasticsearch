@@ -201,13 +201,13 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      */
     public function getAlias(): string
     {
-        return $this->alias ?? $this->getTable() . Config::get('database.connections.elasticsearch.suffix');
+        return ($this->alias ?? $this->getTable()) . Config::get('database.connections.elasticsearch.suffix');
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getDocumentType(): ?string
+    public function getDocumentType(): string
     {
         return $this->document ?? Str::singular($this->getTable());
     }
@@ -376,14 +376,6 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     public function routingRequired(): void
     {
         $this->addMetaField('_routing', ['required' => true]);
-    }
-
-    /**
-     * @return string
-     */
-    public function statement(): string
-    {
-        return $this->getCommands()[0]->name;
     }
 
     /**
