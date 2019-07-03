@@ -106,11 +106,11 @@ class ElasticsearchGrammarTest extends TestCase
     }
 
     /**
-     * It returns a closure that will drop and index.
+     * It returns a closure that will drop an index.
      * @test
      * @covers \DesignMyNight\Elasticsearch\Database\Schema\Grammars\ElasticsearchGrammar::compileDrop
      */
-    public function it_returns_a_closure_that_will_drop_and_index()
+    public function it_returns_a_closure_that_will_drop_an_index()
     {
         $index = '2019_06_03_120000_indices_dev';
 
@@ -133,5 +133,48 @@ class ElasticsearchGrammarTest extends TestCase
         $this->assertInstanceOf(Closure::class, $executable);
 
         $executable($this->blueprint, $this->connection);
+    }
+
+    /**
+     * It returns a closure that will drop an index if it exists.
+     * @test
+     * @covers \DesignMyNight\Elasticsearch\Database\Schema\Grammars\ElasticsearchGrammar::compileDropIfExists
+     * @dataProvider compile_drop_if_exists_data_provider
+     */
+    public function it_returns_a_closure_that_will_drop_an_index_if_it_exists($table, $times)
+    {
+        $index = '2019_06_03_120000_indices_dev';
+        $this->blueprint = new Blueprint($table);
+
+        /** @var CatNamespace|m\CompositeExpectation $catNamespace */
+        $catNamespace = m::mock(CatNamespace::class);
+        $catNamespace->shouldReceive('indices')->andReturn([
+            ['index' => $index]
+        ]);
+
+        /** @var IndicesNamespace|m\CompositeExpectation $indicesNamespace */
+        $indicesNamespace = m::mock(IndicesNamespace::class);
+        $indicesNamespace->shouldReceive('delete')->times($times)->with(['index' => $index]);
+
+        $this->connection->shouldReceive('indices')->andReturn($indicesNamespace);
+        $this->connection->shouldReceive('cat')->once()->andReturn($catNamespace);
+        $this->connection->shouldReceive('dropIndex')->times($times)->with($index)->passthru();
+
+        $executable = $this->grammar->compileDropIfExists(new Blueprint(''), new Fluent(), $this->connection);
+
+        $this->assertInstanceOf(Closure::class, $executable);
+
+        $executable($this->blueprint, $this->connection);
+    }
+
+    /**
+     * compileDropIfExists data provider.
+     */
+    public function compile_drop_if_exists_data_provider(): array
+    {
+        return [
+            'it exists' => ['indices', 1],
+            'it does not exists' => ['books', 0]
+        ];
     }
 }
