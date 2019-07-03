@@ -10,6 +10,7 @@ use Elasticsearch\ClientBuilder;
 use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\Grammar as BaseGrammar;
+use Illuminate\Support\Arr;
 
 class Connection extends BaseConnection
 {
@@ -35,11 +36,10 @@ class Connection extends BaseConnection
         $this->indexSuffix = $config['suffix'] ?? '';
 
         // Extract the hosts from config
-        $hostsConfig = $config['hosts'] ?? $config['host'];
-        $hosts = explode(',', $hostsConfig);
+        $hosts = explode(',', $config['hosts'] ?? $config['host']);
 
         // You can pass options directly to the client
-        $options = array_get($config, 'options', []);
+        $options = Arr::get($config, 'options', []);
 
         // Create the connection
         $this->connection = $this->createConnection($hosts, $config, $options);
