@@ -104,4 +104,34 @@ class ElasticsearchGrammarTest extends TestCase
 
         $executable($blueprint, $this->connection);
     }
+
+    /**
+     * It returns a closure that will drop and index.
+     * @test
+     * @covers \DesignMyNight\Elasticsearch\Database\Schema\Grammars\ElasticsearchGrammar::compileDrop
+     */
+    public function it_returns_a_closure_that_will_drop_and_index()
+    {
+        $index = '2019_06_03_120000_indices_dev';
+
+        /** @var CatNamespace|m\CompositeExpectation $catNamespace */
+        $catNamespace = m::mock(CatNamespace::class);
+        $catNamespace->shouldReceive('indices')->andReturn([
+            ['index' => $index]
+        ]);
+
+        /** @var IndicesNamespace|m\CompositeExpectation $indicesNamespace */
+        $indicesNamespace = m::mock(IndicesNamespace::class);
+        $indicesNamespace->shouldReceive('delete')->once()->with(['index' => $index]);
+
+        $this->connection->shouldReceive('cat')->andReturn($catNamespace);
+        $this->connection->shouldReceive('indices')->andReturn($indicesNamespace);
+        $this->connection->shouldReceive('dropIndex')->once()->with($index)->passthru();
+
+        $executable = $this->grammar->compileDrop(new Blueprint(''), new Fluent(), $this->connection);
+
+        $this->assertInstanceOf(Closure::class, $executable);
+
+        $executable($this->blueprint, $this->connection);
+    }
 }
