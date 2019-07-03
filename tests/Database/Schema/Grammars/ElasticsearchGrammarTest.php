@@ -138,7 +138,7 @@ class ElasticsearchGrammarTest extends TestCase
     /**
      * It returns a closure that will drop an index if it exists.
      * @test
-     * @covers \DesignMyNight\Elasticsearch\Database\Schema\Grammars\ElasticsearchGrammar::compileDropIfExists
+     * @covers       \DesignMyNight\Elasticsearch\Database\Schema\Grammars\ElasticsearchGrammar::compileDropIfExists
      * @dataProvider compile_drop_if_exists_data_provider
      */
     public function it_returns_a_closure_that_will_drop_an_index_if_it_exists($table, $times)
@@ -176,5 +176,39 @@ class ElasticsearchGrammarTest extends TestCase
             'it exists' => ['indices', 1],
             'it does not exists' => ['books', 0]
         ];
+    }
+
+    /**
+     * It returns a closure that will update an index mapping.
+     * @test
+     * @covers \DesignMyNight\Elasticsearch\Database\Schema\Grammars\ElasticsearchGrammar::compileUpdate
+     */
+    public function it_returns_a_closure_that_will_update_an_index_mapping()
+    {
+        $this->blueprint->text('title');
+        $this->blueprint->date('date');
+        $this->blueprint->keyword('status');
+
+        $this->connection->shouldReceive('updateIndex')->once()->with('indices_dev', 'index', [
+            'index' => [
+                'properties' => [
+                    'title' => [
+                        'type' => 'text'
+                    ],
+                    'date' => [
+                        'type' => 'date'
+                    ],
+                    'status' => [
+                        'type' => 'keyword'
+                    ]
+                ]
+            ]
+        ]);
+
+        $executable = $this->grammar->compileUpdate(new Blueprint(''), new Fluent(), $this->connection);
+
+        $this->assertInstanceOf(Closure::class, $executable);
+
+        $executable($this->blueprint, $this->connection);
     }
 }
