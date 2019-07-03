@@ -211,4 +211,82 @@ class ElasticsearchGrammarTest extends TestCase
 
         $executable($this->blueprint, $this->connection);
     }
+
+    /**
+     * It generates a mapping.
+     * @test
+     * @covers \DesignMyNight\Elasticsearch\Database\Schema\Grammars\ElasticsearchGrammar::getColumns
+     */
+    public function it_generates_a_mapping()
+    {
+        $this->blueprint->join('joins', ['parent' => 'child']);
+        $this->blueprint->text('title')->fields(function (Blueprint $field) {
+            $field->keyword('raw');
+        });
+        $this->blueprint->date('start_date');
+        $this->blueprint->boolean('is_closed');
+        $this->blueprint->keyword('status');
+        $this->blueprint->float('price');
+        $this->blueprint->integer('total_reviews');
+        $this->blueprint->object('location')->properties(function (Blueprint $mapping) {
+            $mapping->text('address');
+            $mapping->text('postcode');
+            $mapping->geoPoint('coordinates');
+        });
+
+        $expected = [
+            'joins' => [
+                'type' => 'join',
+                'relations' => [
+                    'parent' => 'child'
+                ],
+            ],
+            'title' => [
+                'type' => 'text',
+                'fields' => [
+                    'raw' => [
+                        'type' => 'keyword'
+                    ]
+                ]
+            ],
+            'start_date' => [
+                'type' => 'date'
+            ],
+            'is_closed' => [
+                'type' => 'boolean'
+            ],
+            'status' => [
+                'type' => 'keyword'
+            ],
+            'price' => [
+                'type' => 'float'
+            ],
+            'total_reviews' => [
+                'type' => 'integer'
+            ],
+            'location' => [
+                'properties' => [
+                    'address' => [
+                        'type' => 'text',
+                    ],
+                    'postcode' => [
+                        'type' => 'text'
+                    ],
+                    'coordinates' => [
+                        'type' => 'geo_point'
+                    ]
+                ]
+            ]
+        ];
+
+        $grammar = new class extends ElasticsearchGrammar
+        {
+            public function outputMapping(Blueprint $blueprint)
+            {
+                return $this->getColumns($blueprint);
+            }
+        };
+
+        $this->assertEquals($expected, $grammar->outputMapping($this->blueprint));
+    }
 }
