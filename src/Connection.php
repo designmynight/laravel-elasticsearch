@@ -581,7 +581,7 @@ class Connection extends BaseConnection
         try {
             $result = $callback($query, $bindings);
         } catch (\Exception $e) {
-            throw new QueryException($query, null, $e);
+            throw new QueryException($query, $bindings, $e);
         }
 
         return $result;
