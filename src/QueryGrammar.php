@@ -807,18 +807,15 @@ class QueryGrammar extends BaseGrammar
      */
     protected function compileFilterAggregation(array $aggregation): array
     {
-        $compiled = [];
-
         $filter = $this->compileWheres($aggregation['args']);
 
         $filters = $filter['filter'] ?? [];
-
         $query = $filter['query'] ?? [];
 
         $allFilters = array_merge($query, $filters);
 
         $compiled = [
-            'filter' => $allFilters ?: (object) []
+            'filter' => $allFilters ?: ['match_all' => (object) []]
         ];
 
         return $compiled;
