@@ -255,11 +255,12 @@ class QueryGrammar extends BaseGrammar
     {
         $compiled = $this->compileWheres($where['value']);
 
-        $relationshipFilter = 'has_' . $relationship;
+        $relationshipFilter = "has_{$relationship}";
+        $type = $relationship === 'parent' ? 'parent_type' : 'type';
 
         $query = [
             $relationshipFilter => [
-                'type'  => $where['documentType'],
+                $type  => $where['documentType'],
                 'query' => $compiled['query'],
             ],
         ];
