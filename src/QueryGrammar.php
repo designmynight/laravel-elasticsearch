@@ -814,11 +814,9 @@ class QueryGrammar extends BaseGrammar
 
         $allFilters = array_merge($query, $filters);
 
-        $compiled = [
+        return [
             'filter' => $allFilters ?: ['match_all' => (object) []]
         ];
-
-        return $compiled;
     }
 
     /**
