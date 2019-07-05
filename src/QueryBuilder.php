@@ -184,7 +184,7 @@ class QueryBuilder extends BaseBuilder
      * Add a 'nested document' statement to the query.
      *
      * @param  string  $column
-     * @param  \Illuminate\Database\Query\Builder|static $query
+     * @param  callable|\Illuminate\Database\Query\Builder|static $query
      * @param  string  $boolean
      * @return self
      */
