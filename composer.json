@@ -12,7 +12,8 @@
     "license" : "MIT",
     "require": {
         "php": "^7.1",
-        "elasticsearch/elasticsearch": "^5.2",
+        "ext-json": "*",
+        "elasticsearch/elasticsearch": "^6.7",
         "laravel/framework": "^5.7"
     },
     "require-dev": {

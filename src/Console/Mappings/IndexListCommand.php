@@ -54,14 +54,12 @@ class IndexListCommand extends Command
         }
 
         if ($indices = $this->getIndices()) {
-            if (empty($indices)) {
-                $this->line('No indexes were found.');
-
-                return;
-            }
-
             $this->table(array_keys($indices[0]), $indices);
+
+            return;
         }
+
+        $this->line('No indices found.');
     }
 
     /**
