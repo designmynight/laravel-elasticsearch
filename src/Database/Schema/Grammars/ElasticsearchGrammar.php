@@ -31,12 +31,10 @@ class ElasticsearchGrammar extends Grammar
             $connection->createIndex(
                 $index = $blueprint->getIndex(),
                 [
-                    'mappings' => [
-                        $blueprint->getDocumentType() => array_merge(
-                            ['properties' => $this->getColumns($blueprint)],
-                            $blueprint->getMeta()
-                        ),
-                    ],
+                    'mappings' => array_merge(
+                        ['properties' => $this->getColumns($blueprint)],
+                        $blueprint->getMeta()
+                    ),
                 ]
             );
 
