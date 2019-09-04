@@ -1079,7 +1079,6 @@ class QueryGrammar extends BaseGrammar
                     $params['body'][] = [
                         'index' => [
                             '_index' => $builder->from . $this->indexSuffix,
-                            '_type'  => $childDoc['type'] ?? $builder->type,
                             '_id'    => $childDoc['id'],
                             'parent' => $doc['id'],
                         ]
@@ -1093,7 +1092,6 @@ class QueryGrammar extends BaseGrammar
 
             $index = [
                 '_index' => $builder->from . $this->indexSuffix,
-                '_type'  => $builder->type,
                 '_id'    => $doc['id'],
             ];
 
