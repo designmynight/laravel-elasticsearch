@@ -243,6 +243,16 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * @param string $name
+     *
+     * @return PropertyDefinition
+     */
+    public function long($name): PropertyDefinition
+    {
+        return $this->addColumn('long', $name);
+    }
+
+    /**
+     * @param string $name
      * @param array  $parameters
      *
      * @return PropertyDefinition
