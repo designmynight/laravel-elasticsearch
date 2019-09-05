@@ -5,3 +5,9 @@ services:
     entrypoint: ["phpcbf"]
     volumes:
       - .:/opt
+  unit-tests:
+    image: designmynight/php7.1-cli-mongo
+    command: phpdbg -qrr ./vendor/bin/phpunit
+    volumes:
+      - .:/opt
+    working_dir: /opt
