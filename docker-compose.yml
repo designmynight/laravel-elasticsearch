@@ -1,13 +1,27 @@
 version: '3'
 services:
+  style-enforcer:
+    image: designmynight/php7.1-style-enforcer:latest
+    volumes:
+      - .:/opt
   style-fixer:
     image: designmynight/php7.1-style-enforcer:latest
     entrypoint: ["phpcbf"]
     volumes:
       - .:/opt
+
   unit-tests:
     image: designmynight/php7.1-cli-mongo
     command: phpdbg -qrr ./vendor/bin/phpunit
+    volumes:
+      - .:/opt
+    working_dir: /opt
+
+  composer:
+    build:
+      context: .
+      dockerfile: Dockerfile.composer
+    command: composer -o install
     volumes:
       - .:/opt
     working_dir: /opt
