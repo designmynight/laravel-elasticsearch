@@ -1095,7 +1095,11 @@ class QueryGrammar extends BaseGrammar
                 '_id'    => $doc['id'],
             ];
 
-            if ($routing = $builder->getRouting()) {
+            if(isset($doc['_routing'])) {
+                $index['routing'] = $doc['_routing'];
+                unset($doc['_routing']);
+            }
+            else if ($routing = $builder->getRouting()) {
                 $index['routing'] = $routing;
             }
 
