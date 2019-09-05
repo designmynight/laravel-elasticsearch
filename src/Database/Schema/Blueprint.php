@@ -243,16 +243,6 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * @param string $name
-     *
-     * @return PropertyDefinition
-     */
-    public function long($name): PropertyDefinition
-    {
-        return $this->addColumn('long', $name);
-    }
-
-    /**
-     * @param string $name
      * @param array  $parameters
      *
      * @return PropertyDefinition
@@ -314,6 +304,16 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     public function keyword(string $name, array $parameters = []): PropertyDefinition
     {
         return $this->addColumn('keyword', $name, $parameters);
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return PropertyDefinition
+     */
+    public function long($name):PropertyDefinition
+    {
+        return $this->addColumn('long', $name);
     }
 
     /**
