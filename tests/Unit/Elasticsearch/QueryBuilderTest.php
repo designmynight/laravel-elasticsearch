@@ -34,13 +34,13 @@ class QueryBuilderTest extends TestCase
      * @test
      * @dataProvider whereParentIdProvider
      */
-    public function adds_parent_id_to_wheres_clause(string $name, $id, string $boolean):void
+    public function adds_parent_id_to_wheres_clause(string $parentType, $id, string $boolean):void
     {
-        $this->builder->whereParentId($name, $id, $boolean);
+        $this->builder->whereParentId($parentType, $id, $boolean);
 
         $this->assertEquals([
             'type' => 'ParentId',
-            'name' => $name,
+            'name' => $parentType,
             'id' => $id,
             'boolean' => $boolean,
         ], $this->builder->wheres[0]);

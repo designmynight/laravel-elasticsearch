@@ -308,7 +308,7 @@ class QueryGrammar extends BaseGrammar
     protected function compileWhereParentId(Builder $builder, array $where) {
         return [
             'parent_id' => [
-                'type' => $where['name'],
+                'type' => $where['relationType'],
                 'id'   => $where['id'],
             ],
         ];
