@@ -300,6 +300,20 @@ class QueryGrammar extends BaseGrammar
         return $this->applyWhereRelationship($builder, $where, 'parent');
     }
 
+    /**
+     * @param Builder $builder
+     * @param array   $where
+     * @return array
+     */
+    protected function compileWhereParentId(Builder $builder, array $where) {
+        return [
+            'parent_id' => [
+                'type' => $where['name'],
+                'id'   => $where['id'],
+            ],
+        ];
+    }
+
     protected function compileWherePrefix(Builder $builder, array $where): array
     {
         $query = [
