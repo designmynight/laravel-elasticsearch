@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\Unit\Database\Schema;
+
 use Carbon\Carbon;
 use DesignMyNight\Elasticsearch\Database\Schema\Blueprint;
 use Tests\TestCase;

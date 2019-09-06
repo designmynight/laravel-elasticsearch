@@ -1,6 +1,9 @@
 <?php
 
+namespace Tests\Unit\Database\Schema\Grammars;
+
 use Carbon\Carbon;
+use Closure;
 use DesignMyNight\Elasticsearch\Connection;
 use DesignMyNight\Elasticsearch\Database\Schema\Blueprint;
 use DesignMyNight\Elasticsearch\Database\Schema\Grammars\ElasticsearchGrammar;
