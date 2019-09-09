@@ -473,12 +473,11 @@ class Connection extends BaseConnection
 
     /**
      * @param string $index
-     * @param string $type
      * @param array  $body
      */
-    public function updateIndex(string $index, string $type, array $body): void
+    public function updateIndex(string $index, array $body): void
     {
-        $this->indices()->putMapping(compact('index', 'type', 'body'));
+        $this->indices()->putMapping(compact('index', 'body'));
     }
 
     /**

@@ -90,13 +90,10 @@ class ElasticsearchGrammar extends Grammar
         return function (Blueprint $blueprint, Connection $connection): void {
             $connection->updateIndex(
                 $blueprint->getAlias(),
-                $blueprint->getDocumentType(),
-                [
-                    $blueprint->getDocumentType() => array_merge(
-                        ['properties' => $this->getColumns($blueprint)],
-                        $blueprint->getMeta()
-                    ),
-                ]
+                array_merge(
+                    ['properties' => $this->getColumns($blueprint)],
+                    $blueprint->getMeta()
+                )
             );
         };
     }
