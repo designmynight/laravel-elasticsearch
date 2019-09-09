@@ -13,7 +13,7 @@
     "require": {
         "php": "^7.1",
         "ext-json": "*",
-        "elasticsearch/elasticsearch": "^6.7 || ^7.0",
+        "elasticsearch/elasticsearch": "^7.0",
         "laravel/framework": "^5.7"
     },
     "require-dev": {

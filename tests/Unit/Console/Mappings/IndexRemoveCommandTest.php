@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Console\Mappings;
+namespace Tests\Unit\Console\Mappings;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\IndexRemoveCommand;
 use Elasticsearch\Client;

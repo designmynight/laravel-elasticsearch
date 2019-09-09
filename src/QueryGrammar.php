@@ -300,6 +300,20 @@ class QueryGrammar extends BaseGrammar
         return $this->applyWhereRelationship($builder, $where, 'parent');
     }
 
+    /**
+     * @param Builder $builder
+     * @param array   $where
+     * @return array
+     */
+    protected function compileWhereParentId(Builder $builder, array $where) {
+        return [
+            'parent_id' => [
+                'type' => $where['relationType'],
+                'id'   => $where['id'],
+            ],
+        ];
+    }
+
     protected function compileWherePrefix(Builder $builder, array $where): array
     {
         $query = [
@@ -1079,7 +1093,6 @@ class QueryGrammar extends BaseGrammar
                     $params['body'][] = [
                         'index' => [
                             '_index' => $builder->from . $this->indexSuffix,
-                            '_type'  => $childDoc['type'] ?? $builder->type,
                             '_id'    => $childDoc['id'],
                             'parent' => $doc['id'],
                         ]
@@ -1093,11 +1106,14 @@ class QueryGrammar extends BaseGrammar
 
             $index = [
                 '_index' => $builder->from . $this->indexSuffix,
-                '_type'  => $builder->type,
                 '_id'    => $doc['id'],
             ];
 
-            if ($routing = $builder->getRouting()) {
+            if(isset($doc['_routing'])) {
+                $index['routing'] = $doc['_routing'];
+                unset($doc['_routing']);
+            }
+            else if($routing = $builder->getRouting()) {
                 $index['routing'] = $routing;
             }
 

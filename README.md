@@ -7,6 +7,15 @@ Build Elasticsearch queries as you're used to with Eloquent, and get Model insta
 - Build and perform complex aggregations on your data
 - Use the Elasticsearch scroll API to retrieve large numbers of results 
 
+## Versions
+Depending on your version of Elasticsearch you can use the following version of this package
+
+| Elasticsearch | Laravel Elasticsearch |
+|:--------------|:----------------------|
+|>= 7.0, < 7.1  | 6                     |
+|>= 6.6, < 7.0  | 5                     |
+|>= 5.0, < 6.0  | 4                     |
+
 ## Setup
 Add elasticsearch connection configuration to database.php
 ```

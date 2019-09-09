@@ -1,6 +1,9 @@
 <?php
 
+namespace Tests\Unit\Database\Schema\Grammars;
+
 use Carbon\Carbon;
+use Closure;
 use DesignMyNight\Elasticsearch\Connection;
 use DesignMyNight\Elasticsearch\Database\Schema\Blueprint;
 use DesignMyNight\Elasticsearch\Database\Schema\Grammars\ElasticsearchGrammar;
@@ -63,19 +66,17 @@ class ElasticsearchGrammarTest extends TestCase
         $index = '2019_07_02_120000_indices_dev';
         $mapping = [
             'mappings' => [
-                'index' => [
-                    'properties' => [
-                        'title' => [
-                            'type' => 'text',
-                            'fields' => [
-                                'raw' => [
-                                    'type' => 'keyword'
-                                ]
+                'properties' => [
+                    'title' => [
+                        'type' => 'text',
+                        'fields' => [
+                            'raw' => [
+                                'type' => 'keyword'
                             ]
-                        ],
-                        'date' => [
-                            'type' => 'date'
                         ]
+                    ],
+                    'date' => [
+                        'type' => 'date'
                     ]
                 ]
             ]

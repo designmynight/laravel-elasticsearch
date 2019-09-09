@@ -446,6 +446,24 @@ class QueryBuilder extends BaseBuilder
     }
 
     /**
+     * @param string $parentType Name of the parent relation from the join mapping
+     * @param mixed  $id
+     * @param string $boolean
+     * @return QueryBuilder
+     */
+    public function whereParentId(string $parentType, $id, string $boolean = 'and'): self
+    {
+        $this->wheres[] = [
+            'type' => 'ParentId',
+            'parentType' => $parentType,
+            'id' => $id,
+            'boolean' => $boolean,
+        ];
+
+        return $this;
+    }
+
+    /**
      * Add a where parent statement to the query.
      *
      * @param  string  $documentType
