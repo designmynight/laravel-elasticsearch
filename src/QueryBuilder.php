@@ -678,7 +678,9 @@ class QueryBuilder extends BaseBuilder
             $this->runPaginationCountQuery();
         }
 
-        return $this->processor->getRawResponse()['hits']['total'];
+        $total = $this->processor->getRawResponse()['hits']['total'];
+
+        return is_array($total) ? $total['value'] : $total;
     }
 
     /**
