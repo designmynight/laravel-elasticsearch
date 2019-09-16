@@ -428,24 +428,6 @@ class QueryBuilder extends BaseBuilder
     }
 
     /**
-     * Add a type clause to the query.
-     *
-     * @param  string  $documentType
-     * @param  string  $boolean
-     * @return \Illuminate\Database\Query\Builder|static
-     */
-    public function whereType($documentType, $boolean = 'and')
-    {
-        $this->wheres[] = [
-            'type' => 'Type',
-            'value' => $documentType,
-            'boolean' => $boolean
-        ];
-
-        return $this;
-    }
-
-    /**
      * @param string $parentType Name of the parent relation from the join mapping
      * @param mixed  $id
      * @param string $boolean

@@ -271,24 +271,6 @@ class QueryGrammar extends BaseGrammar
     }
 
     /**
-     * Compile a type clause
-     *
-     * @param  Builder  $builder
-     * @param  array  $where
-     * @return array
-     */
-    protected function compileWhereType(Builder $builder, array $where): array
-    {
-        $query = [
-            'type' => [
-                'value' => $where['value']
-            ]
-        ];
-
-        return $query;
-    }
-
-    /**
      * Compile a parent clause
      *
      * @param  Builder  $builder
