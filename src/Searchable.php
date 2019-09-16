@@ -194,12 +194,11 @@ trait Searchable
         return new Collection($models);
     }
 
+    /**
+     * @return EloquentBuilder
+     */
     public static function newElasticsearchQuery(): EloquentBuilder
     {
-        $model = new static();
-
-        return $model
-            ->on(static::getElasticsearchConnectionName())
-            ->whereType($model->getSearchType());
+        return static::on(static::getElasticsearchConnectionName());
     }
 }
