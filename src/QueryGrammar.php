@@ -5,6 +5,7 @@ namespace DesignMyNight\Elasticsearch;
 use DateTime;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar as BaseGrammar;
+use InvalidArgumentException;
 use MongoDB\BSON\ObjectID;
 
 class QueryGrammar extends BaseGrammar
@@ -261,7 +262,9 @@ class QueryGrammar extends BaseGrammar
         // pass filter to query if empty allowing a filter interface to be used in relation query
         // otherwise match all in relation query
         if(empty($compiled['query'])) {
-            $compiled['query'] = !empty($compiled['filter']) ? $compiled['filter'] : ['match_all' => (object) []];
+            $compiled['query'] = empty($compiled['filter']) ? ['match_all' => (object) []] : $compiled['filter'];
+        } else if(!empty($compiled['filter'])) {
+            throw new InvalidArgumentException('Cannot use both filter and query contexts within a relation context');
         }
 
         $query = [
