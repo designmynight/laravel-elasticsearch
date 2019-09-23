@@ -258,6 +258,12 @@ class QueryGrammar extends BaseGrammar
         $relationshipFilter = "has_{$relationship}";
         $type = $relationship === 'parent' ? 'parent_type' : 'type';
 
+        // pass filter to query if empty allowing a filter interface to be used in relation query
+        // otherwise match all in relation query
+        if(empty($compiled['query'])) {
+            $compiled['query'] = !empty($compiled['filter']) ? $compiled['filter'] : ['match_all' => (object) []];
+        }
+
         $query = [
             $relationshipFilter => [
                 $type  => $where['documentType'],
