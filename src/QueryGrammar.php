@@ -1135,7 +1135,6 @@ class QueryGrammar extends BaseGrammar
     {
         $params = [
             'index' => $builder->from . $this->indexSuffix,
-            'type'  => $builder->type,
             'id'    => (string) $builder->wheres[0]['value']
         ];
 
