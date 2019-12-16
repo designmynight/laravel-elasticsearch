@@ -11,6 +11,9 @@ class ElasticsearchExceptionTest extends TestCase
     /** @var ElasticsearchException */
     private $exception;
 
+    /** @var array */
+    private $rawErrorMessage;
+
     /**
      * @test
      */
@@ -33,33 +36,40 @@ class ElasticsearchExceptionTest extends TestCase
         $this->assertSame('index_not_found_exception: no such index [bob]', (string) $this->exception);
     }
 
+    /**
+     * @test
+     */
+    public function returns_the_raw_error_message_as_an_array( ):void {
+        $this->assertSame($this->rawErrorMessage, $this->exception->getRaw());
+    }
+
     protected function setUp()
     {
         parent::setUp();
 
-        $message = json_encode(
-            [
-                "error"  => [
-                    "root_cause"    => [
-                        [
-                            "type"          => "index_not_found_exception",
-                            "reason"        => "no such index [bob]",
-                            "resource.type" => "index_or_alias",
-                            "resource.id"   => "bob",
-                            "index_uuid"    => "_na_",
-                            "index"         => "bob",
-                        ],
+        $this->rawErrorMessage = [
+            "error"  => [
+                "root_cause"    => [
+                    [
+                        "type"          => "index_not_found_exception",
+                        "reason"        => "no such index [bob]",
+                        "resource.type" => "index_or_alias",
+                        "resource.id"   => "bob",
+                        "index_uuid"    => "_na_",
+                        "index"         => "bob",
                     ],
-                    "type"          => "index_not_found_exception",
-                    "reason"        => "no such index [bob]",
-                    "resource.type" => "index_or_alias",
-                    "resource.id"   => "bob",
-                    "index_uuid"    => "_na_",
-                    "index"         => "bob",
                 ],
-                "status" => 404,
-            ]
-        );
+                "type"          => "index_not_found_exception",
+                "reason"        => "no such index [bob]",
+                "resource.type" => "index_or_alias",
+                "resource.id"   => "bob",
+                "index_uuid"    => "_na_",
+                "index"         => "bob",
+            ],
+            "status" => 404,
+        ];
+
+        $message = json_encode($this->rawErrorMessage);
 
         $this->exception = new ElasticsearchException(new Missing404Exception($message));
     }
