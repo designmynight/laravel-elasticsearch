@@ -24,11 +24,6 @@ class IndexCopyCommand extends Command
     protected $signature = 'index:copy {from} {to}';
 
     /**
-     * @var int
-     */
-    protected $batchSize = 1000;
-
-    /**
      * Execute the console command.
      *
      * @return void
