@@ -23,6 +23,9 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     /** @var array */
     protected $meta = [];
 
+    /** @var array */
+    protected $indexSettings = [];
+
     /**
      * @inheritDoc
      */
@@ -39,6 +42,15 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
         );
 
         return $column;
+    }
+
+    /**
+     * @param string $key
+     * @param array  $value
+     */
+    public function addIndexSettings(string $key, array $value): void
+    {
+        $this->indexSettings[$key] = $value;
     }
 
     /**
@@ -221,6 +233,14 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
         $timestamp = Carbon::now()->format('Y_m_d_His');
 
         return "{$timestamp}_{$this->getTable()}" . $suffix;
+    }
+
+    /**
+     * @return array
+     */
+    public function getIndexSettings(): array
+    {
+        return $this->indexSettings;
     }
 
     /**

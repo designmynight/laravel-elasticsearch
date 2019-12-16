@@ -28,14 +28,16 @@ class ElasticsearchGrammar extends Grammar
     public function compileCreate(Blueprint $blueprint, Fluent $command, Connection $connection): Closure
     {
         return function (Blueprint $blueprint, Connection $connection): void {
+            $body = [
+                'mappings' => array_merge(['properties' => $this->getColumns($blueprint)], $blueprint->getMeta()),
+            ];
+
+            if ($settings = $blueprint->getSettings()) {
+                $body['settings'] = $settings;
+            }
+
             $connection->createIndex(
-                $index = $blueprint->getIndex(),
-                [
-                    'mappings' => array_merge(
-                        ['properties' => $this->getColumns($blueprint)],
-                        $blueprint->getMeta()
-                    ),
-                ]
+                $index = $blueprint->getIndex(), $body
             );
 
             $alias = $blueprint->getAlias();
