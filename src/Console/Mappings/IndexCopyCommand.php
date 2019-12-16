@@ -2,6 +2,8 @@
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
+use DesignMyNight\Elasticsearch\Support\ElasticsearchException;
+use Elasticsearch\Common\Exceptions\ElasticsearchException as ElasticsearchExceptionInterface;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -35,51 +37,53 @@ class IndexCopyCommand extends Command
     {
         ['from' => $fromIndex, 'to' => $toIndex] = $this->arguments();
 
-        $bulkParams = ['body' => []];
         $connection = DB::connection('elasticsearch');
 
-        $query = [
-            'index' => $fromIndex,
-            'size' => 0,
-            'body' => [
-                'query' => [
-                    'match_all' => (object) []
-                ],
+        $body = [
+            'source' => [
+                'index' => $fromIndex,
+            ],
+            'dest' => [
+                'index' => $toIndex,
             ],
         ];
 
-        $numResults = $connection->select($query)['hits']['total'];
-        $bar = $this->output->createProgressBar($numResults);
-        $bar->start();
+        try {
+            $this->output->write("Copying ${fromIndex} to ${toIndex}...", true);
 
-        foreach ($connection->cursor($query) as $i => $doc) {
-            $indexParams = [
-                'index' => [
-                    '_index' => $toIndex,
-                    '_type' => $doc['_type'],
-                    '_id' => $doc['_id'],
-                ],
-            ];
+            $result = $connection->reindex([
+                'body' => json_encode($body),
+            ]);
+        } catch (ElasticsearchExceptionInterface $e) {
+            $e = new ElasticsearchException($e);
 
-            if (isset($doc['_parent'])) {
-                $indexParams['index']['parent'] = $doc['_parent'];
-            }
+            $this->output->error((string) $e);
 
-            $bulkParams['body'][] = $indexParams;
-            $bulkParams['body'][] = $doc['_source'];
-
-            if (($i + 1) % $this->batchSize === 0) {
-                $responses = $connection->insert($bulkParams);
-                $bulkParams = ['body' => []];
-
-                $bar->advance($this->batchSize);
-            }
+            return;
         }
 
-        if (! empty($bulkParams['body'])) {
-            $responses = $connection->insert($bulkParams);
+        $this->reportResult($result);
+    }
+
+    /**
+     * @param $result
+     */
+    private function reportResult($result): void
+    {
+        // report any failures
+        if ($result['failures']) {
+            $this->output->warning('Failures');
+            $this->output->table(array_keys($result['failures'][0]), $result['failures']);
         }
 
-        $bar->finish();
+        // format results in strings
+        $result['timed_out'] = $result['timed_out'] ? 'true' : 'false';
+        $result['failures'] = count($result['failures']);
+
+        unset($result['retries']);
+
+        // report success
+        $this->output->success('Copy complete, see results below');
+        $this->output->table(array_keys($result), [$result]);
     }
 }
