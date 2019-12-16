@@ -32,7 +32,7 @@ class ElasticsearchGrammar extends Grammar
                 'mappings' => array_merge(['properties' => $this->getColumns($blueprint)], $blueprint->getMeta()),
             ];
 
-            if ($settings = $blueprint->getSettings()) {
+            if ($settings = $blueprint->getIndexSettings()) {
                 $body['settings'] = $settings;
             }
 
