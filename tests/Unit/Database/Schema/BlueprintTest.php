@@ -93,22 +93,20 @@ class BlueprintTest extends TestCase
     public function adds_settings_ready_to_be_used():void
     {
         $settings = [
-            'analysis' => [
-                'filter' => [
-                    'autocomplete_filter' => [
-                        'type'     => 'edge_ngram',
-                        'min_gram' => 1,
-                        'max_gram' => 20,
-                    ],
+            'filter' => [
+                'autocomplete_filter' => [
+                    'type'     => 'edge_ngram',
+                    'min_gram' => 1,
+                    'max_gram' => 20,
                 ],
-                'analyzer' => [
-                    'autocomplete' => [
-                        'type'      => 'custom',
-                        'tokenizer' => 'standard',
-                        'filter' => [
-                            'lowercase',
-                            'autocomplete_filter',
-                        ],
+            ],
+            'analyzer' => [
+                'autocomplete' => [
+                    'type'      => 'custom',
+                    'tokenizer' => 'standard',
+                    'filter' => [
+                        'lowercase',
+                        'autocomplete_filter',
                     ],
                 ],
             ],
