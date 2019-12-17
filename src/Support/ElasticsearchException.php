@@ -21,19 +21,6 @@ class ElasticsearchException extends Exception
     }
 
     /**
-     * @param BaseElasticsearchException $exception
-     */
-    private function parseException(BaseElasticsearchException $exception): void
-    {
-        $body = json_decode($exception->getMessage(), true);
-
-        $this->message = $body['error']['reason'];
-        $this->code = $body['error']['type'];
-
-        $this->raw = $body;
-    }
-
-    /**
      * @return array
      */
     public function getRaw(): array
@@ -47,5 +34,18 @@ class ElasticsearchException extends Exception
     public function __toString()
     {
         return "{$this->getCode()}: {$this->getMessage()}";
+    }
+
+    /**
+     * @param BaseElasticsearchException $exception
+     */
+    private function parseException(BaseElasticsearchException $exception): void
+    {
+        $body = json_decode($exception->getMessage(), true);
+
+        $this->message = $body['error']['reason'];
+        $this->code = $body['error']['type'];
+
+        $this->raw = $body;
     }
 }
