@@ -44,7 +44,7 @@ class IndexCopyCommand extends Command
         ];
 
         try {
-            $this->output->write("Copying ${fromIndex} to ${toIndex}...", true);
+            $this->output->write("Copying {$fromIndex} to {$toIndex}...", true);
 
             $result = $connection->reindex([
                 'body' => json_encode($body),
