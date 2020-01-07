@@ -27,7 +27,7 @@ class BlueprintTest extends TestCase
      */
     public function it_gets_the_index_alias(string $expected, $alias = null)
     {
-        if(isset($alias)) {
+        if (isset($alias)) {
             $this->blueprint->alias($alias);
         }
 
