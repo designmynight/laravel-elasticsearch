@@ -54,7 +54,7 @@ class BlueprintTest extends TestCase
      */
     public function it_gets_the_document_type(string $expected, $documentType = null)
     {
-        if(isset($documentType)) {
+        if (isset($documentType)) {
             $this->blueprint->document($documentType);
         }
 
