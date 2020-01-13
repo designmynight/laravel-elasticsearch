@@ -690,7 +690,7 @@ class QueryBuilder extends BaseBuilder
      */
     public function getSearchDuration()
     {
-        if ($this->hasProcessedSelect()) {
+        if (!$this->hasProcessedSelect()) {
             $this->getResultsOnce();
         }
 
