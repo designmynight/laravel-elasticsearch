@@ -30,6 +30,9 @@ class QueryBuilder extends BaseBuilder
 
     protected $results;
 
+    /** @var int */
+    protected $resultsOffset;
+
     protected $rawResponse;
 
     protected $routing;
@@ -167,7 +170,7 @@ class QueryBuilder extends BaseBuilder
      */
     public function whereDate($column, $operator, $value = null, $boolean = 'and', $not = false): self
     {
-        list($value, $operator) = $this->prepareValueAndOperator(
+        [$value, $operator] = $this->prepareValueAndOperator(
             $value,
             $operator,
             func_num_args() == 2
@@ -631,9 +634,11 @@ class QueryBuilder extends BaseBuilder
      */
     protected function getResultsOnce()
     {
-        if ($this->results === null) {
+        if (!$this->hasProcessedSelect()) {
             $this->results = $this->processor->processSelect($this, $this->runSelect());
         }
+
+        $this->resultsOffset = $this->offset;
 
         return $this->results;
     }
@@ -685,7 +690,7 @@ class QueryBuilder extends BaseBuilder
      */
     public function getSearchDuration()
     {
-        if ($this->results === null) {
+        if ($this->hasProcessedSelect()) {
             $this->getResultsOnce();
         }
 
@@ -769,5 +774,17 @@ class QueryBuilder extends BaseBuilder
         }
 
         return parent::__call($method, $parameters);
+    }
+
+    /**
+     * @return bool
+     */
+    protected function hasProcessedSelect(): bool
+    {
+        if ($this->results === null) {
+            return false;
+        }
+
+        return $this->offset === $this->resultsOffset;
     }
 }
