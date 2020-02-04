@@ -17,7 +17,7 @@ trait UpdatesAlias
      *
      * @return string
      */
-    protected function getActiveIndex(string $alias):string
+    protected function getActiveIndex(string $alias): string
     {
         try {
             $aliases = collect($this->client->cat()->aliases());
@@ -25,7 +25,7 @@ trait UpdatesAlias
             $this->error('Failed to retrieve the current active index.');
         }
 
-        $aliases = $aliases->filter(function (array $item) use ($alias):bool {
+        $aliases = $aliases->filter(function (array $item) use ($alias): bool {
             return str_contains($item['index'], $alias);
         })->sortByDesc('index');
 
@@ -45,7 +45,7 @@ trait UpdatesAlias
      *
      * @return string
      */
-    protected function getAlias(string $mapping):string
+    protected function getAlias(string $mapping): string
     {
         return preg_replace('/^\d{4}\_\d{2}\_\d{2}\_\d{6}\_(update_)?/', '', $mapping, 1);
     }
@@ -55,7 +55,7 @@ trait UpdatesAlias
      *
      * @return string
      */
-    protected function getIndex(string $alias):string
+    protected function getIndex(string $alias): string
     {
         try {
             $indices = collect($this->client->cat()->indices());
@@ -63,7 +63,7 @@ trait UpdatesAlias
             $this->error('An error occurred attempting to retrieve indices.');
         }
 
-        $relevant = $indices->filter(function (array $item) use ($alias):bool {
+        $relevant = $indices->filter(function (array $item) use ($alias): bool {
             return str_contains($item['index'], $alias);
         })->sortByDesc('index');
 
@@ -76,7 +76,7 @@ trait UpdatesAlias
      * @param string|null $currentIndex
      * @param bool        $removeOldIndex
      */
-    protected function updateAlias(?string $index, string $alias = null, ?string $currentIndex = null, bool $removeOldIndex = false):void
+    protected function updateAlias(?string $index, string $alias = null, ?string $currentIndex = null, bool $removeOldIndex = false): void
     {
         $index = $index ?? $this->getIndex($alias);
 

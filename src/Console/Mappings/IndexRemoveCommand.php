@@ -2,7 +2,7 @@
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
-use Elasticsearch\ClientBuilder;
+use DesignMyNight\Elasticsearch\Console\Mappings\Traits\GetsIndices;
 
 /**
  * Class IndexRemoveCommand
@@ -11,6 +11,7 @@ use Elasticsearch\ClientBuilder;
  */
 class IndexRemoveCommand extends Command
 {
+    use GetsIndices;
 
     /** @var string $description */
     protected $description = 'Remove index from Elasticsearch';
@@ -19,26 +20,14 @@ class IndexRemoveCommand extends Command
     protected $signature = 'index:remove {index? : Name of the index to remove.}';
 
     /**
-     * IndexRemoveCommand constructor.
-     *
-     * @param ClientBuilder $client
-     */
-    public function __construct(ClientBuilder $client)
-    {
-        parent::__construct($client);
-    }
-
-    /**
      * Execute the console command.
      *
      * @return void
      */
     public function handle()
     {
-        $index = $this->argument('index');
-
-        if (!$index) {
-            $indices = collect($this->client->cat()->indices())->sortBy('index')->pluck('index')->toArray();
+        if (!$index = $this->argument('index')) {
+            $indices = collect($this->indices())->pluck('index')->toArray();
             $index = $this->choice('Which index would you like to delete?', $indices);
         }
 
@@ -54,7 +43,7 @@ class IndexRemoveCommand extends Command
      *
      * @return bool
      */
-    protected function removeIndex(string $index):bool
+    protected function removeIndex(string $index): bool
     {
         $this->info("Removing index: {$index}");
 

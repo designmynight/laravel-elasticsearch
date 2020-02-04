@@ -2,9 +2,9 @@
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
+use DesignMyNight\Elasticsearch\Console\Mappings\Traits\GetsIndices;
 use DesignMyNight\Elasticsearch\Support\ElasticsearchException;
 use Elasticsearch\Common\Exceptions\ElasticsearchException as ElasticsearchExceptionInterface;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Class IndexCopyCommand
@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\DB;
  */
 class IndexCopyCommand extends Command
 {
+    use GetsIndices;
+
     /**
      * @var string $description
      */
@@ -21,7 +23,7 @@ class IndexCopyCommand extends Command
     /**
      * @var string $signature
      */
-    protected $signature = 'index:copy {from} {to}';
+    protected $signature = 'index:copy {from?} {to?}';
 
     /**
      * Execute the console command.
@@ -30,40 +32,61 @@ class IndexCopyCommand extends Command
      */
     public function handle()
     {
-        ['from' => $fromIndex, 'to' => $toIndex] = $this->arguments();
-
-        $connection = DB::connection('elasticsearch');
+        $from = $this->from();
+        $to = $this->to();
 
         $body = [
-            'source' => [
-                'index' => $fromIndex,
-            ],
-            'dest' => [
-                'index' => $toIndex,
-            ],
+            'source' => ['index' => $from],
+            'dest' => ['index' => $to],
         ];
 
-        try {
-            $this->output->write("Copying {$fromIndex} to {$toIndex}...", true);
+        if ($this->confirm("Would you like to copy {$from} to {$to}?")) {
+            try {
+                $this->report(
+                    $this->client->reindex(['body' => json_encode($body)])
+                );
+            } catch (ElasticsearchExceptionInterface $exception) {
+                $exception = new ElasticsearchException($exception);
 
-            $result = $connection->reindex([
-                'body' => json_encode($body),
-            ]);
-        } catch (ElasticsearchExceptionInterface $e) {
-            $e = new ElasticsearchException($e);
-
-            $this->output->error((string) $e);
-
-            return;
+                $this->output->error((string) $exception);
+            }
         }
-
-        $this->reportResult($result);
     }
 
     /**
-     * @param $result
+     * @return string
      */
-    private function reportResult($result): void
+    protected function from(): string
+    {
+        if ($from = $this->argument('from')) {
+            return $from;
+        }
+
+        return $this->choice(
+            'Which index would you like to copy from?',
+            collect($this->indices())->pluck('index')->toArray()
+        );
+    }
+
+    /**
+     * @return string
+     */
+    protected function to(): string
+    {
+        if ($to = $this->argument('to')) {
+            return $to;
+        }
+
+        return $this->choice(
+            'Which index would you like to copy to?',
+            collect($this->indices())->pluck('index')->toArray()
+        );
+    }
+
+    /**
+     * @param array $result
+     */
+    private function report(array $result): void
     {
         // report any failures
         if ($result['failures']) {
