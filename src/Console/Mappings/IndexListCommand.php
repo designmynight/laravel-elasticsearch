@@ -13,7 +13,6 @@ use Illuminate\Support\Collection;
  */
 class IndexListCommand extends Command
 {
-
     use GetsIndices;
 
     /** @var string $description */
@@ -21,16 +20,6 @@ class IndexListCommand extends Command
 
     /** @var string $signature */
     protected $signature = 'index:list {--A|alias= : Name of alias indexes belong to.}';
-
-    /**
-     * IndexListCommand constructor.
-     *
-     * @param ClientBuilder $client
-     */
-    public function __construct(ClientBuilder $client)
-    {
-        parent::__construct($client);
-    }
 
     /**
      * Execute the console command.
@@ -53,7 +42,7 @@ class IndexListCommand extends Command
             return;
         }
 
-        if ($indices = $this->getIndices()) {
+        if ($indices = $this->indices()) {
             $this->table(array_keys($indices[0]), $indices);
 
             return;
@@ -67,7 +56,7 @@ class IndexListCommand extends Command
      *
      * @return array
      */
-    protected function getIndicesForAlias(string $alias = '*'):array
+    protected function getIndicesForAlias(string $alias = '*'): array
     {
         try {
             $aliases = collect($this->client->cat()->aliases());

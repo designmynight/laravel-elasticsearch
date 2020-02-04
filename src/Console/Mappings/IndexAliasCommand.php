@@ -56,7 +56,7 @@ class IndexAliasCommand extends Command
     protected function getIndexName(): string
     {
         if (!$index = $this->argument('index')) {
-            $indices = collect($this->getIndices())
+            $indices = collect($this->indices())
                 ->sortBy('index')
                 ->pluck('index')
                 ->toArray();

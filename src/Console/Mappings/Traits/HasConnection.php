@@ -19,7 +19,7 @@ trait HasConnection
     /**
      * @param $connection
      */
-    public function setConnection($connection):void
+    public function setConnection($connection): void
     {
         $this->connection = $connection;
     }
@@ -27,7 +27,7 @@ trait HasConnection
     /**
      * @return Builder
      */
-    protected function getConnection():Builder
+    protected function getConnection(): Builder
     {
         return DB::connection()->table(config('laravel-elasticsearch.mappings_migration_table', 'mappings'));
     }

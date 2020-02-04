@@ -13,7 +13,7 @@ trait GetsIndices
     /**
      * @return array
      */
-    protected function getIndices():array
+    protected function indices(): array
     {
         try {
             return collect($this->client->cat()->indices())->sortBy('index')->toArray();
