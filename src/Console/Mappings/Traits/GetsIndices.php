@@ -8,6 +8,12 @@
 
 namespace DesignMyNight\Elasticsearch\Console\Mappings\Traits;
 
+use DesignMyNight\Elasticsearch\Console\Mappings\Command;
+
+/**
+ * Trait GetsIndices
+ * @package DesignMyNight\Elasticsearch\Console\Mappings\Traits
+ */
 trait GetsIndices
 {
     /**
