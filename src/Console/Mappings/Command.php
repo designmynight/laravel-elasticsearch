@@ -27,4 +27,9 @@ abstract class Command extends BaseCommand
 
         $this->client = new Connection(Config::get('database.connections.elasticsearch'));
     }
+
+    /**
+     * @return void
+     */
+    abstract public function handle();
 }
