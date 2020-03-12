@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Schema;
 class Migration extends \Illuminate\Database\Migrations\Migration
 {
     /** @var \Illuminate\Database\Schema\Builder */
-    private $schema;
+    protected $schema;
 
     public function __construct()
     {
