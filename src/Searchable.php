@@ -154,6 +154,7 @@ trait Searchable
         $array['id'] = $this->id;
 
         unset($array['_id']);
+        unset($array['_parent']);
 
         foreach ((array) $this->indexAsChildDocuments as $field) {
             $subDocuments = $this->$field ?? [];

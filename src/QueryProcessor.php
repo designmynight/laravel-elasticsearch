@@ -47,6 +47,10 @@ class QueryProcessor extends BaseProcessor
         $document = $result['_source'];
         $document['_id'] = $result['_id'];
 
+        if (! empty($result['_parent'])) {
+            $document['_parent'] = $result['_parent'];
+        }
+
         if ($query->includeInnerHits && isset($result['inner_hits'])) {
             $document = $this->addInnerHitsToDocument($document, $result['inner_hits']);
         }
