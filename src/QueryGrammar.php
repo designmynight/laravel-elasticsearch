@@ -1133,20 +1133,7 @@ class QueryGrammar extends BaseGrammar
      */
     public function compileDelete(Builder $builder): array
     {
-        $params = [
-            'index' => $builder->from . $this->indexSuffix,
-            'id'    => (string) $builder->wheres[0]['value']
-        ];
-
-        if ($routing = $builder->getRouting()) {
-            $params['routing'] = $routing;
-        }
-
-        if ($parentId = $builder->getParentId()) {
-            $params['parent'] = $parentId;
-        }
-
-        return $params;
+        return $this->compileSelect($builder);
     }
 
     /**

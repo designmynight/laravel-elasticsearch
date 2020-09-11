@@ -759,7 +759,7 @@ class QueryBuilder extends BaseBuilder
 
         $result = $this->connection->delete($this->grammar->compileDelete($this));
 
-        return !empty($result['found']);
+        return !empty($result['deleted']);
     }
 
     public function __call($method, $parameters)
