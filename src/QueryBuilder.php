@@ -16,6 +16,17 @@ use Illuminate\Support\Str;
  */
 class QueryBuilder extends BaseBuilder
 {
+    public const DELETE_REFRESH = [
+        'FALSE' => false,
+        'TRUE' => true,
+        'WAIT_FOR' => 'wait_for',
+    ];
+
+    public const DELETE_CONFLICT = [
+        'ABORT' => 'abort',
+        'PROCEED' => 'proceed',
+    ];
+
     public $type;
 
     public $filters;
@@ -33,6 +44,9 @@ class QueryBuilder extends BaseBuilder
     protected $rawResponse;
 
     protected $routing;
+
+    /** @var mixed[] */
+    protected $options;
 
     /**
      * All of the supported clause operators.
@@ -95,6 +109,14 @@ class QueryBuilder extends BaseBuilder
     public function getRouting(): ?string
     {
         return $this->routing;
+    }
+
+    /**
+     * @return mixed|null
+     */
+    public function getOption(string $option)
+    {
+        return $this->options[$option] ?? null;
     }
 
     /**
@@ -167,7 +189,7 @@ class QueryBuilder extends BaseBuilder
      */
     public function whereDate($column, $operator, $value = null, $boolean = 'and', $not = false): self
     {
-        list($value, $operator) = $this->prepareValueAndOperator(
+        [$value, $operator] = $this->prepareValueAndOperator(
             $value,
             $operator,
             func_num_args() == 2
@@ -568,6 +590,51 @@ class QueryBuilder extends BaseBuilder
         $this->includeInnerHits = true;
 
         return $this;
+    }
+
+    /**
+     * Set whether to refresh during delete by query
+     *
+     * @link https://www.elastic.co/guide/en/elasticsearch/reference/7.x/docs-delete-by-query.html#docs-delete-by-query-api-query-params
+     * @link https://www.elastic.co/guide/en/elasticsearch/reference/7.x/docs-delete-by-query.html#_refreshing_shards
+     *
+     * @param string $option
+     * @return self
+     * @throws \Exception
+     */
+    public function withRefresh($option = self::DELETE_REFRESH['FALSE']): self
+    {
+        if (in_array($option, self::DELETE_CONFLICT)) {
+            $this->options['delete_refresh'] = $option;
+
+            return $this;
+        }
+
+        throw new \Exception(
+            "$option is an invalid conflict option, valid options are: " . explode(', ', self::DELETE_CONFLICT)
+        );
+    }
+
+    /**
+     * Set how to handle conflucts during a delete request
+     *
+     * @link https://www.elastic.co/guide/en/elasticsearch/reference/7.x/docs-delete-by-query.html#docs-delete-by-query-api-query-params
+     *
+     * @param string $option
+     * @return self
+     * @throws \Exception
+     */
+    public function onConflicts(string $option = self::DELETE_CONFLICT['ABORT']): self
+    {
+        if (in_array($option, self::DELETE_CONFLICT)) {
+            $this->options['delete_conflicts'] = $option;
+
+            return $this;
+        }
+
+        throw new \Exception(
+            "$option is an invalid conflict option, valid options are: " . explode(', ', self::DELETE_CONFLICT)
+        );
     }
 
     /**
