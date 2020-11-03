@@ -19,7 +19,6 @@ class QueryBuilder extends BaseBuilder
     public const DELETE_REFRESH = [
         'FALSE' => false,
         'TRUE' => true,
-        'WAIT_FOR' => 'wait_for',
     ];
 
     public const DELETE_CONFLICT = [
@@ -604,7 +603,7 @@ class QueryBuilder extends BaseBuilder
      */
     public function withRefresh($option = self::DELETE_REFRESH['FALSE']): self
     {
-        if (in_array($option, self::DELETE_CONFLICT)) {
+        if (in_array($option, self::DELETE_REFRESH)) {
             $this->options['delete_refresh'] = $option;
 
             return $this;
