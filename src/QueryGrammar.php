@@ -1134,14 +1134,13 @@ class QueryGrammar extends BaseGrammar
     public function compileDelete(Builder $builder): array
     {
         $clause = $this->compileSelect($builder);
-        $clause['options'] = $clause['options'] ?? [];
 
         if ($conflict = $builder->getOption('delete_conflicts')) {
-            $clause['options']['conflicts'] = $conflict;
+            $clause['conflicts'] = $conflict;
         }
 
         if ($refresh = $builder->getOption('delete_refresh')) {
-            $clause['options']['refresh'] = $refresh;
+            $clause['refresh'] = $refresh;
         }
 
         return $clause;
