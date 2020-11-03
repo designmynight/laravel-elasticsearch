@@ -16,11 +16,13 @@ use Illuminate\Support\Str;
  */
 class QueryBuilder extends BaseBuilder
 {
+    /** @var string[] */
     public const DELETE_REFRESH = [
         'FALSE' => false,
         'TRUE' => true,
     ];
 
+    /** @var string[] */
     public const DELETE_CONFLICT = [
         'ABORT' => 'abort',
         'PROCEED' => 'proceed',
