@@ -699,7 +699,7 @@ class QueryGrammar extends BaseGrammar
      */
     protected function applyOptionsToClause(array $clause, array $where)
     {
-        if (!isset($where['options'])) {
+        if (empty($where['options'])) {
             return $clause;
         }
 
@@ -1133,7 +1133,17 @@ class QueryGrammar extends BaseGrammar
      */
     public function compileDelete(Builder $builder): array
     {
-        return $this->compileSelect($builder);
+        $clause = $this->compileSelect($builder);
+
+        if ($conflict = $builder->getOption('delete_conflicts')) {
+            $clause['conflicts'] = $conflict;
+        }
+
+        if ($refresh = $builder->getOption('delete_refresh')) {
+            $clause['refresh'] = $refresh;
+        }
+
+        return $clause;
     }
 
     /**
