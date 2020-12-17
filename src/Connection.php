@@ -412,7 +412,7 @@ class Connection extends BaseConnection
      *
      * @return \Illuminate\Database\Query\Builder
      */
-    public function table($table)
+    public function table($table, $as = null)
     {
         //
     }
@@ -538,10 +538,23 @@ class Connection extends BaseConnection
             ];
         }, $hosts);
 
-        return ClientBuilder::create()
-            ->setHosts($hosts)
-            ->setSelector('\Elasticsearch\ConnectionPool\Selectors\StickyRoundRobinSelector')
-            ->build();
+        $clientBuilder = ClientBuilder::create()
+            ->setHosts($hosts);
+
+        $elasticConfig = config('elasticsearch.connections.' . config('elasticsearch.defaultConnection', 'default'), []);
+        // Set additional client configuration
+        foreach ($this->configMappings as $key => $method) {
+            $value = Arr::get($elasticConfig, $key);
+            if (is_array($value)) {
+                foreach ($value as $vItem) {
+                    $clientBuilder->$method($vItem);
+                }
+            } elseif ($value !== null) {
+                $clientBuilder->$method($value);
+            }
+        }
+
+        return $clientBuilder->build();
     }
 
     /**
