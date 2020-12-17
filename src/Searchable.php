@@ -2,6 +2,8 @@
 
 namespace DesignMyNight\Elasticsearch;
 
+use Illuminate\Support\Str;
+
 trait Searchable
 {
     public static function getElasticsearchConnectionName(): string
@@ -39,7 +41,7 @@ trait Searchable
      */
     public function getSearchType()
     {
-        return $this->searchType ?? str_singular($this->getTable());
+        return $this->searchType ?? Str::singular($this->getTable());
     }
 
     /**
