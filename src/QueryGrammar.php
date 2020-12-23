@@ -5,6 +5,7 @@ namespace DesignMyNight\Elasticsearch;
 use DateTime;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar as BaseGrammar;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 use MongoDB\BSON\ObjectID;
 
@@ -43,7 +44,7 @@ class QueryGrammar extends BaseGrammar
             $params['body']['post_filter'] = $query['postFilter'];
         }
 
-        if ($builder->aggregations) {
+        if ($builder->aggregate) {
             $params['body']['aggregations'] = $this->compileAggregations($builder);
         }
 
@@ -88,7 +89,7 @@ class QueryGrammar extends BaseGrammar
         $compiled = [];
 
         foreach ($queryParts as $queryPart => $builderVar) {
-            $clauses = $builder->$builderVar ?: [];
+            $clauses = $builder->$builderVar ?? [];
 
             $compiled[$queryPart] = $this->compileClauses($builder, $clauses);
         }
@@ -109,6 +110,11 @@ class QueryGrammar extends BaseGrammar
         $isOr  = false;
 
         foreach ($clauses as $where) {
+
+            if(Str::startsWith($where['column'], $builder->from . '.')) {
+                $where['column'] = Str::replaceFirst($builder->from . '.', '', $where['column']);
+            }
+
             // We use different methods to compile different wheres
             $method = 'compileWhere' . $where['type'];
             $result = $this->{$method}($builder, $where);
@@ -165,11 +171,9 @@ class QueryGrammar extends BaseGrammar
                     'field' => $where['column'],
                 ],
             ];
-
-            $where['not'] = !$value;
         } else if (in_array($where['operator'], array_keys($operatorsMap))) {
             $operator = $operatorsMap[$where['operator']];
-            $query    = [
+            $query = [
                 'range' => [
                     $where['column'] => [
                         $operator => $value,
@@ -383,7 +387,6 @@ class QueryGrammar extends BaseGrammar
     protected function compileWhereNull(Builder $builder, array $where): array
     {
         $where['operator'] = '=';
-
         return $this->compileWhereBasic($builder, $where);
     }
 
@@ -397,7 +400,6 @@ class QueryGrammar extends BaseGrammar
     protected function compileWhereNotNull(Builder $builder, array $where): array
     {
         $where['operator'] = '!=';
-
         return $this->compileWhereBasic($builder, $where);
     }
 
@@ -670,22 +672,7 @@ class QueryGrammar extends BaseGrammar
             default:
                 $value = $where['value'];
         }
-
-        // Convert DateTime values to UTCDateTime.
-        if ($value instanceof DateTime) {
-            $value = $this->convertDateTime($value);
-        } else if ($value instanceof ObjectID) {
-            // Convert DateTime values to UTCDateTime.
-            $value = $this->convertKey($value);
-        } else if (is_array($value)) {
-            foreach ($value as &$val) {
-                if ($val instanceof DateTime) {
-                    $val = $this->convertDateTime($val);
-                } else if ($val instanceof ObjectID) {
-                    $val = $this->convertKey($val);
-                }
-            }
-        }
+        $value = $this->getStringValue($value);
 
         return $value;
     }
@@ -772,7 +759,7 @@ class QueryGrammar extends BaseGrammar
     {
         $aggregations = [];
 
-        foreach ($builder->aggregations as $aggregation) {
+        foreach ($builder->aggregate as $aggregation) {
             $result = $this->compileAggregation($builder, $aggregation);
 
             $aggregations = array_merge($aggregations, $result);
@@ -1032,6 +1019,9 @@ class QueryGrammar extends BaseGrammar
 
         foreach ($orders as $order) {
             $column = $order['column'];
+            if(Str::startsWith($column, $builder->from . '.')) {
+                $column = Str::replaceFirst($builder->from . '.', '', $column);
+            }
 
             $type = $order['type'] ?? 'basic';
 
@@ -1078,7 +1068,12 @@ class QueryGrammar extends BaseGrammar
     {
         $params = [];
 
+        if (! is_array(reset($values))) {
+            $values = [$values];
+        }
+
         foreach ($values as $doc) {
+            $doc['id'] = $doc['id'] ?? ((string) Str::orderedUuid());
             if (isset($doc['child_documents'])) {
                 foreach ($doc['child_documents'] as $childDoc) {
                     $params['body'][] = [
@@ -1117,7 +1112,9 @@ class QueryGrammar extends BaseGrammar
 
             $params['body'][] = ['index' => $index];
 
-            unset($doc['id']);
+            foreach($doc as &$property) {
+                $property = $this->getStringValue($property);
+            }
 
             $params['body'][] = $doc;
         }
@@ -1177,7 +1174,7 @@ class QueryGrammar extends BaseGrammar
      */
     public function getDateFormat():string
     {
-        return 'Y-m-d\TH:i:s';
+        return 'Y-m-d H:i:s';
     }
 
     /**
@@ -1201,5 +1198,35 @@ class QueryGrammar extends BaseGrammar
         $this->indexSuffix = $suffix;
 
         return $this;
+    }
+
+    /**
+     * @param $value
+     * @return mixed
+     */
+    protected function getStringValue($value)
+    {
+        // Convert DateTime values to UTCDateTime.
+        if ($value instanceof DateTime) {
+            $value = $this->convertDateTime($value);
+        } else {
+            if ($value instanceof ObjectID) {
+                // Convert DateTime values to UTCDateTime.
+                $value = $this->convertKey($value);
+            } else {
+                if (is_array($value)) {
+                    foreach ($value as &$val) {
+                        if ($val instanceof DateTime) {
+                            $val = $this->convertDateTime($val);
+                        } else {
+                            if ($val instanceof ObjectID) {
+                                $val = $this->convertKey($val);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $value;
     }
 }

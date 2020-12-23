@@ -815,7 +815,7 @@ class QueryBuilder extends BaseBuilder
 
         $result = $this->connection->insert($this->grammar->compileInsert($this, $values));
 
-        return empty($result['errors']);
+        return $result['errors'];
     }
 
     /**
