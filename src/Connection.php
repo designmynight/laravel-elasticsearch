@@ -26,6 +26,24 @@ class Connection extends BaseConnection
     protected $requestTimeout;
 
     /**
+     * Map configuration array keys with ES ClientBuilder setters
+     *
+     * @var array
+     */
+    protected $configMappings = [
+        'sslVerification'    => 'setSSLVerification',
+        'sniffOnStart'       => 'setSniffOnStart',
+        'retries'            => 'setRetries',
+        'httpHandler'        => 'setHandler',
+        'connectionPool'     => 'setConnectionPool',
+        'connectionSelector' => 'setSelector',
+        'serializer'         => 'setSerializer',
+        'connectionFactory'  => 'setConnectionFactory',
+        'endpoint'           => 'setEndpoint',
+        'namespaces'         => 'registerNamespace',
+    ];
+
+    /**
      * Create a new Elasticsearch connection instance.
      *
      * @param array $config
