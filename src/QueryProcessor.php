@@ -91,4 +91,11 @@ class QueryProcessor extends BaseProcessor
     {
         return $this->aggregations;
     }
+
+    public function processInsertGetId(Builder $query, $sql, $values, $sequence = null)
+    {
+        $result = $query->getConnection()->insert($sql, $values);
+        $last = collect($result['items'])->last();
+        return $last['index']['_id'] ?? null;
+    }
 }
