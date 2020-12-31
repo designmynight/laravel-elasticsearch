@@ -482,10 +482,11 @@ class Connection extends BaseConnection
      */
     public function update($query, $bindings = [])
     {
+        $updateMethod = isset($query['body']['query']) ? 'updateByQuery' : 'update';
         return $this->run(
             $query,
             $bindings,
-            Closure::fromCallable([$this->connection, 'index'])
+            Closure::fromCallable([$this->connection, $updateMethod])
         );
     }
 

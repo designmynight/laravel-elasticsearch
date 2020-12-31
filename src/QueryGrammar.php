@@ -1122,6 +1122,23 @@ class QueryGrammar extends BaseGrammar
         return $params;
     }
 
+    public function compileUpdate(Builder $builder, array $values)
+    {
+        $clause = $this->compileSelect($builder);
+        $clause['body']['conflicts'] = 'proceed';
+        $script = [];
+
+        foreach($values as $column => $value) {
+            $value = $this->getStringValue($value);
+            if(Str::startsWith($column, $builder->from . '.')) {
+                $column = Str::replaceFirst($builder->from . '.', '', $column);
+            }
+            $script[] = 'ctx._source.' . $column . ' = "' . addslashes($value) . '";';
+        }
+        $clause['body']['script'] = implode('', $script);
+        return $clause;
+    }
+
     /**
      * Compile a delete query
      *
