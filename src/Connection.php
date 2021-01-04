@@ -383,6 +383,18 @@ class Connection extends BaseConnection
     }
 
     /**
+     * Get a new query builder instance.
+     *
+     * @return
+     */
+    public function query()
+    {
+        return new QueryBuilder(
+            $this, $this->getQueryGrammar(), $this->getPostProcessor()
+        );
+    }
+
+    /**
      * Set the table prefix in use by the connection.
      *
      * @param string $prefix
@@ -419,18 +431,6 @@ class Connection extends BaseConnection
      * @return bool
      */
     public function statement($query, $bindings = [], Blueprint $blueprint = null)
-    {
-        //
-    }
-
-    /**
-     * Begin a fluent query against a database table.
-     *
-     * @param string $table
-     *
-     * @return \Illuminate\Database\Query\Builder
-     */
-    public function table($table, $as = null)
     {
         //
     }
