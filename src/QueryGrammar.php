@@ -44,7 +44,7 @@ class QueryGrammar extends BaseGrammar
             $params['body']['post_filter'] = $query['postFilter'];
         }
 
-        if ($builder->aggregate) {
+        if ($builder->aggregations) {
             $params['body']['aggregations'] = $this->compileAggregations($builder);
         }
 
@@ -759,7 +759,7 @@ class QueryGrammar extends BaseGrammar
     {
         $aggregations = [];
 
-        foreach ($builder->aggregate as $aggregation) {
+        foreach ($builder->aggregations as $aggregation) {
             $result = $this->compileAggregation($builder, $aggregation);
 
             $aggregations = array_merge($aggregations, $result);
@@ -779,7 +779,7 @@ class QueryGrammar extends BaseGrammar
     {
         $key = $aggregation['key'];
 
-        $method = 'compile' . ucfirst(camel_case($aggregation['type'])) . 'Aggregation';
+        $method = 'compile' . ucfirst(Str::camel($aggregation['type'])) . 'Aggregation';
 
         $compiled = [
             $key => $this->$method($aggregation)
