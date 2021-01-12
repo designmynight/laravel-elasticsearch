@@ -971,6 +971,28 @@ class QueryGrammar extends BaseGrammar
     }
 
     /**
+     * Compile max aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileMaxAggregation(array $aggregation): array
+    {
+        return $this->compileMetricAggregation($aggregation);
+    }
+
+    /**
+     * Compile min aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileMinAggregation(array $aggregation): array
+    {
+        return $this->compileMetricAggregation($aggregation);
+    }
+
+    /**
      * Compile metric aggregation
      *
      * @param  array  $aggregation
