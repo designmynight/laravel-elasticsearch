@@ -5,6 +5,8 @@ namespace DesignMyNight\Elasticsearch;
 use DateTime;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar as BaseGrammar;
+use Illuminate\Support\Str;
+use InvalidArgumentException;
 use MongoDB\BSON\ObjectID;
 
 class QueryGrammar extends BaseGrammar
@@ -108,6 +110,11 @@ class QueryGrammar extends BaseGrammar
         $isOr  = false;
 
         foreach ($clauses as $where) {
+
+            if(isset($where['column']) && Str::startsWith($where['column'], $builder->from . '.')) {
+                $where['column'] = Str::replaceFirst($builder->from . '.', '', $where['column']);
+            }
+
             // We use different methods to compile different wheres
             $method = 'compileWhere' . $where['type'];
             $result = $this->{$method}($builder, $where);
@@ -164,8 +171,12 @@ class QueryGrammar extends BaseGrammar
                     'field' => $where['column'],
                 ],
             ];
-
-            $where['not'] = !$value;
+        } else if ($where['operator'] == 'like') {
+            $query = [
+                'wildcard' => [
+                    $where['column'] => str_replace('%', '*', $value),
+                ],
+            ];
         } else if (in_array($where['operator'], array_keys($operatorsMap))) {
             $operator = $operatorsMap[$where['operator']];
             $query    = [
