@@ -111,7 +111,7 @@ class QueryGrammar extends BaseGrammar
 
         foreach ($clauses as $where) {
 
-            if(Str::startsWith($where['column'], $builder->from . '.')) {
+            if(isset($where['column']) && Str::startsWith($where['column'], $builder->from . '.')) {
                 $where['column'] = Str::replaceFirst($builder->from . '.', '', $where['column']);
             }
 
@@ -169,6 +169,12 @@ class QueryGrammar extends BaseGrammar
             $query = [
                 'exists' => [
                     'field' => $where['column'],
+                ],
+            ];
+        } else if ($where['operator'] == 'like') {
+            $query = [
+                'wildcard' => [
+                    $where['column'] => str_replace('%', '*', $value),
                 ],
             ];
         } else if (in_array($where['operator'], array_keys($operatorsMap))) {
