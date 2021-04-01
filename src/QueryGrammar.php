@@ -942,6 +942,25 @@ class QueryGrammar extends BaseGrammar
     }
 
     /**
+     * Compile missing aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileMissingAggregation(array $aggregation): array
+    {
+        $field = is_array($aggregation['args']) ? $aggregation['args']['field'] : $aggregation['args'];
+
+        $compiled = [
+            'missing' => [
+                'field' => $field
+            ]
+        ];
+
+        return $compiled;
+    }
+
+    /**
      * Compile reverse nested aggregation
      *
      * @param  array  $aggregation
@@ -1008,6 +1027,13 @@ class QueryGrammar extends BaseGrammar
     {
         $metric = $aggregation['type'];
 
+        if (is_array($aggregation['args']) && isset($aggregation['args']['script'])) {
+            return [
+                $metric => [
+                    'script' => $aggregation['args']['script']
+                ]
+            ];
+        }
         $field = is_array($aggregation['args']) ? $aggregation['args']['field'] : $aggregation['args'];
 
         return [
