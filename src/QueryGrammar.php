@@ -892,6 +892,9 @@ class QueryGrammar extends BaseGrammar
             if (isset($aggregation['args']['interval'])) {
                 $compiled['date_histogram']['interval'] = $aggregation['args']['interval'];
             }
+            if (isset($aggregation['args']['calendar_interval'])) {
+                $compiled['date_histogram']['calendar_interval'] = $aggregation['args']['calendar_interval'];
+            }
 
             if (isset($aggregation['args']['min_doc_count'])) {
                 $compiled['date_histogram']['min_doc_count'] = $aggregation['args']['min_doc_count'];
