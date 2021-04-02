@@ -911,6 +911,36 @@ class QueryGrammar extends BaseGrammar
     }
 
     /**
+     * Compile cardinality aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileCardinalityAggregation(array $aggregation): array
+    {
+        $compiled = [
+            'cardinality' => $aggregation['args']
+        ];
+
+        return $compiled;
+    }
+
+    /**
+     * Compile composite aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileCompositeAggregation(array $aggregation): array
+    {
+        $compiled = [
+            'composite' => $aggregation['args']
+        ];
+
+        return $compiled;
+    }
+
+    /**
      * Compile date range aggregation
      *
      * @param  array  $aggregation
