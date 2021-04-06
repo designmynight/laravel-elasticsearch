@@ -5,6 +5,7 @@ namespace DesignMyNight\Elasticsearch;
 use DateTime;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar as BaseGrammar;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 use MongoDB\BSON\ObjectID;
 
@@ -77,7 +78,7 @@ class QueryGrammar extends BaseGrammar
      * @param  Builder  $builder
      * @return array
      */
-    protected function compileWheres(Builder $builder): array
+    public function compileWheres(Builder $builder): array
     {
         $queryParts = [
             'query' => 'wheres',
@@ -88,7 +89,7 @@ class QueryGrammar extends BaseGrammar
         $compiled = [];
 
         foreach ($queryParts as $queryPart => $builderVar) {
-            $clauses = $builder->$builderVar ?: [];
+            $clauses = $builder->$builderVar ?? [];
 
             $compiled[$queryPart] = $this->compileClauses($builder, $clauses);
         }
@@ -109,6 +110,11 @@ class QueryGrammar extends BaseGrammar
         $isOr  = false;
 
         foreach ($clauses as $where) {
+
+            if(isset($where['column']) && Str::startsWith($where['column'], $builder->from . '.')) {
+                $where['column'] = Str::replaceFirst($builder->from . '.', '', $where['column']);
+            }
+
             // We use different methods to compile different wheres
             $method = 'compileWhere' . $where['type'];
             $result = $this->{$method}($builder, $where);
@@ -165,11 +171,15 @@ class QueryGrammar extends BaseGrammar
                     'field' => $where['column'],
                 ],
             ];
-
-            $where['not'] = !$value;
+        } else if ($where['operator'] == 'like') {
+            $query = [
+                'wildcard' => [
+                    $where['column'] => str_replace('%', '*', $value),
+                ],
+            ];
         } else if (in_array($where['operator'], array_keys($operatorsMap))) {
             $operator = $operatorsMap[$where['operator']];
-            $query    = [
+            $query = [
                 'range' => [
                     $where['column'] => [
                         $operator => $value,
@@ -383,7 +393,6 @@ class QueryGrammar extends BaseGrammar
     protected function compileWhereNull(Builder $builder, array $where): array
     {
         $where['operator'] = '=';
-
         return $this->compileWhereBasic($builder, $where);
     }
 
@@ -397,7 +406,6 @@ class QueryGrammar extends BaseGrammar
     protected function compileWhereNotNull(Builder $builder, array $where): array
     {
         $where['operator'] = '!=';
-
         return $this->compileWhereBasic($builder, $where);
     }
 
@@ -670,22 +678,7 @@ class QueryGrammar extends BaseGrammar
             default:
                 $value = $where['value'];
         }
-
-        // Convert DateTime values to UTCDateTime.
-        if ($value instanceof DateTime) {
-            $value = $this->convertDateTime($value);
-        } else if ($value instanceof ObjectID) {
-            // Convert DateTime values to UTCDateTime.
-            $value = $this->convertKey($value);
-        } else if (is_array($value)) {
-            foreach ($value as &$val) {
-                if ($val instanceof DateTime) {
-                    $val = $this->convertDateTime($val);
-                } else if ($val instanceof ObjectID) {
-                    $val = $this->convertKey($val);
-                }
-            }
-        }
+        $value = $this->getStringValue($value);
 
         return $value;
     }
@@ -792,7 +785,7 @@ class QueryGrammar extends BaseGrammar
     {
         $key = $aggregation['key'];
 
-        $method = 'compile' . ucfirst(camel_case($aggregation['type'])) . 'Aggregation';
+        $method = 'compile' . ucfirst(Str::camel($aggregation['type'])) . 'Aggregation';
 
         $compiled = [
             $key => $this->$method($aggregation)
@@ -899,6 +892,9 @@ class QueryGrammar extends BaseGrammar
             if (isset($aggregation['args']['interval'])) {
                 $compiled['date_histogram']['interval'] = $aggregation['args']['interval'];
             }
+            if (isset($aggregation['args']['calendar_interval'])) {
+                $compiled['date_histogram']['calendar_interval'] = $aggregation['args']['calendar_interval'];
+            }
 
             if (isset($aggregation['args']['min_doc_count'])) {
                 $compiled['date_histogram']['min_doc_count'] = $aggregation['args']['min_doc_count'];
@@ -910,6 +906,36 @@ class QueryGrammar extends BaseGrammar
                 $compiled['date_histogram']['extended_bounds']['max'] = $this->convertDateTime($aggregation['args']['extended_bounds'][1]);
             }
         }
+
+        return $compiled;
+    }
+
+    /**
+     * Compile cardinality aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileCardinalityAggregation(array $aggregation): array
+    {
+        $compiled = [
+            'cardinality' => $aggregation['args']
+        ];
+
+        return $compiled;
+    }
+
+    /**
+     * Compile composite aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileCompositeAggregation(array $aggregation): array
+    {
+        $compiled = [
+            'composite' => $aggregation['args']
+        ];
 
         return $compiled;
     }
@@ -941,6 +967,25 @@ class QueryGrammar extends BaseGrammar
 
         $compiled = [
             'exists' => [
+                'field' => $field
+            ]
+        ];
+
+        return $compiled;
+    }
+
+    /**
+     * Compile missing aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileMissingAggregation(array $aggregation): array
+    {
+        $field = is_array($aggregation['args']) ? $aggregation['args']['field'] : $aggregation['args'];
+
+        $compiled = [
+            'missing' => [
                 'field' => $field
             ]
         ];
@@ -984,6 +1029,28 @@ class QueryGrammar extends BaseGrammar
     }
 
     /**
+     * Compile max aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileMaxAggregation(array $aggregation): array
+    {
+        return $this->compileMetricAggregation($aggregation);
+    }
+
+    /**
+     * Compile min aggregation
+     *
+     * @param  array  $aggregation
+     * @return array
+     */
+    protected function compileMinAggregation(array $aggregation): array
+    {
+        return $this->compileMetricAggregation($aggregation);
+    }
+
+    /**
      * Compile metric aggregation
      *
      * @param  array  $aggregation
@@ -993,6 +1060,13 @@ class QueryGrammar extends BaseGrammar
     {
         $metric = $aggregation['type'];
 
+        if (is_array($aggregation['args']) && isset($aggregation['args']['script'])) {
+            return [
+                $metric => [
+                    'script' => $aggregation['args']['script']
+                ]
+            ];
+        }
         $field = is_array($aggregation['args']) ? $aggregation['args']['field'] : $aggregation['args'];
 
         return [
@@ -1032,6 +1106,9 @@ class QueryGrammar extends BaseGrammar
 
         foreach ($orders as $order) {
             $column = $order['column'];
+            if(Str::startsWith($column, $builder->from . '.')) {
+                $column = Str::replaceFirst($builder->from . '.', '', $column);
+            }
 
             $type = $order['type'] ?? 'basic';
 
@@ -1078,7 +1155,12 @@ class QueryGrammar extends BaseGrammar
     {
         $params = [];
 
+        if (! is_array(reset($values))) {
+            $values = [$values];
+        }
+
         foreach ($values as $doc) {
+            $doc['id'] = $doc['id'] ?? ((string) Str::orderedUuid());
             if (isset($doc['child_documents'])) {
                 foreach ($doc['child_documents'] as $childDoc) {
                     $params['body'][] = [
@@ -1117,12 +1199,31 @@ class QueryGrammar extends BaseGrammar
 
             $params['body'][] = ['index' => $index];
 
-            unset($doc['id']);
+            foreach($doc as &$property) {
+                $property = $this->getStringValue($property);
+            }
 
             $params['body'][] = $doc;
         }
 
         return $params;
+    }
+
+    public function compileUpdate(Builder $builder, array $values)
+    {
+        $clause = $this->compileSelect($builder);
+        $clause['body']['conflicts'] = 'proceed';
+        $script = [];
+
+        foreach($values as $column => $value) {
+            $value = $this->getStringValue($value);
+            if(Str::startsWith($column, $builder->from . '.')) {
+                $column = Str::replaceFirst($builder->from . '.', '', $column);
+            }
+            $script[] = 'ctx._source.' . $column . ' = "' . addslashes($value) . '";';
+        }
+        $clause['body']['script'] = implode('', $script);
+        return $clause;
     }
 
     /**
@@ -1177,7 +1278,7 @@ class QueryGrammar extends BaseGrammar
      */
     public function getDateFormat():string
     {
-        return 'Y-m-d\TH:i:s';
+        return 'Y-m-d H:i:s';
     }
 
     /**
@@ -1201,5 +1302,35 @@ class QueryGrammar extends BaseGrammar
         $this->indexSuffix = $suffix;
 
         return $this;
+    }
+
+    /**
+     * @param $value
+     * @return mixed
+     */
+    protected function getStringValue($value)
+    {
+        // Convert DateTime values to UTCDateTime.
+        if ($value instanceof DateTime) {
+            $value = $this->convertDateTime($value);
+        } else {
+            if ($value instanceof ObjectID) {
+                // Convert DateTime values to UTCDateTime.
+                $value = $this->convertKey($value);
+            } else {
+                if (is_array($value)) {
+                    foreach ($value as &$val) {
+                        if ($val instanceof DateTime) {
+                            $val = $this->convertDateTime($val);
+                        } else {
+                            if ($val instanceof ObjectID) {
+                                $val = $this->convertKey($val);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $value;
     }
 }

@@ -26,6 +26,24 @@ class Connection extends BaseConnection
     protected $requestTimeout;
 
     /**
+     * Map configuration array keys with ES ClientBuilder setters
+     *
+     * @var array
+     */
+    protected $configMappings = [
+        'sslVerification'    => 'setSSLVerification',
+        'sniffOnStart'       => 'setSniffOnStart',
+        'retries'            => 'setRetries',
+        'httpHandler'        => 'setHandler',
+        'connectionPool'     => 'setConnectionPool',
+        'connectionSelector' => 'setSelector',
+        'serializer'         => 'setSerializer',
+        'connectionFactory'  => 'setConnectionFactory',
+        'endpoint'           => 'setEndpoint',
+        'namespaces'         => 'registerNamespace',
+    ];
+
+    /**
      * Create a new Elasticsearch connection instance.
      *
      * @param array $config
@@ -365,6 +383,18 @@ class Connection extends BaseConnection
     }
 
     /**
+     * Get a new query builder instance.
+     *
+     * @return
+     */
+    public function query()
+    {
+        return new QueryBuilder(
+            $this, $this->getQueryGrammar(), $this->getPostProcessor()
+        );
+    }
+
+    /**
      * Set the table prefix in use by the connection.
      *
      * @param string $prefix
@@ -401,18 +431,6 @@ class Connection extends BaseConnection
      * @return bool
      */
     public function statement($query, $bindings = [], Blueprint $blueprint = null)
-    {
-        //
-    }
-
-    /**
-     * Begin a fluent query against a database table.
-     *
-     * @param string $table
-     *
-     * @return \Illuminate\Database\Query\Builder
-     */
-    public function table($table)
     {
         //
     }
@@ -464,10 +482,11 @@ class Connection extends BaseConnection
      */
     public function update($query, $bindings = [])
     {
+        $updateMethod = isset($query['body']['query']) ? 'updateByQuery' : 'update';
         return $this->run(
             $query,
             $bindings,
-            Closure::fromCallable([$this->connection, 'index'])
+            Closure::fromCallable([$this->connection, $updateMethod])
         );
     }
 
@@ -538,10 +557,23 @@ class Connection extends BaseConnection
             ];
         }, $hosts);
 
-        return ClientBuilder::create()
-            ->setHosts($hosts)
-            ->setSelector('\Elasticsearch\ConnectionPool\Selectors\StickyRoundRobinSelector')
-            ->build();
+        $clientBuilder = ClientBuilder::create()
+            ->setHosts($hosts);
+
+        $elasticConfig = config('elasticsearch.connections.' . config('elasticsearch.defaultConnection', 'default'), []);
+        // Set additional client configuration
+        foreach ($this->configMappings as $key => $method) {
+            $value = Arr::get($elasticConfig, $key);
+            if (is_array($value)) {
+                foreach ($value as $vItem) {
+                    $clientBuilder->$method($vItem);
+                }
+            } elseif ($value !== null) {
+                $clientBuilder->$method($value);
+            }
+        }
+
+        return $clientBuilder->build();
     }
 
     /**

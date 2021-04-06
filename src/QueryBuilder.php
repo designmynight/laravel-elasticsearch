@@ -57,7 +57,7 @@ class QueryBuilder extends BaseBuilder
      *
      * @var array
      */
-    public $operators = ['=', '<', '>', '<=', '>=', '!=', 'exists'];
+    public $operators = ['=', '<', '>', '<=', '>=', '!=', 'exists', 'like'];
 
     /**
      * Set the document type the search is targeting.
@@ -383,7 +383,7 @@ class QueryBuilder extends BaseBuilder
             $this->wheres[] = $compiled;
         }
 
-        if (count($query->filters)) {
+        if (isset($query->filters) && count($query->filters)) {
             $this->filters[] = $compiled;
         }
 
@@ -815,7 +815,7 @@ class QueryBuilder extends BaseBuilder
 
         $result = $this->connection->insert($this->grammar->compileInsert($this, $values));
 
-        return empty($result['errors']);
+        return $result['errors'];
     }
 
     /**

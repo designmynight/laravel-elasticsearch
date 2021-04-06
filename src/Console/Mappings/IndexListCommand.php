@@ -3,8 +3,8 @@
 namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\GetsIndices;
-use Elasticsearch\ClientBuilder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 /**
  * Class IndexListCommand
@@ -65,7 +65,7 @@ class IndexListCommand extends Command
                 ->sortBy('alias')
                 ->when($alias !== '*', function (Collection $aliases) use ($alias) {
                     return $aliases->filter(function ($item) use ($alias) {
-                        return str_contains($item['alias'], $alias);
+                        return Str::contains($item['alias'], $alias);
                     });
                 })
                 ->values()
