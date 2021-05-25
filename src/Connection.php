@@ -3,6 +3,7 @@
 namespace DesignMyNight\Elasticsearch;
 
 use Closure;
+use DesignMyNight\Elasticsearch\Exceptions\BulkInsertQueryException;
 use DesignMyNight\Elasticsearch\Exceptions\QueryException;
 use Elasticsearch\ClientBuilder;
 use Illuminate\Database\Connection as BaseConnection;
@@ -283,9 +284,10 @@ class Connection extends BaseConnection
     /**
      * Run an insert statement against the database.
      *
-     * @param  array  $params
-     * @param  array  $bindings
+     * @param array $params
+     * @param array $bindings
      * @return bool
+     * @throws BulkInsertQueryException
      */
     public function insert($params, $bindings = [])
     {
@@ -295,7 +297,11 @@ class Connection extends BaseConnection
             Closure::fromCallable([$this->connection, 'bulk'])
         );
 
-        return empty($result['errors']);
+        if (empty($result['errors'])) {
+            throw new BulkInsertQueryException($result);
+        }
+
+        return true;
     }
 
     /**
