@@ -1,6 +1,6 @@
 <?php
 
-namespace DesignMyNight\Elasticsearch;
+namespace DesignMyNight\Elasticsearch\Exceptions;
 
 use Illuminate\Database\QueryException as BaseQueryException;
 
