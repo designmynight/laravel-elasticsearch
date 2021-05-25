@@ -288,11 +288,13 @@ class Connection extends BaseConnection
      */
     public function insert($params, $bindings = [])
     {
-        return $this->run(
+        $result = $this->run(
             $this->addClientParams($params),
             $bindings,
             Closure::fromCallable([$this->connection, 'bulk'])
         );
+
+        return empty($result['errors']);
     }
 
     /**
