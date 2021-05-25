@@ -3,6 +3,7 @@
 namespace DesignMyNight\Elasticsearch;
 
 use Closure;
+use DesignMyNight\Elasticsearch\Exceptions\QueryException;
 use Elasticsearch\ClientBuilder;
 use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Database\Events\QueryExecuted;
@@ -380,7 +381,7 @@ class Connection extends BaseConnection
      * @param  \Closure  $callback
      * @return mixed
      *
-     * @throws \DesignMyNight\Elasticsearch\QueryException
+     * @throws \DesignMyNight\Elasticsearch\Exceptions\QueryException
      */
     protected function runQueryCallback($query, $bindings, Closure $callback)
     {
