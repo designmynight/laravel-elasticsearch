@@ -362,11 +362,13 @@ class Connection extends BaseConnection
      */
     public function select($params, $bindings = [], $useReadPdo = true)
     {
-        return $this->run(
+        $result = $this->run(
             $this->addClientParams($params),
             $bindings,
             Closure::fromCallable([$this->connection, 'search'])
         );
+
+        return empty($result['errors']);
     }
 
     /**
