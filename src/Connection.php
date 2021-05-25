@@ -6,6 +6,7 @@ use Closure;
 use DesignMyNight\Elasticsearch\Database\Schema\Blueprint;
 use DesignMyNight\Elasticsearch\Database\Schema\ElasticsearchBuilder;
 use DesignMyNight\Elasticsearch\Database\Schema\Grammars\ElasticsearchGrammar;
+use DesignMyNight\Elasticsearch\Exceptions\QueryException;
 use Elasticsearch\ClientBuilder;
 use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Database\Events\QueryExecuted;
@@ -434,7 +435,28 @@ class Connection extends BaseConnection
      */
     public function statement($query, $bindings = [], Blueprint $blueprint = null)
     {
-        //
+        return $bindings;
+    }
+
+    /**
+     * Run a search query.
+     *
+     * @param  array     $query
+     * @param  array     $bindings
+     * @param  \Closure  $callback
+     * @return mixed
+     *
+     * @throws \DesignMyNight\Elasticsearch\Exceptions\QueryException
+     */
+    protected function runQueryCallback($query, $bindings, Closure $callback)
+    {
+        try {
+            $result = $callback($query, $bindings);
+        } catch (Exception $e) {
+            throw new QueryException($query, null, $e);
+        }
+
+        return $result;
     }
 
     /**
