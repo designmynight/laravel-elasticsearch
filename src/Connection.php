@@ -10,8 +10,6 @@ use Elasticsearch\ClientBuilder;
 use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\Grammar as BaseGrammar;
-use Illuminate\Database\QueryException;
-use Illuminate\Database\Schema\Builder;
 use Illuminate\Support\Arr;
 
 class Connection extends BaseConnection
