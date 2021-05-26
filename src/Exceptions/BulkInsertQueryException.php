@@ -31,7 +31,9 @@ class BulkInsertQueryException extends Exception
         $message = [];
 
         $items = array_filter($result['items'] ?? [], function(array $item): bool {
-            return $item['index'] && !empty($item['index']['error']);
+            $itemAction = reset($item);
+
+            return $itemAction && !empty($itemAction['error']);
         });
 
         $items = array_values($items);
@@ -44,12 +46,12 @@ class BulkInsertQueryException extends Exception
         $message[] = 'Bulk Insert Errors (' . 'Showing ' . count($items) . ' of ' . $totalErrors . '):';
 
         foreach ($items as $item) {
-            $item = $item['index'];
+            $itemAction = reset($item);
 
             $itemError = array_merge([
-                '_id'  => $item['_id'],
-                'reason' => $item['error']['reason'],
-            ], $item['error']['caused_by'] ?? []);
+                '_id'  => $itemAction['_id'],
+                'reason' => $itemAction['error']['reason'],
+            ], $itemAction['error']['caused_by'] ?? []);
 
             $message[] = implode(': ', $itemError);
         }
