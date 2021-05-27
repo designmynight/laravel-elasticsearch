@@ -734,7 +734,7 @@ class QueryBuilder extends BaseBuilder
     /**
      * @inheritdoc
      */
-    public function insert(array $values): bool
+    public function insert(array $values)
     {
         // Since every insert gets treated like a batch insert, we will have to detect
         // if the user is inserting a single document or an array of documents.
