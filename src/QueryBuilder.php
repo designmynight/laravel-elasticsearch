@@ -354,11 +354,11 @@ class QueryBuilder extends BaseBuilder
 
         $compiled = compact('type', 'query', 'boolean');
 
-        if (count($query->wheres)) {
+        if (count(array($query->wheres))) {
             $this->wheres[] = $compiled;
         }
 
-        if (count($query->filters)) {
+        if (count(array($query->filters))) {
             $this->filters[] = $compiled;
         }
 
