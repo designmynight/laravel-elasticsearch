@@ -358,7 +358,7 @@ class QueryBuilder extends BaseBuilder
             $this->wheres[] = $compiled;
         }
 
-        if (count($query->filters)) {
+        if (!empty($query->filters)) {
             $this->filters[] = $compiled;
         }
 
