@@ -6,6 +6,7 @@ use Closure;
 use DesignMyNight\Elasticsearch\Database\Schema\Blueprint;
 use DesignMyNight\Elasticsearch\Database\Schema\ElasticsearchBuilder;
 use DesignMyNight\Elasticsearch\Database\Schema\Grammars\ElasticsearchGrammar;
+use DesignMyNight\Elasticsearch\Exceptions\BulkInsertQueryException;
 use DesignMyNight\Elasticsearch\Exceptions\QueryException;
 use Elasticsearch\ClientBuilder;
 use Illuminate\Database\Connection as BaseConnection;
@@ -232,20 +233,26 @@ class Connection extends BaseConnection
     }
 
     /**
-     * Run an insert statement against the database.
+     * Run a select statement against the database.
      *
      * @param array $params
      * @param array $bindings
-     *
      * @return bool
+     * @throws BulkInsertQueryException
      */
     public function insert($params, $bindings = [])
     {
-        return $this->run(
+        $result = $this->run(
             $this->addClientParams($params),
             $bindings,
             Closure::fromCallable([$this->connection, 'bulk'])
         );
+
+        if (!empty($result['errors'])) {
+            throw new BulkInsertQueryException($result);
+        }
+
+        return true;
     }
 
     /**
@@ -354,10 +361,7 @@ class Connection extends BaseConnection
     }
 
     /**
-     * Run a select statement against the database.
-     *
-     * @param array $params
-     * @param array $bindings
+     * Run an update statement against the database.
      *
      * @return array
      */
