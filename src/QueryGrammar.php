@@ -1209,7 +1209,7 @@ class QueryGrammar extends BaseGrammar
         return $params;
     }
 
-    public function compileUpdate(Builder $builder, array $values)
+    public function compileUpdate(Builder $builder, $values)
     {
         $clause = $this->compileSelect($builder);
         $clause['body']['conflicts'] = 'proceed';
