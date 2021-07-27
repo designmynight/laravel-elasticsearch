@@ -3,10 +3,13 @@
 namespace DesignMyNight\Elasticsearch;
 
 use Closure;
+use DesignMyNight\Elasticsearch\Exceptions\BulkInsertQueryException;
 use DesignMyNight\Elasticsearch\Database\Schema\Blueprint;
 use DesignMyNight\Elasticsearch\Database\Schema\ElasticsearchBuilder;
 use DesignMyNight\Elasticsearch\Database\Schema\Grammars\ElasticsearchGrammar;
+use DesignMyNight\Elasticsearch\Exceptions\QueryException;
 use Elasticsearch\ClientBuilder;
+use Exception;
 use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\Grammar as BaseGrammar;
@@ -235,16 +238,22 @@ class Connection extends BaseConnection
      *
      * @param array $params
      * @param array $bindings
-     *
      * @return bool
+     * @throws BulkInsertQueryException
      */
     public function insert($params, $bindings = [])
     {
-        return $this->run(
+        $result = $this->run(
             $this->addClientParams($params),
             $bindings,
             Closure::fromCallable([$this->connection, 'bulk'])
         );
+
+        if (empty($result['errors'])) {
+            throw new BulkInsertQueryException($result);
+        }
+
+        return true;
     }
 
     /**
@@ -355,9 +364,8 @@ class Connection extends BaseConnection
     /**
      * Run a select statement against the database.
      *
-     * @param array $params
-     * @param array $bindings
-     *
+     * @param  array   $params
+     * @param  array   $bindings
      * @return array
      */
     public function select($params, $bindings = [], $useReadPdo = true)
@@ -579,7 +587,7 @@ class Connection extends BaseConnection
     /**
      * Get the default post processor instance.
      *
-     * @return Processor
+     * @return QueryProcessor
      */
     protected function getDefaultPostProcessor()
     {
