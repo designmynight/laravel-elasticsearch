@@ -5,6 +5,7 @@ namespace DesignMyNight\Elasticsearch;
 use DateTime;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar as BaseGrammar;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use MongoDB\BSON\ObjectID;
@@ -1278,7 +1279,7 @@ class QueryGrammar extends BaseGrammar
      */
     public function getDateFormat():string
     {
-        return 'Y-m-d H:i:s';
+        return Config::get('laravel-elasticsearch.date_format', 'Y-m-d H:i:s');
     }
 
     /**
