@@ -440,7 +440,7 @@ class Connection extends BaseConnection
      */
     public function statement($query, $bindings = [], Blueprint $blueprint = null)
     {
-        return $bindings;
+        //
     }
 
     /**
