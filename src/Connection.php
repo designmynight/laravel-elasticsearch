@@ -9,6 +9,7 @@ use DesignMyNight\Elasticsearch\Database\Schema\ElasticsearchBuilder;
 use DesignMyNight\Elasticsearch\Database\Schema\Grammars\ElasticsearchGrammar;
 use DesignMyNight\Elasticsearch\Exceptions\QueryException;
 use Elasticsearch\ClientBuilder;
+use Exception;
 use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\Grammar as BaseGrammar;
@@ -443,27 +444,6 @@ class Connection extends BaseConnection
     }
 
     /**
-     * Run a search query.
-     *
-     * @param  array     $query
-     * @param  array     $bindings
-     * @param  \Closure  $callback
-     * @return mixed
-     *
-     * @throws \DesignMyNight\Elasticsearch\Exceptions\QueryException
-     */
-    protected function runQueryCallback($query, $bindings, Closure $callback)
-    {
-        try {
-            $result = $callback($query, $bindings);
-        } catch (Exception $e) {
-            throw new QueryException($query, null, $e);
-        }
-
-        return $result;
-    }
-
-    /**
      * Execute a Closure within a transaction.
      *
      * @param \Closure $callback
@@ -607,7 +587,7 @@ class Connection extends BaseConnection
     /**
      * Get the default post processor instance.
      *
-     * @return Processor
+     * @return QueryProcessor
      */
     protected function getDefaultPostProcessor()
     {
