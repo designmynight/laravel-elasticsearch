@@ -762,8 +762,7 @@ class QueryBuilder extends BaseBuilder
     {
         return $this->cloneWithout(['columns', 'orders', 'limit', 'offset'])
             ->limit(1)
-            ->get($columns)
-            ->all();
+            ->get($columns)->all();
     }
 
     /**
