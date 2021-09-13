@@ -197,7 +197,12 @@ class QueryGrammar extends BaseGrammar
 
         $query = $this->applyOptionsToClause($query, $where);
 
-        if (!empty($where['not']) || ($where['operator'] == '!=' && !is_null($value)) || ($where['operator'] == '=' && is_null($value))) {
+        if (
+            !empty($where['not'])
+            || ($where['operator'] == '!=' && !is_null($value))
+            || ($where['operator'] == '=' && is_null($value))
+            || ($where['operator'] == 'exists' && !$value)
+        ) {
             $query = [
                 'bool' => [
                     'must_not' => [
