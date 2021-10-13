@@ -249,7 +249,7 @@ class Connection extends BaseConnection
             Closure::fromCallable([$this->connection, 'bulk'])
         );
 
-        if (empty($result['errors'])) {
+        if (!empty($result['errors'])) {
             throw new BulkInsertQueryException($result);
         }
 
