@@ -249,7 +249,6 @@ class Connection extends BaseConnection
         );
 
         if (!empty($result['errors'])) {
-            throw new BulkInsertQueryException($result);
         }
 
         return true;
