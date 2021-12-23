@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
+use Illuminate\Container\Container;
+use Illuminate\Support\Arr;
 
 /**
  * Class EloquentBuilder
@@ -132,13 +134,25 @@ class EloquentBuilder extends BaseBuilder
 
         $perPage = $perPage ?: $this->model->getPerPage();
 
-        $results = $this->forPage($page, $perPage)->get($columns);
+        if($this->query->distinct){
+            $aggParams = [
+                'field' => reset($this->query->distinct),
+                'precision_threshold'=>40000
+            ];
+            $total = Arr::get((clone $this)->aggregation('query_distinct_total', 'cardinality', $aggParams)
+                ->getQuery()->getAggregationResults(),'query_distinct_total.value');
+            $results = $this->forPage($page, $perPage)->get($columns);
+        }else{
+            $results = $this->forPage($page, $perPage)->get($columns);
+            $total = $this->toBase()->getCountForPagination($columns);
+        }
 
-        $total = $this->toBase()->getCountForPagination($columns);
-
-        return new LengthAwarePaginator($results, $total, $perPage, $page, [
-            'path'     => Paginator::resolveCurrentPath(),
-            'pageName' => $pageName,
+        return Container::getInstance()->makeWith(LengthAwarePaginator::class, [
+            'items' => $results, 'total' => $total, 'perPage' => $perPage, 'currentPage' => $page,
+            'options' => [
+                'path'     => Paginator::resolveCurrentPath(),
+                'pageName' => $pageName,
+            ]
         ]);
     }
 }

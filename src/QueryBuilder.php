@@ -39,6 +39,8 @@ class QueryBuilder extends BaseBuilder
 
     public $includeInnerHits;
 
+    public $distinct;
+
     protected $parentId;
 
     protected $results;
@@ -122,6 +124,24 @@ class QueryBuilder extends BaseBuilder
     public function getOption(string $option)
     {
         return $this->options[$option] ?? null;
+    }
+
+    /**
+     * Force the query to only return distinct results.
+     *
+     * @return $this
+     */
+    public function distinct()
+    {
+        $columns = func_get_args();
+
+        if (count($columns) > 0) {
+            $this->distinct = is_array($columns[0])  ? $columns[0] : $columns;
+        } else {
+            $this->distinct = [];
+        }
+
+        return $this;
     }
 
     /**
