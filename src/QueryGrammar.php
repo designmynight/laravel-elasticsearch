@@ -530,7 +530,7 @@ class QueryGrammar extends BaseGrammar
         if (! empty($where['options']['constant_score'])) {
             $query = [
                 'constant_score' => [
-                    'query' => $query,
+                    'filter' => $query,
                 ],
             ];
         }
