@@ -3,6 +3,8 @@
 namespace DesignMyNight\Elasticsearch;
 
 use Closure;
+use DesignMyNight\Elasticsearch\Exceptions\BulkInsertQueryException;
+use DesignMyNight\Elasticsearch\Exceptions\QueryException;
 use Elasticsearch\ClientBuilder;
 use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Database\Events\QueryExecuted;
@@ -282,17 +284,24 @@ class Connection extends BaseConnection
     /**
      * Run an insert statement against the database.
      *
-     * @param  array  $params
-     * @param  array  $bindings
+     * @param array $params
+     * @param array $bindings
      * @return bool
+     * @throws BulkInsertQueryException
      */
     public function insert($params, $bindings = [])
     {
-        return $this->run(
+        $result = $this->run(
             $this->addClientParams($params),
             $bindings,
             Closure::fromCallable([$this->connection, 'bulk'])
         );
+
+        if (!empty($result['errors'])) {
+            throw new BulkInsertQueryException($result);
+        }
+
+        return true;
     }
 
     /**
@@ -378,7 +387,7 @@ class Connection extends BaseConnection
      * @param  \Closure  $callback
      * @return mixed
      *
-     * @throws \DesignMyNight\Elasticsearch\QueryException
+     * @throws \DesignMyNight\Elasticsearch\Exceptions\QueryException
      */
     protected function runQueryCallback($query, $bindings, Closure $callback)
     {
