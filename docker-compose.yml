@@ -1,7 +1,9 @@
 version: '3'
 services:
   unit-tests:
-    image: designmynight/php7.1-cli-mongo
+    build:
+      context: .
+      dockerfile: Dockerfile.composer
     command: phpdbg -qrr ./vendor/bin/phpunit
     volumes:
       - .:/opt
