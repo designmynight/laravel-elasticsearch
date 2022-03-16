@@ -16,16 +16,16 @@ use Illuminate\Support\Str;
 class Blueprint extends \Illuminate\Database\Schema\Blueprint
 {
     /** @var string */
-    protected $alias;
+    protected string $alias;
 
     /** @var string */
-    protected $document;
+    protected string $document;
 
     /** @var array */
-    protected $meta = [];
+    protected array $meta = [];
 
     /** @var array */
-    protected $indexSettings = [];
+    protected array $indexSettings = [];
 
     /**
      * Add a new column to the blueprint.
@@ -33,11 +33,11 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param string $type
      * @param string $name
      * @param  array  $parameters
-     * @return \Illuminate\Database\Schema\ColumnDefinition
+     * @return PropertyDefinition
      */
     public function addColumn(string $type, string $name, array $parameters = [])
     {
-        return $this->addColumnDefinition(new ColumnDefinition(
+        return $this->addColumnDefinition(new PropertyDefinition(
             array_merge(compact('type', 'name'), $parameters)
         ));
     }
@@ -45,10 +45,10 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     /**
      * Add a new column definition to the blueprint.
      *
-     * @param  \Illuminate\Database\Schema\ColumnDefinition  $definition
-     * @return \Illuminate\Database\Schema\ColumnDefinition
+     * @param PropertyDefinition $definition
+     * @return PropertyDefinition
      */
-    protected function addColumnDefinition($definition)
+    protected function addColumnDefinition(PropertyDefinition $definition): PropertyDefinition
     {
         $this->columns[] = $definition;
 
@@ -91,7 +91,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * Create a new binary column on the table.
      *
      * @param string $column
-     * @return \Illuminate\Database\Schema\ColumnDefinition
+     * @return PropertyDefinition
      */
     public function binary(string $column): PropertyDefinition
     {
@@ -115,20 +115,18 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * @param string $column
-     * @param array $parameters
-     *
-     * @return ColumnDefinition
+     * @return PropertyDefinition
      */
-    public function date(string $column, array $parameters = []): PropertyDefinition
+    public function date(string $column): PropertyDefinition
     {
-        return $this->addColumn('date', $column, $parameters);
+        return $this->addColumn('date', $column);
     }
 
     /**
      * @param string $column
      * @param array  $parameters
      *
-     * @return ColumnDefinition
+     * @return PropertyDefinition
      */
     public function dateRange(string $column, array $parameters = []): PropertyDefinition
     {
@@ -144,10 +142,10 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
-     * @param string $name
-     * @param array  $parameters
+     * @param string $column
+     * @param array $parameters
      *
-     * @return ColumnDefinition
+     * @return PropertyDefinition
      */
     public function doubleRange(string $column, array $parameters = []): PropertyDefinition
     {
@@ -157,7 +155,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     /**
      * @param bool|string $value
      */
-    public function dynamic($value): void
+    public function dynamic(bool|string $value): void
     {
         $this->addMetaField('dynamic', $value);
     }
@@ -183,9 +181,9 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param int $total
      * @param int $places
      * @param bool $unsigned
-     * @return ColumnDefinition
+     * @return PropertyDefinition
      */
-    public function float($column, $total = 8, $places = 2, $unsigned = false): PropertyDefinition
+    public function float(string $column, int $total = 8, int $places = 2, bool $unsigned = false): PropertyDefinition
     {
         return $this->addColumn('float', $column);
     }
@@ -194,7 +192,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param string $column
      * @param array $parameters
      *
-     * @return ColumnDefinition
+     * @return PropertyDefinition
      */
     public function floatRange(string $column, array $parameters = []): PropertyDefinition
     {
@@ -205,7 +203,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param string $column
      * @param array  $parameters
      *
-     * @return ColumnDefinition
+     * @return PropertyDefinition
      */
     public function geoPoint(string $column, array $parameters = []): PropertyDefinition
     {
@@ -216,7 +214,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param string $column
      * @param array  $parameters
      *
-     * @return ColumnDefinition
+     * @return PropertyDefinition
      */
     public function geoShape(string $column, array $parameters = []): PropertyDefinition
     {
@@ -270,7 +268,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param string column
      * @param bool $autoIncrement
      * @param bool $unsigned
-     * @return ColumnDefinition
+     * @return PropertyDefinition
      */
     public function integer(string $column, $autoIncrement = false, $unsigned = false): PropertyDefinition
     {
@@ -278,10 +276,10 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
-     * @param string $name
-     * @param array  $parameters
+     * @param string $column
+     * @param array $parameters
      *
-     * @return ColumnDefinition
+     * @return PropertyDefinition
      */
     public function integerRange(string $column, array $parameters = []): PropertyDefinition
     {
@@ -289,8 +287,8 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
-     * @param string $name
-     * @return ColumnDefinition
+     * @param string $column
+     * @return PropertyDefinition
      */
     public function ip(string $column): PropertyDefinition
     {
@@ -299,7 +297,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * @param string $column
-     * @return ColumnDefinition
+     * @return PropertyDefinition
      */
     public function ipAddress(string $column = 'ip_address'): PropertyDefinition
     {
@@ -310,7 +308,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param string $column
      * @param array  $parameters
      *
-     * @return ColumnDefinition
+     * @return PropertyDefinition
      */
     public function ipRange(string $column, array $parameters = []): PropertyDefinition
     {
@@ -321,7 +319,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param string $column
      * @param array  $relations
      *
-     * @return ColumnDefinition
+     * @return PropertyDefinition
      */
     public function join(string $column, array $relations): PropertyDefinition
     {
@@ -331,7 +329,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     /**
      * @param string $column
      * @param array $parameters
-     * @return \Illuminate\Database\Schema\ColumnDefinition
+     * @return PropertyDefinition
      */
     public function keyword(string $column, array $parameters = []): PropertyDefinition
     {
@@ -341,9 +339,9 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     /**
      * @param string $column
      *
-     * @return ColumnDefinition
+     * @return PropertyDefinition
      */
-    public function long(string $column):ColumnDefinition
+    public function long(string $column):PropertyDefinition
     {
         return $this->addColumn('long', $column);
     }
@@ -352,7 +350,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param string $column
      * @param array  $parameters
      *
-     * @return ColumnDefinition
+     * @return PropertyDefinition
      */
     public function longRange(string $column, array $parameters = []): PropertyDefinition
     {
@@ -371,7 +369,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param string   $column
      * @param \Closure $parameters
      *
-     * @return ColumnDefinition
+     * @return PropertyDefinition
      */
     public function nested(string $column): PropertyDefinition
     {
@@ -380,7 +378,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * @param string $column
-     * @return ColumnDefinition|\Illuminate\Database\Schema\ColumnDefinition
+     * @return PropertyDefinition
      */
     public function object(string $column)
     {
@@ -391,7 +389,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param string $column
      * @param array  $parameters
      *
-     * @return ColumnDefinition
+     * @return PropertyDefinition
      */
     public function percolator(string $column, array $parameters = []): PropertyDefinition
     {
@@ -403,7 +401,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param string $column
      * @param array  $parameters
      *
-     * @return ColumnDefinition
+     * @return PropertyDefinition
      */
     public function range(string $type, string $column, array $parameters = []): PropertyDefinition
     {
@@ -422,9 +420,9 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param string $column
      * @param array  $length
      *
-     * @return ColumnDefinition
+     * @return PropertyDefinition
      */
-    public function string($column, $length = null): PropertyDefinition
+    public function string(string $column, $length = null): PropertyDefinition
     {
         $length = $length ?: Builder::$defaultStringLength;
 
@@ -433,14 +431,11 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * @param string $column
-     * @param string $type
-     * @param array|null $parameters
-     *
-     * @return ColumnDefinition
+     * @return PropertyDefinition
      */
-    public function text(string $type, string $column, array $parameters = []): PropertyDefinition
+    public function text(string $column): PropertyDefinition
     {
-        return $this->addColumn($type, $column, $parameters);
+        return $this->addColumn('text', $column);
     }
 
     /**
@@ -476,7 +471,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param string $column
      * @param array  $parameters
      *
-     * @return ColumnDefinition
+     * @return PropertyDefinition
      */
     public function tokenCount(string $column, array $parameters = []): PropertyDefinition
     {
