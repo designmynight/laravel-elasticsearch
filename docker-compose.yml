@@ -1,13 +1,17 @@
 version: '3'
 services:
   unit-tests:
-    image: designmynight/php7.1-cli-mongo
-    command: phpdbg -qrr ./vendor/bin/phpunit
+    container_name: 'laravel-elasticsearch'
+    build:
+      context: .
+      dockerfile: Dockerfile.composer
+#    command: phpdbg -qrr ./vendor/bin/phpunit
     volumes:
       - .:/opt
     working_dir: /opt
 
   composer:
+    container_name: 'laravel-elasticsearch-composer'
     build:
       context: .
       dockerfile: Dockerfile.composer
