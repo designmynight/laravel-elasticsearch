@@ -35,7 +35,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param  array  $parameters
      * @return PropertyDefinition
      */
-    public function addColumn(string $type, string $name, array $parameters = [])
+    public function addColumn($type, $name, $parameters = [])
     {
         return $this->addColumnDefinition(new PropertyDefinition(
             array_merge(compact('type', 'name'), $parameters)
@@ -48,7 +48,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param PropertyDefinition $definition
      * @return PropertyDefinition
      */
-    protected function addColumnDefinition(PropertyDefinition $definition): PropertyDefinition
+    protected function addColumnDefinition($definition): PropertyDefinition
     {
         $this->columns[] = $definition;
 
@@ -93,7 +93,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param string $column
      * @return PropertyDefinition
      */
-    public function binary(string $column): PropertyDefinition
+    public function binary($column): PropertyDefinition
     {
         return $this->addColumn('binary', $column);
     }
@@ -117,7 +117,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param string $column
      * @return PropertyDefinition
      */
-    public function date(string $column): PropertyDefinition
+    public function date($column): PropertyDefinition
     {
         return $this->addColumn('date', $column);
     }
@@ -183,7 +183,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param bool $unsigned
      * @return PropertyDefinition
      */
-    public function float(string $column, int $total = 8, int $places = 2, bool $unsigned = false): PropertyDefinition
+    public function float($column, $total = 8, $places = 2, $unsigned = false): PropertyDefinition
     {
         return $this->addColumn('float', $column);
     }
@@ -194,7 +194,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      *
      * @return PropertyDefinition
      */
-    public function floatRange(string $column, array $parameters = []): PropertyDefinition
+    public function floatRange($column, array $parameters = []): PropertyDefinition
     {
         return $this->range('float_range', $column, $parameters);
     }
@@ -270,7 +270,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param bool $unsigned
      * @return PropertyDefinition
      */
-    public function integer(string $column, $autoIncrement = false, $unsigned = false): PropertyDefinition
+    public function integer($column, $autoIncrement = false, $unsigned = false): PropertyDefinition
     {
         return $this->addColumn('integer', $column);
     }
@@ -299,7 +299,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param string $column
      * @return PropertyDefinition
      */
-    public function ipAddress(string $column = 'ip_address'): PropertyDefinition
+    public function ipAddress($column = 'ip_address'): PropertyDefinition
     {
         return $this->addColumn('ipAddress', $column);
     }
@@ -422,7 +422,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      *
      * @return PropertyDefinition
      */
-    public function string(string $column, $length = null): PropertyDefinition
+    public function string($column, $length = null): PropertyDefinition
     {
         $length = $length ?: Builder::$defaultStringLength;
 
@@ -433,7 +433,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param string $column
      * @return PropertyDefinition
      */
-    public function text(string $column): PropertyDefinition
+    public function text($column): PropertyDefinition
     {
         return $this->addColumn('text', $column);
     }
@@ -473,7 +473,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      *
      * @return PropertyDefinition
      */
-    public function tokenCount(string $column, array $parameters = []): PropertyDefinition
+    public function tokenCount($column, array $parameters = []): PropertyDefinition
     {
         return $this->addColumn('token_count', $column, $parameters);
     }
