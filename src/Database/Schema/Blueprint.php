@@ -108,7 +108,11 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     public function build(Connection $connection, Grammar $grammar)
     {
         foreach ($this->toSql($connection, $grammar) as $statement) {
-            $connection->statement($statement);
+            if ($connection->pretending()) {
+                return;
+            }
+
+            $statement($this, $connection);
         }
     }
 
