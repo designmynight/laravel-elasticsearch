@@ -128,12 +128,12 @@ class QueryBuilder extends BaseBuilder
      * Add a where between statement to the query.
      *
      * @param string $column
-     * @param array  $values
+     * @param iterable $values
      * @param string $boolean
      * @param bool   $not
      * @return self
      */
-    public function whereBetween($column, array $values, $boolean = 'and', $not = false): self
+    public function whereBetween($column, iterable $values, $boolean = 'and', $not = false): self
     {
         $type = 'Between';
 
@@ -224,24 +224,6 @@ class QueryBuilder extends BaseBuilder
         }
 
         $this->wheres[] = compact('column', 'query', 'type', 'boolean');
-
-        return $this;
-    }
-
-    /**
-     * Add a 'must not' statement to the query.
-     *
-     * @param \Illuminate\Database\Query\Builder|static $query
-     * @param string                                    $boolean
-     * @return self
-     */
-    public function whereNot($query, $boolean = 'and'): self
-    {
-        $type = 'Not';
-
-        call_user_func($query, $query = $this->newQuery());
-
-        $this->wheres[] = compact('query', 'type', 'boolean');
 
         return $this;
     }
