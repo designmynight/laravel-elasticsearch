@@ -11,7 +11,7 @@ class BlueprintTest extends TestCase
     /** @var Blueprint */
     private $blueprint;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

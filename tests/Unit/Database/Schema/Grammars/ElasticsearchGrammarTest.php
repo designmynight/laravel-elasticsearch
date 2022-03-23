@@ -25,7 +25,7 @@ class ElasticsearchGrammarTest extends TestCase
     /** @var ElasticsearchGrammar */
     private $grammar;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
