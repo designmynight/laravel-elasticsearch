@@ -2,33 +2,28 @@
 
 namespace Tests;
 
-use Carbon\Carbon;
-use Orchestra\Testbench\TestCase as BaseTestCase;
 
-class TestCase extends BaseTestCase
+class TestCase extends \Orchestra\Testbench\TestCase
 {
 
     /**
      * Set up the tests.
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
+    }
+
+    protected function defineEnvironment($app)
+    {
+        $app['config']->set('database.connections.elasticsearch.suffix', '_dev');
     }
 
     /**
      * @return void
      */
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
-    }
-
-    /**
-     * @param \Illuminate\Foundation\Application $app
-     */
-    protected function getEnvironmentSetUp($app)
-    {
-        $app['config']->set('database.connections.elasticsearch.suffix', '_dev');
     }
 }
