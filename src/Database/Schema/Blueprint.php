@@ -28,18 +28,21 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     protected array $indexSettings = [];
 
     /**
-     * Add a new column to the blueprint.
-     *
-     * @param string $type
-     * @param string $name
-     * @param  array  $parameters
-     * @return PropertyDefinition
+     * @inheritDoc
      */
-    public function addColumn($type, $name, $parameters = [])
+    public function addColumn($type, $name, array $parameters = [])
     {
-        return $this->addColumnDefinition(new PropertyDefinition(
-            array_merge(compact('type', 'name'), $parameters)
-        ));
+        $attributes = ['name'];
+
+        if (isset($type)) {
+            $attributes[] = 'type';
+        }
+
+        $this->columns[] = $column = new PropertyDefinition(
+            array_merge(compact(...$attributes), $parameters)
+        );
+
+        return $column;
     }
 
     /**

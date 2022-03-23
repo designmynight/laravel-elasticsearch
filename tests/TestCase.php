@@ -16,7 +16,26 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
     protected function defineEnvironment($app)
     {
-        $app['config']->set('database.connections.elasticsearch.suffix', '_dev');
+        //default laravel/elasticsearch configurations
+        $app['config']->set('database.connections.elasticsearch', [
+            'driver' => 'elasticsearch',
+            'host' => 'localhost',
+            'port' => 9200,
+            'scheme' => 'http',
+            'database' => 'database',
+            'username' => 'admin',
+            'password' => 'admin',
+            'suffix' => '_dev',
+            'sslVerification' => true,
+        ]);
+
+        //default package configurations
+        $app['config']->set('elasticsearch', [
+            'defaultConnection' => 'default',
+            'default' => [
+                'sslVerification' => true,
+            ],
+        ]);
     }
 
     /**

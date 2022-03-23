@@ -75,15 +75,15 @@ class IndexListCommandTest extends TestCase
         ];
         $body = [
             [
+                'index' => '2017_05_21_111500_test_dev',
+                'alias' => 'test_dev',
+            ],
+            [
                 'index' => '2018_05_21_111500_test_production',
                 'alias' => 'test_production',
             ],
             [
                 'index' => '2018_05_21_111500_test_dev',
-                'alias' => 'test_dev',
-            ],
-            [
-                'index' => '2017_05_21_111500_test_dev',
                 'alias' => 'test_dev',
             ],
         ];
@@ -136,7 +136,7 @@ class IndexListCommandTest extends TestCase
                 'index' => 'name of index',
             ],
         ];
-        $this->command->shouldReceive('getIndices')->once()->andReturn($indices);
+        $this->command->shouldReceive('indices')->once()->andReturn($indices);
         $this->command->shouldReceive('table')->once()->withAnyArgs();
 
         $this->command->handle();
