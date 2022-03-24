@@ -210,11 +210,11 @@ class ElasticsearchGrammarTest extends TestCase
             ]
         ]);
 
-        $executable = $this->grammar->compileUpdate(new Blueprint(''), new Fluent(), $this->connection);
+        $executable = $this->grammar->compileUpdate(new Blueprint(''), new Fluent(), $connection);
 
         $this->assertInstanceOf(Closure::class, $executable);
 
-        $executable($this->blueprint, $this->connection);
+        $executable($this->blueprint, $connection);
     }
 
     /**

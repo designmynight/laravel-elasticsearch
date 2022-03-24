@@ -73,6 +73,7 @@ class IndexListCommandTest extends TestCase
                 'alias' => 'test_production',
             ],
         ];
+
         $body = [
             [
                 'index' => '2017_05_21_111500_test_dev',
