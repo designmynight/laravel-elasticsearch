@@ -3,19 +3,49 @@
 namespace Tests\Unit\Database\Schema;
 
 use Carbon\Carbon;
+use DesignMyNight\Elasticsearch\Connection;
 use DesignMyNight\Elasticsearch\Database\Schema\Blueprint;
+use DesignMyNight\Elasticsearch\Database\Schema\Grammars\ElasticsearchGrammar;
+use Mockery as m;
 use Tests\TestCase;
 
 class BlueprintTest extends TestCase
 {
-    /** @var Blueprint */
-    private $blueprint;
+    private Blueprint $blueprint;
 
     public function setUp(): void
     {
         parent::setUp();
 
         $this->blueprint = new Blueprint('indices');
+    }
+
+    /**
+     * @test
+     */
+    public function it_creates_mapping()
+    {
+        $connection = m::mock(Connection::class);
+
+        $grammar = m::mock(ElasticsearchGrammar::class);
+
+        $grammar->shouldReceive('getFluentCommands')
+            ->once()
+            ->andReturn([]);
+
+        $fluent = $this->blueprint->create();
+        $this->blueprint->date('created_at');
+
+        $closure = function () {};
+
+        $grammar->shouldReceive('compileCreate')
+            ->once()
+            ->with($this->blueprint, $fluent, $connection)
+            ->andReturn($closure);
+
+        $results = $this->blueprint->toSql($connection, $grammar);
+
+        $this->assertEquals([$closure], $results);
     }
 
     /**
@@ -72,8 +102,6 @@ class BlueprintTest extends TestCase
      */
     public function it_routing_required()
     {
-        $type = 'routingRequired';
-
         $this->blueprint->routingRequired();
 
         $this->assertEquals(["_routing" => ["required" => true]], $this->blueprint->getMeta());
