@@ -23,6 +23,65 @@ class BlueprintTest extends TestCase
     /**
      * @test
      */
+    public function it_fails_if_grammar_no_method()
+    {
+        $connection = m::mock(Connection::class);
+
+        $grammar = m::mock(ElasticsearchGrammar::class);
+
+        $grammar->shouldReceive('getFluentCommands')
+            ->once()
+            ->andReturn([]);
+
+        $fluent = $this->blueprint->dropUnique('test');
+
+        $this->blueprint->date('created_at');
+
+        $closure = function () {
+        };
+
+        $grammar->shouldReceive('compileDrop')
+            ->never()
+            ->with($this->blueprint, $fluent, $connection)
+            ->andReturn($closure);
+
+        $results = $this->blueprint->toSql($connection, $grammar);
+
+        $this->assertEquals([], $results);
+    }
+
+    /**
+     * @test
+     */
+    public function it_updates_mapping()
+    {
+        $connection = m::mock(Connection::class);
+
+        $grammar = m::mock(ElasticsearchGrammar::class);
+
+        $grammar->shouldReceive('getFluentCommands')
+            ->once()
+            ->andReturn([]);
+
+        $fluent = $this->blueprint->update();
+        $this->blueprint->date('created_at');
+
+        $closure = function () {
+        };
+
+        $grammar->shouldReceive('compileUpdate')
+            ->once()
+            ->with($this->blueprint, $fluent, $connection)
+            ->andReturn($closure);
+
+        $results = $this->blueprint->toSql($connection, $grammar);
+
+        $this->assertEquals([$closure], $results);
+    }
+
+    /**
+     * @test
+     */
     public function it_creates_mapping()
     {
         $connection = m::mock(Connection::class);
@@ -36,7 +95,8 @@ class BlueprintTest extends TestCase
         $fluent = $this->blueprint->create();
         $this->blueprint->date('created_at');
 
-        $closure = function () {};
+        $closure = function () {
+        };
 
         $grammar->shouldReceive('compileCreate')
             ->once()
