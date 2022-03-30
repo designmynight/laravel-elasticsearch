@@ -4,10 +4,9 @@ namespace Tests\Unit\Console\Mappings;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\IndexListCommand;
 use Elasticsearch\Client;
-use Elasticsearch\ClientBuilder;
 use Elasticsearch\Namespaces\CatNamespace;
-use Orchestra\Testbench\TestCase;
 use Mockery as m;
+use Tests\TestCase;
 
 /**
  * Class IndexListCommandTest
@@ -16,6 +15,7 @@ use Mockery as m;
  */
 class IndexListCommandTest extends TestCase
 {
+    use \Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 
     /** @var m\CompositeExpectation|IndexListCommand */
     private $command;
@@ -23,7 +23,7 @@ class IndexListCommandTest extends TestCase
     /**
      * Set up tests.
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -48,7 +48,7 @@ class IndexListCommandTest extends TestCase
 
         $this->command->client = $client;
 
-        $this->assertEquals([], $this->command->getIndices());
+        $this->assertEquals([], $this->command->indices());
     }
 
     /**
@@ -73,17 +73,18 @@ class IndexListCommandTest extends TestCase
                 'alias' => 'test_production',
             ],
         ];
+
         $body = [
+            [
+                'index' => '2017_05_21_111500_test_dev',
+                'alias' => 'test_dev',
+            ],
             [
                 'index' => '2018_05_21_111500_test_production',
                 'alias' => 'test_production',
             ],
             [
                 'index' => '2018_05_21_111500_test_dev',
-                'alias' => 'test_dev',
-            ],
-            [
-                'index' => '2017_05_21_111500_test_dev',
                 'alias' => 'test_dev',
             ],
         ];
@@ -136,7 +137,7 @@ class IndexListCommandTest extends TestCase
                 'index' => 'name of index',
             ],
         ];
-        $this->command->shouldReceive('getIndices')->once()->andReturn($indices);
+        $this->command->shouldReceive('indices')->once()->andReturn($indices);
         $this->command->shouldReceive('table')->once()->withAnyArgs();
 
         $this->command->handle();

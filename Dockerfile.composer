@@ -1,4 +1,6 @@
-FROM 607756570330.dkr.ecr.eu-west-1.amazonaws.com/dmn-php:php80-ac819d7
+FROM php:cli-alpine3.15
+
+COPY --from=composer:2.0.13 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /opt
 

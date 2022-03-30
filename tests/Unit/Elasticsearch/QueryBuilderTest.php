@@ -14,7 +14,7 @@ class QueryBuilderTest extends TestCase
     /** @var QueryBuilder */
     private $builder;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

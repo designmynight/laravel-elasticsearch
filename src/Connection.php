@@ -9,7 +9,6 @@ use DesignMyNight\Elasticsearch\Database\Schema\ElasticsearchBuilder;
 use DesignMyNight\Elasticsearch\Database\Schema\Grammars\ElasticsearchGrammar;
 use DesignMyNight\Elasticsearch\Exceptions\QueryException;
 use Elasticsearch\ClientBuilder;
-use Exception;
 use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\Grammar as BaseGrammar;

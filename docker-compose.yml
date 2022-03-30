@@ -2,6 +2,7 @@ version: '3'
 services:
   unit-tests:
     container_name: 'laravel-elasticsearch'
+    tty: true
     build:
       context: .
       dockerfile: Dockerfile.composer
