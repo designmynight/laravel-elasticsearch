@@ -431,9 +431,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      */
     public function string($column, $length = null): PropertyDefinition
     {
-        $length = $length ?: Builder::$defaultStringLength;
-
-        return $this->text('string', $column,  compact('length'));
+        return $this->text($column);
     }
 
     /**
