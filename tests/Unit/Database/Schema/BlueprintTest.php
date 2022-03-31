@@ -130,6 +130,8 @@ class BlueprintTest extends TestCase
         $name = 'name';
         $expected = compact('type', 'name');
 
+        $this->blueprint->tokenCount($expected['name']);
+
         $this->assertColumn($expected);
     }
 
@@ -142,6 +144,8 @@ class BlueprintTest extends TestCase
         $name = 'name';
         $expected = compact('type', 'name');
 
+        $this->blueprint->text($name);
+
         $this->assertColumn($expected);
     }
 
@@ -150,9 +154,11 @@ class BlueprintTest extends TestCase
      */
     public function it_adds_string()
     {
-        $type = 'string';
+        $type = 'text';
         $name = 'name';
         $expected = compact('type', 'name');
+
+        $this->blueprint->string($expected['name']);
 
         $this->assertColumn($expected);
     }
@@ -177,6 +183,8 @@ class BlueprintTest extends TestCase
         $name = 'name';
         $expected = compact('type', 'name');
 
+        $this->blueprint->range($expected['type'], $expected['name']);
+
         $this->assertColumn($expected);
     }
 
@@ -191,10 +199,7 @@ class BlueprintTest extends TestCase
 
         $this->blueprint->integerRange($expected['name']);
 
-        $columns = $this->blueprint->getColumns();
-        $attr = $columns[0]->getAttributes();
-
-        $this->assertEquals($expected, $attr);
+        $this->assertColumn($expected);
     }
 
     /**
@@ -206,13 +211,13 @@ class BlueprintTest extends TestCase
         $name = 'name';
         $expected = compact('type', 'name');
 
+        $this->blueprint->integer($name);
+
         $this->assertColumn($expected);
     }
 
     public function assertColumn($expected)
     {
-        $this->blueprint->addColumn($expected['type'], $expected['name']);
-
         $columns = $this->blueprint->getColumns();
         $attr = $columns[0]->getAttributes();
 
@@ -227,7 +232,7 @@ class BlueprintTest extends TestCase
         $type = 'string';
         $name = 'name';
         $expected = compact('type', 'name');
-
+        $this->blueprint->addColumn($type, $name);
         $this->assertColumn($expected);
     }
 
