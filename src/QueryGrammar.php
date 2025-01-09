@@ -5,8 +5,6 @@ namespace DesignMyNight\Elasticsearch;
 use DateTime;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar as BaseGrammar;
-use Illuminate\Support\Str;
-use InvalidArgumentException;
 use MongoDB\BSON\ObjectID;
 
 class QueryGrammar extends BaseGrammar
