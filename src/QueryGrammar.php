@@ -110,11 +110,6 @@ class QueryGrammar extends BaseGrammar
         $isOr  = false;
 
         foreach ($clauses as $where) {
-
-            if(isset($where['column']) && Str::startsWith($where['column'], $builder->from . '.')) {
-                $where['column'] = Str::replaceFirst($builder->from . '.', '', $where['column']);
-            }
-
             // We use different methods to compile different wheres
             $method = 'compileWhere' . $where['type'];
             $result = $this->{$method}($builder, $where);
