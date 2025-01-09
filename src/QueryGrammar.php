@@ -171,6 +171,8 @@ class QueryGrammar extends BaseGrammar
                     'field' => $where['column'],
                 ],
             ];
+
+            $where['not'] = !$value;
         } else if ($where['operator'] == 'like') {
             $query = [
                 'wildcard' => [
