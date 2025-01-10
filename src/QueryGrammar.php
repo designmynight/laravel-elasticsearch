@@ -181,6 +181,12 @@ class QueryGrammar extends BaseGrammar
                     ],
                 ],
             ];
+        } else if ($where['operator'] == 'match_phrase') {
+            $query = [
+                'match_phrase' => [
+                    $where['column'] => $value,
+                ],
+            ];
         } else {
             $query = [
                 'term' => [

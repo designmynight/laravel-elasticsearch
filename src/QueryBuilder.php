@@ -40,7 +40,7 @@ class QueryBuilder extends BaseBuilder
      *
      * @var array
      */
-    public $operators = ['=', '<', '>', '<=', '>=', '!=', 'exists', 'like'];
+    public $operators = ['=', '<', '>', '<=', '>=', '!=', 'exists', 'like', 'match_phrase'];
 
     /**
      * Set the document type the search is targeting.
