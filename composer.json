@@ -14,7 +14,8 @@
         "php": "^8.0",
         "ext-json": "*",
         "elasticsearch/elasticsearch": "^7.17",
-        "laravel/framework": "^11.0"
+        "laravel/framework": "^11.0",
+        "league/flysystem": "^3.8.0"
     },
     "require-dev": {
         "orchestra/testbench": "^7.2.0",
