@@ -1,14 +1,13 @@
-FROM designmynight/php7.1-cli-mongo
+FROM php:cli-alpine3.15
+
+COPY --from=composer:2.0.13 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /opt
 
-RUN apk add --no-cache libpng libpng-dev && docker-php-ext-install gd && apk del libpng-dev
+RUN apk add --update --no-cache libpng libpng-dev && apk del libpng-dev
 
-RUN docker-php-ext-install pcntl
-
-COPY --from=composer:1.6 /usr/bin/composer /usr/bin/composer
-
-RUN /usr/bin/composer global require hirak/prestissimo
+RUN apk add php8-gd php8-pcntl
 
 COPY composer.json /opt
 COPY composer.lock /opt
+RUN composer update

@@ -25,7 +25,7 @@ class ElasticsearchGrammarTest extends TestCase
     /** @var ElasticsearchGrammar */
     private $grammar;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -38,13 +38,13 @@ class ElasticsearchGrammarTest extends TestCase
         $indicesNamespace->shouldReceive('existsAlias')->andReturnFalse();
 
         /** @var Client|m\CompositeExpectation $client */
-        $client = m::mock(Client::class);
-        $client->shouldReceive('cat')->andReturn($catNamespace);
-        $client->shouldReceive('indices')->andReturn($indicesNamespace);
+        $this->client = m::mock(Client::class);
+        $this->client->shouldReceive('cat')->andReturn($catNamespace);
+        $this->client->shouldReceive('indices')->andReturn($indicesNamespace);
 
         /** @var Connection|m\CompositeExpectation $connection */
         $connection = m::mock(Connection::class)->makePartial()->shouldAllowMockingProtectedMethods();
-        $connection->shouldReceive('createConnection')->andReturn($client);
+        $connection->shouldReceive('createConnection')->andReturn($this->client);
 
         Carbon::setTestNow(
             Carbon::create(2019, 7, 2, 12)
@@ -186,31 +186,35 @@ class ElasticsearchGrammarTest extends TestCase
      */
     public function it_returns_a_closure_that_will_update_an_index_mapping()
     {
+        $connection = m::mock(
+            Connection::class . '[updateIndex]',
+            [config('database.connections.elasticsearch')]
+        );
+
+
         $this->blueprint->text('title');
         $this->blueprint->date('date');
         $this->blueprint->keyword('status');
 
-        $this->connection->shouldReceive('updateIndex')->once()->with('indices_dev', 'index', [
-            'index' => [
-                'properties' => [
-                    'title' => [
-                        'type' => 'text'
-                    ],
-                    'date' => [
-                        'type' => 'date'
-                    ],
-                    'status' => [
-                        'type' => 'keyword'
-                    ]
+        $connection->shouldReceive('updateIndex')->once()->with('indices_dev', [
+            'properties' => [
+                'title' => [
+                    'type' => 'text'
+                ],
+                'date' => [
+                    'type' => 'date'
+                ],
+                'status' => [
+                    'type' => 'keyword'
                 ]
             ]
         ]);
 
-        $executable = $this->grammar->compileUpdate(new Blueprint(''), new Fluent(), $this->connection);
+        $executable = $this->grammar->compileUpdate(new Blueprint(''), new Fluent(), $connection);
 
         $this->assertInstanceOf(Closure::class, $executable);
 
-        $executable($this->blueprint, $this->connection);
+        $executable($this->blueprint, $connection);
     }
 
     /**

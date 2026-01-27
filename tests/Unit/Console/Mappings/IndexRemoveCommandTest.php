@@ -4,11 +4,10 @@ namespace Tests\Unit\Console\Mappings;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\IndexRemoveCommand;
 use Elasticsearch\Client;
-use Elasticsearch\ClientBuilder;
 use Elasticsearch\Namespaces\CatNamespace;
 use Elasticsearch\Namespaces\IndicesNamespace;
 use Mockery as m;
-use Orchestra\Testbench\TestCase;
+use Tests\TestCase;
 
 /**
  * Class IndexRemoveCommandTest
@@ -21,7 +20,7 @@ class IndexRemoveCommandTest extends TestCase
     /** @var m\CompositeExpectation|IndexRemoveCommand */
     private $command;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -55,7 +54,7 @@ class IndexRemoveCommandTest extends TestCase
      * It handles the console command call.
      *
      * @test
-     * @covers IndexRemoveCommand::handle()
+     * @covers       IndexRemoveCommand::handle()
      * @dataProvider handle_data_provider
      */
     public function it_handles_the_console_command_call($index)
@@ -79,7 +78,7 @@ class IndexRemoveCommandTest extends TestCase
     /**
      * @return array
      */
-    public function handle_data_provider():array
+    public function handle_data_provider(): array
     {
         return [
             'index given'    => ['test_index'],
