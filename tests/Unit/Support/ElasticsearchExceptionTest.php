@@ -5,9 +5,8 @@ namespace Tests\Unit\Support;
 use DesignMyNight\Elasticsearch\Support\ElasticsearchException;
 use Elasticsearch\Common\Exceptions\ElasticsearchException as BaseElasticsearchException;
 use Elasticsearch\Common\Exceptions\Missing404Exception;
-use Orchestra\Testbench\TestCase;
 
-class ElasticsearchExceptionTest extends TestCase
+class ElasticsearchExceptionTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @test
@@ -64,7 +63,7 @@ class ElasticsearchExceptionTest extends TestCase
         $this->assertSame($raw, $exception->getRaw());
     }
 
-    public function errorMessagesProvider(): array
+    public static function errorMessagesProvider(): array
     {
         $missingIndexError = json_encode(
             [
@@ -92,10 +91,10 @@ class ElasticsearchExceptionTest extends TestCase
 
         return [
             'missing_index' => [
-                'error'   => new Missing404Exception($missingIndexError),
-                'code'    => 'index_not_found_exception',
-                'message' => 'no such index [bob]',
-                'raw'     => json_decode($missingIndexError, true),
+                new Missing404Exception($missingIndexError),
+                'index_not_found_exception',
+                'no such index [bob]',
+                json_decode($missingIndexError, true),
             ],
         ];
     }

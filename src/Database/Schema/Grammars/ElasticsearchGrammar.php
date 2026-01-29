@@ -130,11 +130,12 @@ class ElasticsearchGrammar extends Grammar
     }
 
     /**
-     * @param BaseBlueprint $blueprint
+     * Get the columns for the Elasticsearch mapping.
      *
+     * @param  Blueprint  $blueprint
      * @return array
      */
-    protected function getColumns(BaseBlueprint $blueprint)
+    protected function getColumns(Blueprint $blueprint)
     {
         $columns = [];
 
@@ -190,7 +191,7 @@ class ElasticsearchGrammar extends Grammar
     {
         if (!is_null($property->fields)) {
             $fields = $property->fields;
-            $fields($blueprint = $this->createBlueprint());
+            $fields($blueprint = $this->createBlueprint($blueprint->getConnection(), $blueprint->getTable()));
 
             $property->fields = $this->getColumns($blueprint);
         }
@@ -208,7 +209,7 @@ class ElasticsearchGrammar extends Grammar
     {
         if (!is_null($property->properties)) {
             $properties = $property->properties;
-            $properties($blueprint = $this->createBlueprint());
+            $properties($blueprint = $this->createBlueprint($blueprint->getConnection(), $blueprint->getTable()));
 
             $property->properties = $this->getColumns($blueprint);
         }
@@ -219,8 +220,8 @@ class ElasticsearchGrammar extends Grammar
     /**
      * @return Blueprint
      */
-    private function createBlueprint(): Blueprint
+    private function createBlueprint(Connection $connection, $table, ?Closure $callback = null): Blueprint
     {
-        return new Blueprint('');
+        return new Blueprint($connection, $table, $callback);
     }
 }

@@ -6,7 +6,6 @@ use DesignMyNight\Elasticsearch\Connection;
 use Elasticsearch\Client;
 use Elasticsearch\ClientBuilder;
 use Illuminate\Console\Command as BaseCommand;
-use Illuminate\Support\Facades\Config;
 
 /**
  * Class Command
@@ -25,7 +24,9 @@ abstract class Command extends BaseCommand
     {
         parent::__construct();
 
-        $this->client = new Connection(Config::get('database.connections.elasticsearch'));
+        if ($config = config('database.connections.elasticsearch')) {
+            $this->client = new Connection($config);
+        }
     }
 
     /**
