@@ -2,11 +2,12 @@
 
 namespace DesignMyNight\Elasticsearch\Database\Schema;
 
+use Closure;
 use Carbon\Carbon;
-use Illuminate\Database\Connection;
-use Illuminate\Database\Schema\Grammars\Grammar;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
+use Illuminate\Database\Connection;
+use Illuminate\Support\Facades\Config;
+use DesignMyNight\Elasticsearch\Database\Schema\ColumnDefinition;
 
 /**
  * Class Blueprint
@@ -15,33 +16,20 @@ use Illuminate\Support\Str;
 class Blueprint extends \Illuminate\Database\Schema\Blueprint
 {
     /** @var string */
-    protected $alias;
+    protected string $alias;
 
     /** @var string */
-    protected $document;
+    protected string $document;
 
     /** @var array */
-    protected $meta = [];
+    protected array $meta = [];
 
     /** @var array */
-    protected $indexSettings = [];
+    protected array $indexSettings = [];
 
-    /**
-     * @inheritDoc
-     */
-    public function addColumn($type, $name, array $parameters = [])
+    public function __construct(Connection $connection, $table, ?Closure $callback = null)
     {
-        $attributes = ['name'];
-
-        if (isset($type)) {
-            $attributes[] = 'type';
-        }
-
-        $this->columns[] = $column = new PropertyDefinition(
-            array_merge(compact(...$attributes), $parameters)
-        );
-
-        return $column;
+        parent::__construct($connection, $table, $callback);
     }
 
     /**
@@ -71,55 +59,23 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
-     * @param string $name
-     * @param array  $parameters
-     *
-     * @return PropertyDefinition
+     * @param string $column
+     * @return ColumnDefinition
      */
-    public function binary($name, array $parameters = []): PropertyDefinition
+    public function date($column)
     {
-        return $this->addColumn('binary', $name, $parameters);
+        return $this->addColumn('date', $column);
     }
 
     /**
-     * Execute the blueprint against the database.
-     *
-     * @param \Illuminate\Database\Connection              $connection
-     * @param \Illuminate\Database\Schema\Grammars\Grammar $grammar
-     *
-     * @return void
-     */
-    public function build(Connection $connection, Grammar $grammar)
-    {
-        foreach ($this->toSql($connection, $grammar) as $statement) {
-            if ($connection->pretending()) {
-                return;
-            }
-
-            $statement($this, $connection);
-        }
-    }
-
-    /**
-     * @param string $name
+     * @param string $column
      * @param array  $parameters
      *
-     * @return PropertyDefinition
+     * @return ColumnDefinition
      */
-    public function date($name): PropertyDefinition
+    public function dateRange(string $column, array $parameters = [])
     {
-        return $this->addColumn('date', $name);
-    }
-
-    /**
-     * @param string $name
-     * @param array  $parameters
-     *
-     * @return PropertyDefinition
-     */
-    public function dateRange(string $name, array $parameters = []): PropertyDefinition
-    {
-        return $this->range('date_range', $name, $parameters);
+        return $this->range('date_range', $column, $parameters);
     }
 
     /**
@@ -131,20 +87,20 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
-     * @param string $name
-     * @param array  $parameters
+     * @param string $column
+     * @param array $parameters
      *
-     * @return PropertyDefinition
+     * @return ColumnDefinition
      */
-    public function doubleRange(string $name, array $parameters = []): PropertyDefinition
+    public function doubleRange(string $column, array $parameters = [])
     {
-        return $this->range('double_range', $name, $parameters);
+        return $this->range('double_range', $column, $parameters);
     }
 
     /**
      * @param bool|string $value
      */
-    public function dynamic($value): void
+    public function dynamic(bool|string $value): void
     {
         $this->addMetaField('dynamic', $value);
     }
@@ -166,46 +122,48 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
-     * @param string $name
+     * Create a new float column on the table.
      *
-     * @return PropertyDefinition
+     * @param string $column
+     * @param int $precision
+     * @return ColumnDefinition
      */
-    public function float($name, $total = 8, $places = 2, $unsigned = false): PropertyDefinition
+    public function float($column, $precision = 53)
     {
-        return $this->addColumn('float', $name);
+        return $this->addColumn('float', $column);
     }
 
     /**
-     * @param string $name
-     * @param array  $parameters
+     * @param string $column
+     * @param array $parameters
      *
-     * @return PropertyDefinition
+     * @return ColumnDefinition
      */
-    public function floatRange(string $name, array $parameters = []): PropertyDefinition
+    public function floatRange($column, array $parameters = [])
     {
-        return $this->range('float_range', $name, $parameters);
+        return $this->range('float_range', $column, $parameters);
     }
 
     /**
-     * @param string $name
+     * @param string $column
      * @param array  $parameters
      *
-     * @return PropertyDefinition
+     * @return ColumnDefinition
      */
-    public function geoPoint(string $name, array $parameters = []): PropertyDefinition
+    public function geoPoint(string $column, array $parameters = [])
     {
-        return $this->addColumn('geo_point', $name, $parameters);
+        return $this->addColumn('geo_point', $column, $parameters);
     }
 
     /**
-     * @param string $name
+     * @param string $column
      * @param array  $parameters
      *
-     * @return PropertyDefinition
+     * @return ColumnDefinition
      */
-    public function geoShape(string $name, array $parameters = []): PropertyDefinition
+    public function geoShape(string $column, array $parameters = [])
     {
-        return $this->addColumn('geo_shape', $name, $parameters);
+        return $this->addColumn('geo_shape', $column, $parameters);
     }
 
     /**
@@ -252,99 +210,96 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
-     * @param string $name
-     *
-     * @return PropertyDefinition
+     * @param string column
+     * @param bool $autoIncrement
+     * @param bool $unsigned
+     * @return ColumnDefinition
      */
-    public function integer($name, $autoIncrement = false, $unsigned = false): PropertyDefinition
+    public function integer($column, $autoIncrement = false, $unsigned = false)
     {
-        return $this->addColumn('integer', $name);
+        return $this->addColumn('integer', $column);
     }
 
     /**
-     * @param string $name
+     * @param string $column
+     * @param array $parameters
+     *
+     * @return ColumnDefinition
+     */
+    public function integerRange(string $column, array $parameters = [])
+    {
+        return $this->range('integer_range', $column, $parameters);
+    }
+
+    /**
+     * @param string $column
+     * @return ColumnDefinition
+     */
+    public function ip(string $column)
+    {
+        return $this->ipAddress($column);
+    }
+
+    /**
+     * @param string $column
+     * @return ColumnDefinition
+     */
+    public function ipAddress($column = 'ip_address')
+    {
+        return $this->addColumn('ipAddress', $column);
+    }
+
+    /**
+     * @param string $column
      * @param array  $parameters
      *
-     * @return PropertyDefinition
+     * @return ColumnDefinition
      */
-    public function integerRange(string $name, array $parameters = []): PropertyDefinition
+    public function ipRange(string $column, array $parameters = [])
     {
-        return $this->range('integer_range', $name, $parameters);
+        return $this->range('ip_range', $column, $parameters);
     }
 
     /**
-     * @param string $name
-     * @param array  $parameters
-     *
-     * @return PropertyDefinition
-     */
-    public function ip(string $name, array $parameters = []): PropertyDefinition
-    {
-        return $this->ipAddress($name, $parameters);
-    }
-
-    /**
-     * @param string $name
-     * @param array  $parameters
-     *
-     * @return PropertyDefinition
-     */
-    public function ipAddress($name, array $parameters = []): PropertyDefinition
-    {
-        return $this->addColumn('ip', $name, $parameters);
-    }
-
-    /**
-     * @param string $name
-     * @param array  $parameters
-     *
-     * @return PropertyDefinition
-     */
-    public function ipRange(string $name, array $parameters = []): PropertyDefinition
-    {
-        return $this->range('ip_range', $name, $parameters);
-    }
-
-    /**
-     * @param string $name
+     * @param string $column
      * @param array  $relations
      *
-     * @return PropertyDefinition
+     * @return ColumnDefinition
      */
-    public function join(string $name, array $relations): PropertyDefinition
+    public function join(string $column, array $relations)
     {
-        return $this->addColumn('join', $name, compact('relations'));
+        return $this->addColumn('join', $column, compact('relations'));
     }
 
     /**
-     * @param string $name
+     * @param string $column
+     * @param array $parameters
+     * @return ColumnDefinition
+     */
+    public function keyword(string $column, array $parameters = [])
+    {
+        return $this->addColumn('keyword', $column, $parameters);
+    }
+
+    /**
+     * @param string $column
      *
-     * @return \Illuminate\Database\Schema\ColumnDefinition
+     * @return ColumnDefinition
      */
-    public function keyword(string $name, array $parameters = []): PropertyDefinition
+    public function long(string $column)
     {
-        return $this->addColumn('keyword', $name, $parameters);
+        return $this->addColumn('long', $column);
     }
 
     /**
-     * @param string $name
-     *
-     * @return PropertyDefinition
-     */
-    public function long(string $name):PropertyDefinition
-    {
-        return $this->addColumn('long', $name);
-    }
-
-    /**
-     * @param string $name
+     * @param string $column
      * @param array  $parameters
      *
-     * @return PropertyDefinition
+     * @return ColumnDefinition
      */
-    public function longRange(string $name, array $parameters = []): PropertyDefinition
+    public function longRange(string $column, array $parameters = [])
     {
-        return $this->range('long_range', $name, $parameters);
+        return $this->range('long_range', $column, $parameters);
     }
 
     /**
@@ -356,48 +311,46 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
-     * @param string   $name
+     * @param string   $column
      * @param \Closure $parameters
      *
-     * @return PropertyDefinition
+     * @return ColumnDefinition
      */
-    public function nested(string $name): PropertyDefinition
+    public function nested(string $column)
     {
-        return $this->addColumn('nested', $name);
+        return $this->addColumn('nested', $column);
     }
 
     /**
-     * @param string   $name
-     * @param \Closure $parameters
-     *
-     * @return PropertyDefinition|\Illuminate\Database\Schema\ColumnDefinition
+     * @param string $column
+     * @return ColumnDefinition
      */
-    public function object(string $name)
+    public function object(string $column)
     {
-        return $this->addColumn(null, $name);
+        return $this->addColumn(null, $column);
     }
 
     /**
-     * @param string $name
+     * @param string $column
      * @param array  $parameters
      *
-     * @return PropertyDefinition
+     * @return ColumnDefinition
      */
-    public function percolator(string $name, array $parameters = []): PropertyDefinition
+    public function percolator(string $column, array $parameters = [])
     {
-        return $this->addColumn('percolator', $name, $parameters);
+        return $this->addColumn('percolator', $column, $parameters);
     }
 
     /**
      * @param string $type
-     * @param string $name
+     * @param string $column
      * @param array  $parameters
      *
-     * @return PropertyDefinition
+     * @return ColumnDefinition
      */
-    public function range(string $type, string $name, array $parameters = []): PropertyDefinition
+    public function range(string $type, string $column, array $parameters = [])
     {
-        return $this->addColumn($type, $name, $parameters);
+        return $this->addColumn($type, $column, $parameters);
     }
 
     /**
@@ -409,65 +362,39 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
-     * @param string $name
+     * @param string $column
      * @param array  $length
      *
-     * @return PropertyDefinition
+     * @return ColumnDefinition
      */
-    public function string($name, $parameters = null): PropertyDefinition
+    public function string($column, $length = null)
     {
-        return $this->text($name, $parameters ?? []);
+        return $this->text($column);
     }
 
     /**
-     * @param string     $name
-     * @param array|null $parameters
-     *
-     * @return PropertyDefinition
+     * @param string $column
+     * @return ColumnDefinition
      */
-    public function text($name, array $parameters = []): PropertyDefinition
+    public function text($column)
     {
-        return $this->addColumn('text', $name, $parameters);
+        return $this->addColumn('text', $column);
+    }
+
+    public function getConnection()
+    {
+        return $this->connection;
     }
 
     /**
-     * @param Connection $connection
-     * @param Grammar    $grammar
-     * @return \Closure[]
-     */
-    public function toSql(Connection $connection, Grammar $grammar)
-    {
-        $this->addImpliedCommands($grammar);
-
-        $statements = [];
-
-        // Each type of command has a corresponding compiler function on the schema
-        // grammar which is used to build the necessary SQL statements to build
-        // the blueprint element, so we'll just call that compilers function.
-        $this->ensureCommandsAreValid($connection);
-
-        foreach ($this->commands as $command) {
-            $method = 'compile' . ucfirst($command->name);
-
-            if (method_exists($grammar, $method)) {
-                if (!is_null($statement = $grammar->$method($this, $command, $connection))) {
-                    $statements[] = $statement;
-                }
-            }
-        }
-
-        return $statements;
-    }
-
-    /**
-     * @param string $name
+     * @param string $column
      * @param array  $parameters
      *
-     * @return PropertyDefinition
+     * @return ColumnDefinition
      */
-    public function tokenCount(string $name, array $parameters = []): PropertyDefinition
+    public function tokenCount($column, array $parameters = [])
     {
-        return $this->addColumn('token_count', $name, $parameters);
+        return $this->addColumn('token_count', $column, $parameters);
     }
 
     /**

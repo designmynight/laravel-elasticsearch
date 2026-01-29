@@ -14,7 +14,7 @@ class QueryBuilderTest extends TestCase
     /** @var QueryBuilder */
     private $builder;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -49,7 +49,7 @@ class QueryBuilderTest extends TestCase
     /**
      * @return array
      */
-    public function whereParentIdProvider():array
+    public static function whereParentIdProvider(): array
     {
         return [
             'boolean and' => ['my_parent', 1, 'and'],

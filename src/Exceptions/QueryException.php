@@ -14,7 +14,7 @@ class QueryException extends BaseQueryException
      * @param  \Exception $previous
      * @return string
      */
-    protected function formatMessage($query, $bindings, $previous)
+    protected function formatMessage($connectionName, $sql, $bindings, $previous)
     {
         return $previous->getMessage();
     }

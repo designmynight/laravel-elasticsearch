@@ -9,7 +9,6 @@ use DesignMyNight\Elasticsearch\Database\Schema\ElasticsearchBuilder;
 use DesignMyNight\Elasticsearch\Database\Schema\Grammars\ElasticsearchGrammar;
 use DesignMyNight\Elasticsearch\Exceptions\QueryException;
 use Elasticsearch\ClientBuilder;
-use Exception;
 use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\Grammar as BaseGrammar;
@@ -220,7 +219,7 @@ class Connection extends BaseConnection
      */
     public function getSchemaGrammar()
     {
-        return new ElasticsearchGrammar();
+        return new ElasticsearchGrammar($this);
     }
 
     /**
@@ -601,7 +600,7 @@ class Connection extends BaseConnection
      */
     protected function getDefaultQueryGrammar()
     {
-        return $this->withIndexSuffix(new QueryGrammar);
+        return $this->withIndexSuffix(new QueryGrammar($this));
     }
 
     /**
@@ -620,7 +619,12 @@ class Connection extends BaseConnection
         try {
             $result = $callback($query, $bindings);
         } catch (\Exception $e) {
-            throw new QueryException($query, $bindings, $e);
+            throw new QueryException(
+                $this->getName(),
+                $query,
+                $bindings,
+                $e
+            );
         }
 
         return $result;

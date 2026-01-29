@@ -3,6 +3,7 @@
 namespace DesignMyNight\Elasticsearch;
 
 use Closure;
+use DateTimeInterface;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Support\Str;
 
@@ -28,6 +29,9 @@ class QueryBuilder extends BaseBuilder
         'ABORT' => 'abort',
         'PROCEED' => 'proceed',
     ];
+    
+    /** @var \DesignMyNight\Elasticsearch\QueryProcessor */
+    public $processor;
 
     public $type;
 
@@ -128,12 +132,12 @@ class QueryBuilder extends BaseBuilder
      * Add a where between statement to the query.
      *
      * @param string $column
-     * @param array  $values
+     * @param iterable $values
      * @param string $boolean
      * @param bool   $not
      * @return self
      */
-    public function whereBetween($column, array $values, $boolean = 'and', $not = false): self
+    public function whereBetween($column, iterable $values, $boolean = 'and', $not = false): self
     {
         $type = 'Between';
 
@@ -224,24 +228,6 @@ class QueryBuilder extends BaseBuilder
         }
 
         $this->wheres[] = compact('column', 'query', 'type', 'boolean');
-
-        return $this;
-    }
-
-    /**
-     * Add a 'must not' statement to the query.
-     *
-     * @param \Illuminate\Database\Query\Builder|static $query
-     * @param string                                    $boolean
-     * @return self
-     */
-    public function whereNot($query, $boolean = 'and'): self
-    {
-        $type = 'Not';
-
-        call_user_func($query, $query = $this->newQuery());
-
-        $this->wheres[] = compact('query', 'type', 'boolean');
 
         return $this;
     }
@@ -455,16 +441,16 @@ class QueryBuilder extends BaseBuilder
     }
 
     /**
-     * @param string $parentType Name of the parent relation from the join mapping
-     * @param mixed  $id
+     * @param string $name
+     * @param mixed $id
      * @param string $boolean
      * @return QueryBuilder
      */
-    public function whereParentId(string $parentType, $id, string $boolean = 'and'): self
+    public function whereParentId(string $name, $id, string $boolean = 'and'): self
     {
         $this->wheres[] = [
             'type' => 'ParentId',
-            'parentType' => $parentType,
+            'name' => $name,
             'id' => $id,
             'boolean' => $boolean,
         ];
@@ -561,12 +547,16 @@ class QueryBuilder extends BaseBuilder
             return $this;
         }
 
-        if (!is_string($args) && is_callable($args)) {
-            call_user_func($args, $args = $this->newQuery());
+        if ($args !== null && is_callable($args)) {
+            $query = $this->newQuery();
+            call_user_func($args, $query);
+            $args = $query;
         }
 
-        if (!is_string($aggregations) && is_callable($aggregations)) {
-            call_user_func($aggregations, $aggregations = $this->newQuery());
+        if ($aggregations !== null && is_callable($aggregations)) {
+            $query = $this->newQuery();
+            call_user_func($aggregations, $query);
+            $aggregations = $query;
         }
 
         $this->aggregations[] = compact(
@@ -629,7 +619,7 @@ class QueryBuilder extends BaseBuilder
         }
 
         throw new \Exception(
-            "$option is an invalid conflict option, valid options are: " . explode(', ', self::DELETE_CONFLICT)
+            "$option is an invalid conflict option, valid options are: " . implode(', ', self::DELETE_CONFLICT)
         );
     }
 
@@ -651,7 +641,7 @@ class QueryBuilder extends BaseBuilder
         }
 
         throw new \Exception(
-            "$option is an invalid conflict option, valid options are: " . explode(', ', self::DELETE_CONFLICT)
+            "$option is an invalid conflict option, valid options are: " . implode(', ', self::DELETE_CONFLICT)
         );
     }
 
@@ -685,6 +675,7 @@ class QueryBuilder extends BaseBuilder
     {
         $this->getResultsOnce();
 
+        /** @var \DesignMyNight\Elasticsearch\QueryProcessor $processor */
         return $this->processor->getAggregationResults();
     }
 
@@ -786,7 +777,7 @@ class QueryBuilder extends BaseBuilder
      */
     public function toCompiledQuery(): array
     {
-        return $this->toSql();
+        return $this->grammar->compileSelect($this);
     }
 
     /**
