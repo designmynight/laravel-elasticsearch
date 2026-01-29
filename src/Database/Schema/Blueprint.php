@@ -60,6 +60,15 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * @param string $column
+     * @return ColumnDefinition
+     */
+    public function date($column)
+    {
+        return $this->addColumn('date', $column);
+    }
+
+    /**
+     * @param string $column
      * @param array  $parameters
      *
      * @return ColumnDefinition
@@ -233,6 +242,15 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * @param string $column
+     * @return ColumnDefinition
+     */
+    public function ipAddress($column = 'ip_address')
+    {
+        return $this->addColumn('ipAddress', $column);
+    }
+
+    /**
+     * @param string $column
      * @param array  $parameters
      *
      * @return ColumnDefinition
@@ -366,5 +384,24 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     public function getConnection()
     {
         return $this->connection;
+    }
+
+    /**
+     * @param string $column
+     * @param array  $parameters
+     *
+     * @return ColumnDefinition
+     */
+    public function tokenCount($column, array $parameters = [])
+    {
+        return $this->addColumn('token_count', $column, $parameters);
+    }
+
+    /**
+     * @return \Illuminate\Support\Fluent
+     */
+    public function update()
+    {
+        return $this->addCommand('update');
     }
 }

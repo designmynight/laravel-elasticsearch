@@ -78,7 +78,7 @@ class BlueprintTest extends TestCase
 
         $this->assertEquals([$closure], $results);
     }
-
+    
     /**
      * @test
      */

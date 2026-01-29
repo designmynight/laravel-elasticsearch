@@ -11,15 +11,14 @@
     ],
     "license" : "MIT",
     "require": {
-        "php": "^8.0",
+        "php": "^8.2",
         "ext-json": "*",
         "elasticsearch/elasticsearch": "^7.17",
-        "laravel/framework": "^11.0 || ^12.0",
-        "league/flysystem": "^3.8.0"
+        "laravel/framework": "^11.0 || ^12.0"
     },
     "require-dev": {
-        "orchestra/testbench": "^7.2.0",
-        "phpunit/phpunit": "^9.5.19",
+        "orchestra/testbench": "^10.0",
+        "phpunit/phpunit": "^10 || ^11",
         "mockery/mockery": "^1.1"
     },
     "autoload": {
