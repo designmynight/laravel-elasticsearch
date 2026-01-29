@@ -20,17 +20,6 @@ class ElasticsearchGrammar extends Grammar
     protected $modifiers = ['Boost', 'Dynamic', 'Fields', 'Format', 'Index', 'Properties'];
 
     /**
-     * Create a new schema grammar instance.
-     *
-     * @param  \Illuminate\Database\Connection  $connection
-     * @return void
-     */
-    public function __construct(\Illuminate\Database\Connection $connection)
-    {
-        parent::__construct($connection);
-    }
-
-    /**
      * @param Blueprint  $blueprint
      * @param Fluent     $command
      * @param Connection $connection
@@ -143,10 +132,10 @@ class ElasticsearchGrammar extends Grammar
     /**
      * Get the columns for the Elasticsearch mapping.
      *
-     * @param  BaseBlueprint  $blueprint
+     * @param  Blueprint  $blueprint
      * @return array
      */
-    protected function getColumns(BaseBlueprint $blueprint)
+    protected function getColumns(Blueprint $blueprint)
     {
         $columns = [];
 
