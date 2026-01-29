@@ -3,6 +3,7 @@
 namespace DesignMyNight\Elasticsearch;
 
 use Closure;
+use DateTimeInterface;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Support\Str;
 
@@ -28,6 +29,9 @@ class QueryBuilder extends BaseBuilder
         'ABORT' => 'abort',
         'PROCEED' => 'proceed',
     ];
+    
+    /** @var \DesignMyNight\Elasticsearch\QueryProcessor */
+    public $processor;
 
     public $type;
 
@@ -543,12 +547,16 @@ class QueryBuilder extends BaseBuilder
             return $this;
         }
 
-        if (!is_string($args) && is_callable($args)) {
-            call_user_func($args, $args = $this->newQuery());
+        if ($args !== null && is_callable($args)) {
+            $query = $this->newQuery();
+            call_user_func($args, $query);
+            $args = $query;
         }
 
-        if (!is_string($aggregations) && is_callable($aggregations)) {
-            call_user_func($aggregations, $aggregations = $this->newQuery());
+        if ($aggregations !== null && is_callable($aggregations)) {
+            $query = $this->newQuery();
+            call_user_func($aggregations, $query);
+            $aggregations = $query;
         }
 
         $this->aggregations[] = compact(
@@ -611,7 +619,7 @@ class QueryBuilder extends BaseBuilder
         }
 
         throw new \Exception(
-            "$option is an invalid conflict option, valid options are: " . explode(', ', self::DELETE_CONFLICT)
+            "$option is an invalid conflict option, valid options are: " . implode(', ', self::DELETE_CONFLICT)
         );
     }
 
@@ -633,7 +641,7 @@ class QueryBuilder extends BaseBuilder
         }
 
         throw new \Exception(
-            "$option is an invalid conflict option, valid options are: " . explode(', ', self::DELETE_CONFLICT)
+            "$option is an invalid conflict option, valid options are: " . implode(', ', self::DELETE_CONFLICT)
         );
     }
 
@@ -667,6 +675,7 @@ class QueryBuilder extends BaseBuilder
     {
         $this->getResultsOnce();
 
+        /** @var \DesignMyNight\Elasticsearch\QueryProcessor $processor */
         return $this->processor->getAggregationResults();
     }
 
@@ -768,7 +777,7 @@ class QueryBuilder extends BaseBuilder
      */
     public function toCompiledQuery(): array
     {
-        return $this->toSql();
+        return $this->grammar->compileSelect($this);
     }
 
     /**

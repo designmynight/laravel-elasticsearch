@@ -130,24 +130,20 @@ class ElasticsearchGrammar extends Grammar
     }
 
     /**
-     * @param BaseBlueprint $blueprint
+     * Compile the column definition.
      *
-     * @return array
+     * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+     * @param  \Illuminate\Database\Schema\ColumnDefinition  $column
+     * @return string
      */
-    protected function getColumns(BaseBlueprint $blueprint)
+    protected function getColumn(Blueprint $blueprint, $column)
     {
-        $columns = [];
+        // Each of the column types has their own compiler functions, which are tasked
+        // with turning the column definition into its SQL format for this platform
+        // used by the connection. The column's modifiers are compiled and added.
+        $sql = $this->wrap($column).' '.$this->getType($column);
 
-        foreach ($blueprint->getAddedColumns() as $property) {
-            // Pass empty string as we only need to modify the property and return it.
-            $column = $this->addModifiers('', $blueprint, $property);
-            $key = Str::snake($column->name);
-            unset($column->name);
-
-            $columns[$key] = $column->toArray();
-        }
-
-        return $columns;
+        return $this->addModifiers($sql, $blueprint, $column);
     }
 
     /**
@@ -190,7 +186,7 @@ class ElasticsearchGrammar extends Grammar
     {
         if (!is_null($property->fields)) {
             $fields = $property->fields;
-            $fields($blueprint = $this->createBlueprint());
+            $fields($blueprint = $this->createBlueprint($blueprint->getConnection(), $blueprint->getTable()));
 
             $property->fields = $this->getColumns($blueprint);
         }
@@ -208,7 +204,7 @@ class ElasticsearchGrammar extends Grammar
     {
         if (!is_null($property->properties)) {
             $properties = $property->properties;
-            $properties($blueprint = $this->createBlueprint());
+            $properties($blueprint = $this->createBlueprint($blueprint->connection, $blueprint->table));
 
             $property->properties = $this->getColumns($blueprint);
         }
@@ -219,8 +215,8 @@ class ElasticsearchGrammar extends Grammar
     /**
      * @return Blueprint
      */
-    private function createBlueprint(): Blueprint
+    private function createBlueprint(Connection $connection, $table, ?Closure $callback = null): Blueprint
     {
-        return new Blueprint('');
+        return new Blueprint($connection, $table, $callback);
     }
 }

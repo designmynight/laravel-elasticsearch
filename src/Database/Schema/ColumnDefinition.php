@@ -14,7 +14,7 @@ use Illuminate\Support\Fluent;
  * @method PropertyDefinition properties(\Closure $field)
  * @package DesignMyNight\Elasticsearch\Database\Schema
  */
-class PropertyDefinition extends Fluent
+class ColumnDefinition extends Fluent
 {
     //
 }
