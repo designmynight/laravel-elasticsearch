@@ -12,12 +12,17 @@ use Tests\TestCase;
 class BlueprintTest extends TestCase
 {
     private Blueprint $blueprint;
+    private $mockConnection;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->blueprint = new Blueprint('indices');
+        $this->mockConnection = m::mock(Connection::class);
+        $grammar = m::mock(ElasticsearchGrammar::class);
+        $grammar->shouldReceive('getFluentCommands')->andReturn([]);
+        $this->mockConnection->shouldReceive('getSchemaGrammar')->andReturn($grammar);
+        $this->blueprint = new Blueprint($this->mockConnection, 'indices');
     }
 
     /**
@@ -296,7 +301,7 @@ class BlueprintTest extends TestCase
     /**
      * getAlias data provider.
      */
-    public function get_alias_data_provider(): array
+    public static function get_alias_data_provider(): array
     {
         return [
             'alias not provided' => ['indices_dev'],
@@ -323,7 +328,7 @@ class BlueprintTest extends TestCase
     /**
      * getDocumentType data provider.
      */
-    public function get_document_type_data_provider(): array
+    public static function get_document_type_data_provider(): array
     {
         return [
             'document not provided' => ['index'],

@@ -219,7 +219,7 @@ class Connection extends BaseConnection
      */
     public function getSchemaGrammar()
     {
-        return new ElasticsearchGrammar();
+        return new ElasticsearchGrammar($this);
     }
 
     /**

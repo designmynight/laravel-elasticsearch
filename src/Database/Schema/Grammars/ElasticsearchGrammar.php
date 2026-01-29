@@ -20,6 +20,17 @@ class ElasticsearchGrammar extends Grammar
     protected $modifiers = ['Boost', 'Dynamic', 'Fields', 'Format', 'Index', 'Properties'];
 
     /**
+     * Create a new schema grammar instance.
+     *
+     * @param  \Illuminate\Database\Connection  $connection
+     * @return void
+     */
+    public function __construct(\Illuminate\Database\Connection $connection)
+    {
+        parent::__construct($connection);
+    }
+
+    /**
      * @param Blueprint  $blueprint
      * @param Fluent     $command
      * @param Connection $connection
@@ -130,20 +141,25 @@ class ElasticsearchGrammar extends Grammar
     }
 
     /**
-     * Compile the column definition.
+     * Get the columns for the Elasticsearch mapping.
      *
-     * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
-     * @param  \Illuminate\Database\Schema\ColumnDefinition  $column
-     * @return string
+     * @param  BaseBlueprint  $blueprint
+     * @return array
      */
-    protected function getColumn(Blueprint $blueprint, $column)
+    protected function getColumns(BaseBlueprint $blueprint)
     {
-        // Each of the column types has their own compiler functions, which are tasked
-        // with turning the column definition into its SQL format for this platform
-        // used by the connection. The column's modifiers are compiled and added.
-        $sql = $this->wrap($column).' '.$this->getType($column);
+        $columns = [];
 
-        return $this->addModifiers($sql, $blueprint, $column);
+        foreach ($blueprint->getAddedColumns() as $property) {
+            // Pass empty string as we only need to modify the property and return it.
+            $column = $this->addModifiers('', $blueprint, $property);
+            $key = Str::snake($column->name);
+            unset($column->name);
+
+            $columns[$key] = $column->toArray();
+        }
+
+        return $columns;
     }
 
     /**
@@ -204,7 +220,7 @@ class ElasticsearchGrammar extends Grammar
     {
         if (!is_null($property->properties)) {
             $properties = $property->properties;
-            $properties($blueprint = $this->createBlueprint($blueprint->connection, $blueprint->table));
+            $properties($blueprint = $this->createBlueprint($blueprint->getConnection(), $blueprint->getTable()));
 
             $property->properties = $this->getColumns($blueprint);
         }

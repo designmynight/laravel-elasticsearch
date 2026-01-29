@@ -78,7 +78,7 @@ class IndexRemoveCommandTest extends TestCase
     /**
      * @return array
      */
-    public function handle_data_provider(): array
+    public static function handle_data_provider(): array
     {
         return [
             'index given'    => ['test_index'],
