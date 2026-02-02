@@ -233,6 +233,49 @@ class QueryBuilder extends BaseBuilder
     }
 
     /**
+     * Add a "where not" clause to the query.
+     *
+     * For Closure: wraps the nested query in Elasticsearch's must_not clause.
+     * For column: adds a negated condition.
+     *
+     * @param \Closure|string|array $column
+     * @param mixed $operator
+     * @param mixed $value
+     * @param string $boolean
+     * @return self
+     */
+    public function whereNot($column, $operator = null, $value = null, $boolean = 'and'): self
+    {
+        // If $column is a Closure, use the original ES behaviour (must_not wrapper)
+        if ($column instanceof Closure) {
+            $type = 'Not';
+            call_user_func($column, $query = $this->newQuery());
+            $this->wheres[] = compact('query', 'type', 'boolean');
+            return $this;
+        }
+
+        // For array columns, handle each condition with negation
+        if (is_array($column)) {
+            foreach ($column as $key => $val) {
+                $this->whereNot($key, '=', $val, $boolean);
+            }
+            return $this;
+        }
+
+        // For column-based whereNot, add a where clause with 'not' flag
+        [$value, $operator] = $this->prepareValueAndOperator(
+            $value,
+            $operator,
+            func_num_args() === 2
+        );
+
+        $type = 'Basic';
+        $this->wheres[] = compact('type', 'column', 'operator', 'value', 'boolean') + ['not' => true];
+
+        return $this;
+    }
+
+    /**
      * Add a prefix query
      *
      * @param string  $column
