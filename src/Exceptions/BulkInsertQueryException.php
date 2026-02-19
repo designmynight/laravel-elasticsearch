@@ -45,9 +45,9 @@ class BulkInsertQueryException extends Exception
 
         foreach ($items as $item) {
             $itemError = array_merge([
-                '_id'  => $item['_id'],
-                'reason' => $item['error']['reason'],
-            ], $item['error']['caused_by'] ?? []);
+                '_id'  => $item['index']['_id'],
+                'reason' => $item['index']['error']['reason'],
+            ], $item['index']['error']['caused_by'] ?? []);
 
             $message[] = implode(': ', $itemError);
         }
