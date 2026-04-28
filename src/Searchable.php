@@ -134,7 +134,7 @@ trait Searchable
         $array = $this->toArray();
 
         foreach ($this->getArrayableRelations() as $key => $relation) {
-            $attributeName = snake_case($key);
+            $attributeName = Str::snake($key);
 
             if (isset($array[$attributeName]) && method_exists($relation, 'toSearchableArray')) {
                 $array[$attributeName] = $relation->onSearchConnection(function ($model) {

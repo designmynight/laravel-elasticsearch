@@ -706,7 +706,7 @@ class QueryGrammar extends BaseGrammar
         $options        = array_intersect_key($where['options'], array_flip($optionsToApply));
 
         foreach ($options as $option => $value) {
-            $method = 'apply' . studly_case($option) . 'Option';
+            $method = 'apply' . Str::studly($option) . 'Option';
 
             if (method_exists($this, $method)) {
                 $clause = $this->$method($clause, $value, $where);
