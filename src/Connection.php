@@ -238,7 +238,7 @@ class Connection extends BaseConnection
      *
      * @param array $params
      * @param array $bindings
-     * @return bool
+     * @return array
      * @throws BulkInsertQueryException
      */
     public function insert($params, $bindings = [])
@@ -253,7 +253,7 @@ class Connection extends BaseConnection
             throw new BulkInsertQueryException($result);
         }
 
-        return true;
+        return $result;
     }
 
     /**
