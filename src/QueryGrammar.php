@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use MongoDB\BSON\ObjectID;
+use Illuminate\Support\Arr;
 
 class QueryGrammar extends BaseGrammar
 {
@@ -66,11 +67,32 @@ class QueryGrammar extends BaseGrammar
             unset($params['body']['query']);
         }
 
+        if($builder->distinct) {
+            $params['body']['collapse']['field'] = reset($builder->distinct);
+        }
+
         // print "<pre>";
         // print str_replace('    ', '  ', json_encode($params, JSON_PRETTY_PRINT));
         // exit;
 
         return $params;
+    }
+
+    /**
+     * Compile a null clause
+     *
+     * @param  Builder  $builder
+     * @param  array  $where
+     * @return array
+     */
+    protected function compileWhereRaw(Builder $builder, array $where): array
+    {
+        if($where['sql'] instanceof \Closure){
+            $query = $builder->newQuery();
+            $where['sql']($query);
+            return Arr::get($this->compileWheres($query),'query.bool');
+        }
+        return $where['sql'];
     }
 
     /**
@@ -1226,9 +1248,10 @@ class QueryGrammar extends BaseGrammar
             if(Str::startsWith($column, $builder->from . '.')) {
                 $column = Str::replaceFirst($builder->from . '.', '', $column);
             }
-            $script[] = 'ctx._source.' . $column . ' = "' . addslashes($value) . '";';
+            $clause['body']['script']['params'][$column] = $value;
+            $script[] = 'ctx._source.' . $column . ' = params.'.$column.';';
         }
-        $clause['body']['script'] = implode('', $script);
+        $clause['body']['script']['source'] = implode('', $script);
         return $clause;
     }
 

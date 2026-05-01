@@ -166,13 +166,15 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
-     * @param string $name
-     *
+     * @param      $column
+     * @param int  $total
+     * @param int  $places
+     * @param bool $unsigned
      * @return PropertyDefinition
      */
-    public function float($name, $total = 8, $places = 2): PropertyDefinition
+    public function float($column, $total = 8, $places = 2, $unsigned = false): PropertyDefinition
     {
-        return $this->addColumn('float', $name);
+        return $this->addColumn('float', $column);
     }
 
     /**
