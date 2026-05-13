@@ -186,7 +186,7 @@ class Connection extends BaseConnection
         return $this->run(
             $query,
             $bindings,
-            Closure::fromCallable([$this->connection, 'deleteByQuery'])
+            Closure::fromCallable([$this->connection, 'delete'])
         );
     }
 
