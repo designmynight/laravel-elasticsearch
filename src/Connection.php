@@ -182,14 +182,10 @@ class Connection extends BaseConnection
      */
     public function delete($query, $bindings = [])
     {
-        // If the query has a 'body' with a 'query', use deleteByQuery
-        // Otherwise, use delete for single document deletion
-        $method = isset($query['body']['query']) ? 'deleteByQuery' : 'delete';
-
         return $this->run(
             $query,
             $bindings,
-            Closure::fromCallable([$this->connection, $method])
+            Closure::fromCallable([$this->connection, 'deleteByQuery'])
         );
     }
 

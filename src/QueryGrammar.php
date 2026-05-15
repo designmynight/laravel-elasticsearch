@@ -1131,30 +1131,11 @@ class QueryGrammar extends BaseGrammar
      */
     public function compileDelete(Builder $builder): array
     {
-        // Check if this is a simple ID-based delete (single where on _id)
-        $isSimpleIdDelete = $this->isSimpleIdDelete($builder);
-        
-        if ($isSimpleIdDelete) {
-            // Use single-document delete format for simple ID deletes
-            // Connection.php will route to single-document delete API
-            $params = [
-                'index' => $builder->from . $this->indexSuffix,
-                'type'  => $builder->type,
-                'id'    => (string) $builder->wheres[0]['value']
-            ];
-        } else {
-            // Use deleteByQuery format for complex queries
-            // Connection.php will route to deleteByQuery API
-            $wheres = $this->compileWheres($builder);
-            
-            $params = [
-                'index' => $builder->from . $this->indexSuffix,
-                'type'  => $builder->type,
-                'body'  => [
-                    'query' => $wheres['query'] ?? ['match_all' => new \stdClass()]
-                ]
-            ];
-        }
+        $params = [
+            'index' => $builder->from . $this->indexSuffix,
+            'type'  => $builder->type,
+            'id'    => (string) $builder->wheres[0]['value']
+        ];
 
         if ($routing = $builder->getRouting()) {
             $params['routing'] = $routing;
@@ -1165,27 +1146,6 @@ class QueryGrammar extends BaseGrammar
         }
 
         return $params;
-    }
-
-    /**
-     * Check if the query is a simple ID-based delete
-     *
-     * @param  Builder  $builder
-     * @return bool
-     */
-    protected function isSimpleIdDelete(Builder $builder): bool
-    {
-        // Check if there's exactly one where clause and it's on _id
-        if (count($builder->wheres) !== 1) {
-            return false;
-        }
-
-        $where = $builder->wheres[0];
-        
-        // Check if it's a simple equality check on _id
-        return $where['type'] === 'Basic' 
-            && $where['column'] === '_id' 
-            && $where['operator'] === '=';
     }
 
     /**
