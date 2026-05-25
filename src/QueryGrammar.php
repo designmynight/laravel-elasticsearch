@@ -1142,6 +1142,16 @@ class QueryGrammar extends BaseGrammar
                 'type'  => $builder->type,
                 'id'    => (string) $builder->wheres[0]['value']
             ];
+
+            if ($routing = $builder->getRouting()) {
+                $params['routing'] = $routing;
+            }
+
+            // In ES 7.x 'parent' was removed; use 'routing' instead
+            // (parent implied routing in ES 5.x/6.x).
+            if ($parentId = $builder->getParentId()) {
+                $params['routing'] = $parentId;
+            }
         } else {
             // Use deleteByQuery format for complex queries
             // Connection.php will route to deleteByQuery API
@@ -1149,19 +1159,18 @@ class QueryGrammar extends BaseGrammar
             
             $params = [
                 'index' => $builder->from . $this->indexSuffix,
-                'type'  => $builder->type,
                 'body'  => [
                     'query' => $wheres['query'] ?? ['match_all' => new \stdClass()]
                 ]
             ];
-        }
 
-        if ($routing = $builder->getRouting()) {
-            $params['routing'] = $routing;
-        }
-
-        if ($parentId = $builder->getParentId()) {
-            $params['parent'] = $parentId;
+            // deleteByQuery does not accept 'parent'; use 'routing' instead
+            // (parent implies routing in ES 5.x).
+            if ($routing = $builder->getRouting()) {
+                $params['routing'] = $routing;
+            } else if ($parentId = $builder->getParentId()) {
+                $params['routing'] = $parentId;
+            }
         }
 
         return $params;
