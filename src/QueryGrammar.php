@@ -1190,10 +1190,11 @@ class QueryGrammar extends BaseGrammar
         }
 
         $where = $builder->wheres[0];
-        
-        // Check if it's a simple equality check on _id
-        return $where['type'] === 'Basic' 
-            && $where['column'] === '_id' 
+
+        // Check if it's a simple equality check on _id or id (MongoDB models
+        // may use 'id' as their primary key which maps to '_id' in Elasticsearch)
+        return $where['type'] === 'Basic'
+            && in_array($where['column'], ['_id', 'id'], true)
             && $where['operator'] === '=';
     }
 
