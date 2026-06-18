@@ -229,21 +229,27 @@ class QueryBuilder extends BaseBuilder
     }
 
     /**
-     * Add a 'must not' statement to the query.
+     * Add a "where not" clause to the query.
      *
-     * @param \Illuminate\Database\Query\Builder|static $query
-     * @param string                                    $boolean
-     * @return self
+     * For Closure: wraps the nested query in Elasticsearch's must_not clause.
+     * For column: adds a negated condition via the parent builder.
+     *
+     * @param \Closure|string|array|\Illuminate\Contracts\Database\Query\Expression $column
+     * @param mixed $operator
+     * @param mixed $value
+     * @param string $boolean
+     * @return $this
      */
-    public function whereNot($query, $boolean = 'and'): self
+    public function whereNot($column, $operator = null, $value = null, $boolean = 'and')
     {
-        $type = 'Not';
+        if ($column instanceof Closure) {
+            $type = 'Not';
+            call_user_func($column, $query = $this->newQuery());
+            $this->wheres[] = compact('query', 'type', 'boolean');
+            return $this;
+        }
 
-        call_user_func($query, $query = $this->newQuery());
-
-        $this->wheres[] = compact('query', 'type', 'boolean');
-
-        return $this;
+        return parent::whereNot($column, $operator, $value, $boolean);
     }
 
     /**
