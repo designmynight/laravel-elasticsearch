@@ -132,10 +132,10 @@ class ElasticsearchGrammar extends Grammar
     /**
      * Get the columns for the Elasticsearch mapping.
      *
-     * @param  Blueprint  $blueprint
+     * @param  BaseBlueprint  $blueprint
      * @return array
      */
-    protected function getColumns(Blueprint $blueprint)
+    protected function getColumns(BaseBlueprint $blueprint)
     {
         $columns = [];
 
