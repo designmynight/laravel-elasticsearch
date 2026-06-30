@@ -387,6 +387,34 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
+     * Execute the blueprint against the database.
+     *
+     * Overrides the base build() because Elasticsearch grammar compile methods
+     * require 3 arguments (blueprint, command, connection) and return Closures
+     * rather than SQL strings.
+     *
+     * @return void
+     */
+    public function build(): void
+    {
+        foreach ($this->commands as $command) {
+            if ($command->shouldBeSkipped ?? false) {
+                continue;
+            }
+
+            $method = 'compile' . ucfirst($command->name);
+
+            if (method_exists($this->grammar, $method)) {
+                $result = $this->grammar->$method($this, $command, $this->connection);
+
+                if ($result instanceof Closure) {
+                    $result($this, $this->connection);
+                }
+            }
+        }
+    }
+
+    /**
      * @param string $column
      * @param array  $parameters
      *
