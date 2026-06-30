@@ -32,4 +32,12 @@ class ElasticsearchBuilder extends Builder
             $callback($blueprint);
         }));
     }
+
+    /**
+     * @inheritDoc
+     */
+    protected function createBlueprint($table, ?Closure $callback = null)
+    {
+        return new Blueprint($this->connection, $table, $callback);
+    }
 }
