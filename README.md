@@ -1,6 +1,14 @@
 # laravel-elasticsearch
 Use Elasticsearch as a database in Laravel to retrieve Eloquent models and perform aggregations.
 
+## Supported release lines
+
+| Release line | PHP | Laravel | Elasticsearch server | Elasticsearch PHP client |
+| --- | --- | --- | --- | --- |
+| `12.x` | 8.3 | 12 / 13 | 5.x | 6.8 |
+
+The `12.x` line preserves the typed-document behavior used by the earlier releases while supporting PHP 8.3 and Laravel 12 and 13.
+
 Build Elasticsearch queries as you're used to with Eloquent, and get Model instances in return, with some nice extras:
 - Use `query`, `filter` and `postFilter` query types
 - Perform geo searches
@@ -20,6 +28,17 @@ Add elasticsearch connection configuration to database.php
     'suffix'   => 'optional_es_index_suffix',
 ]
 ```
+
+## Tests
+
+After installing dependencies with Composer, run the unit and parity tests with `vendor/bin/phpunit`. To run integration tests against Elasticsearch 5.6.16, use:
+
+```sh
+docker compose up -d elasticsearch
+docker compose run --rm tests
+```
+
+The integration group is skipped unless `ES_HOST` is set.
 
 Create or update your base Model.php class to override `newEloquentBuilder()` and `newBaseQueryBuilder()`:
 
