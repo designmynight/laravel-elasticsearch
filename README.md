@@ -5,9 +5,9 @@ Use Elasticsearch as a database in Laravel to retrieve Eloquent models and perfo
 
 | Release line | PHP | Laravel | Elasticsearch server | Elasticsearch PHP client |
 | --- | --- | --- | --- | --- |
-| `12.x` | 8.3 | 12 / 13 | 5.x | 6.8 |
+| `9.x` | 8.3 | 12 / 13 | 5.x | 6.8 |
 
-The `12.x` line preserves the typed-document behavior used by the earlier releases while supporting PHP 8.3 and Laravel 12 and 13.
+The `9.x` line preserves the typed-document behavior used by the earlier releases while supporting PHP 8.3 and Laravel 12 and 13.
 
 Build Elasticsearch queries as you're used to with Eloquent, and get Model instances in return, with some nice extras:
 - Use `query`, `filter` and `postFilter` query types
