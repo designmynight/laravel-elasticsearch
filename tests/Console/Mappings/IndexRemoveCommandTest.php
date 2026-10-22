@@ -21,7 +21,7 @@ class IndexRemoveCommandTest extends TestCase
     /** @var m\CompositeExpectation|IndexRemoveCommand */
     private $command;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -30,12 +30,8 @@ class IndexRemoveCommandTest extends TestCase
             ->makePartial();
     }
 
-    /**
-     * It removes the given index.
-     *
-     * @test
-     * @covers       IndexRemoveCommand::removeIndex()
-     */
+    /** It removes the given index. */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_removes_the_given_index()
     {
         $indicesNamespace = m::mock(IndicesNamespace::class);
@@ -51,13 +47,9 @@ class IndexRemoveCommandTest extends TestCase
         $this->assertTrue($this->command->removeIndex('test_index'));
     }
 
-    /**
-     * It handles the console command call.
-     *
-     * @test
-     * @covers IndexRemoveCommand::handle()
-     * @dataProvider handle_data_provider
-     */
+    /** It handles the console command call. */
+    #[\PHPUnit\Framework\Attributes\Test]
+    #[\PHPUnit\Framework\Attributes\DataProvider('handle_data_provider')]
     public function it_handles_the_console_command_call($index)
     {
         $catNamespace = m::mock(CatNamespace::class);
@@ -79,7 +71,7 @@ class IndexRemoveCommandTest extends TestCase
     /**
      * @return array
      */
-    public function handle_data_provider():array
+    public static function handle_data_provider():array
     {
         return [
             'index given'    => ['test_index'],

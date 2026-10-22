@@ -23,7 +23,7 @@ class IndexListCommandTest extends TestCase
     /**
      * Set up tests.
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -32,12 +32,8 @@ class IndexListCommandTest extends TestCase
             ->makePartial();
     }
 
-    /**
-     * It gets a list of indices on the Elasticsearch cluster.
-     *
-     * @test
-     * @covers       IndexListCommand::getIndices()
-     */
+    /** It gets a list of indices on the Elasticsearch cluster. */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_gets_a_list_of_indices_on_the_elasticsearch_cluster()
     {
         $catNamespace = m::mock(CatNamespace::class);
@@ -51,12 +47,8 @@ class IndexListCommandTest extends TestCase
         $this->assertEquals([], $this->command->getIndices());
     }
 
-    /**
-     * It returns a formatted array of active aliases and their corresponding indices.
-     *
-     * @test
-     * @covers       IndexListCommand::getIndicesForAlias()
-     */
+    /** It returns a formatted array of active aliases and their corresponding indices. */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_returns_a_formatted_array_of_active_aliases_and_their_corresponding_indices()
     {
         $expected = [
@@ -99,12 +91,8 @@ class IndexListCommandTest extends TestCase
         $this->assertEquals($expected, $this->command->getIndicesForAlias());
     }
 
-    /**
-     * It handles the console command when an alias is given.
-     *
-     * @test
-     * @covers IndexListCommand::handle()
-     */
+    /** It handles the console command when an alias is given. */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_handles_the_console_command_when_an_alias_is_given()
     {
         $alias = 'some_alias';
@@ -121,12 +109,8 @@ class IndexListCommandTest extends TestCase
         $this->command->handle();
     }
 
-    /**
-     * It handles the console command call.
-     *
-     * @test
-     * @covers IndexListCommand::handle()
-     */
+    /** It handles the console command call. */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_handles_the_console_command_call()
     {
         $this->command->shouldReceive('option')->once()->with('alias')->andReturnNull();
