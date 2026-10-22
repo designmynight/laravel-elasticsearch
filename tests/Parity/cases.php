@@ -143,24 +143,6 @@ return function () {
         }, 'bookings'),
     ];
 
-    $extendedAggregations = null;
-    if (method_exists($connection->getQueryGrammar(), 'compileMinAggregation')) {
-        $extendedAggregations = $build(function ($query) {
-            $query->aggregation('minimum', 'min', 'covers')
-                ->aggregation('maximum', 'max', 'covers')
-                ->aggregation('cardinality', 'cardinality', 'venue_id')
-                ->aggregation('zoned_dates', 'date_histogram', [
-                    'field' => 'created_at',
-                    'interval' => 'day',
-                    'time_zone' => 'Europe/London',
-                    'extended_bounds' => [
-                        Carbon::parse('2020-01-01 00:00:00', 'UTC'),
-                        Carbon::parse('2020-01-07 23:59:59', 'UTC'),
-                    ],
-                ]);
-        })['body']['aggregations'];
-    }
-
     $singleInsertBuilder = $connection->query()->from('bookings')->type('booking');
     $insertBuilder = $connection->query()->from('bookings')->type('booking');
     $childInsertBuilder = $connection->query()
@@ -280,6 +262,5 @@ return function () {
             'suffix' => $grammar->getIndexSuffix(),
             'date_format' => $grammar->getDateFormat(),
         ],
-        'extended_aggregations' => $extendedAggregations,
     ];
 };

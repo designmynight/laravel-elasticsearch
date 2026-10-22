@@ -53,16 +53,16 @@ class IndexListCommandTest extends TestCase
     {
         $expected = [
             [
-                'index' => '2017_05_21_111500_test_dev',
-                'alias' => 'test_dev',
-            ],
-            [
                 'index' => '2018_05_21_111500_test_dev',
                 'alias' => 'test_dev',
             ],
             [
                 'index' => '2018_05_21_111500_test_production',
                 'alias' => 'test_production',
+            ],
+            [
+                'index' => '2018_05_21_111500_test_stage',
+                'alias' => 'test_stage',
             ],
         ];
         $body = [
@@ -75,8 +75,8 @@ class IndexListCommandTest extends TestCase
                 'alias' => 'test_dev',
             ],
             [
-                'index' => '2017_05_21_111500_test_dev',
-                'alias' => 'test_dev',
+                'index' => '2018_05_21_111500_test_stage',
+                'alias' => 'test_stage',
             ],
         ];
 

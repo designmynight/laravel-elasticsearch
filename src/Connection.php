@@ -142,7 +142,7 @@ class Connection extends BaseConnection
     public function cursor($query, $bindings = [], $useReadPdo = false, array $fetchUsing = [])
     {
         $scrollTimeout = '30s';
-        $limit = $query['size'] ?? $query['body']['size'] ?? 0;
+        $limit = $query['size'] ?? 0;
 
         $scrollParams = [
             'scroll' => $scrollTimeout,
@@ -150,20 +150,14 @@ class Connection extends BaseConnection
             'index' => $query['index'],
             'body' => $query['body'],
         ];
-        unset($scrollParams['body']['size']);
 
         $results = $this->select($scrollParams);
 
         $scrollId = $results['_scroll_id'];
 
-        $numResults = 0;
+        $numResults = count($results['hits']['hits']);
 
         foreach ($results['hits']['hits'] as $result) {
-            if ($limit && $numResults >= $limit) {
-                break;
-            }
-
-            $numResults++;
             yield $result;
         }
 

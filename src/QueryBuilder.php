@@ -755,46 +755,6 @@ class QueryBuilder extends BaseBuilder
         }
     }
 
-    public function chunk($count, callable $callback)
-    {
-        $this->enforceOrderBy();
-
-        $skip = $this->getOffset();
-        $remaining = $this->getLimit();
-        $page = 1;
-
-        do {
-            $offset = (($page - 1) * $count) + (int) $skip;
-            $limit = is_null($remaining) ? $count : min($count, $remaining);
-
-            if ($limit == 0) {
-                break;
-            }
-
-            $query = clone $this;
-            $query->results = null;
-            $results = $query->offset($offset)->limit($limit)->get();
-            $countResults = $results->count();
-
-            if ($countResults == 0) {
-                break;
-            }
-
-            if (! is_null($remaining)) {
-                $remaining = max($remaining - $countResults, 0);
-            }
-
-            if ($callback($results, $page) === false) {
-                return false;
-            }
-
-            unset($results);
-            $page++;
-        } while ($countResults == $count);
-
-        return true;
-    }
-
     /**
      * @inheritdoc
      */

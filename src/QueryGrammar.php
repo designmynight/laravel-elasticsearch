@@ -913,10 +913,6 @@ class QueryGrammar extends BaseGrammar
                 $compiled['date_histogram']['interval'] = $aggregation['args']['interval'];
             }
 
-            if (isset($aggregation['args']['time_zone'])) {
-                $compiled['date_histogram']['time_zone'] = $aggregation['args']['time_zone'];
-            }
-
             if (isset($aggregation['args']['min_doc_count'])) {
                 $compiled['date_histogram']['min_doc_count'] = $aggregation['args']['min_doc_count'];
             }
@@ -996,21 +992,6 @@ class QueryGrammar extends BaseGrammar
      * @return array
      */
     protected function compileAvgAggregation(array $aggregation): array
-    {
-        return $this->compileMetricAggregation($aggregation);
-    }
-
-    protected function compileMinAggregation(array $aggregation): array
-    {
-        return $this->compileMetricAggregation($aggregation);
-    }
-
-    protected function compileMaxAggregation(array $aggregation): array
-    {
-        return $this->compileMetricAggregation($aggregation);
-    }
-
-    protected function compileCardinalityAggregation(array $aggregation): array
     {
         return $this->compileMetricAggregation($aggregation);
     }
