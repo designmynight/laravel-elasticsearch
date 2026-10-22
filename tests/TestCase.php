@@ -11,7 +11,7 @@ class TestCase extends BaseTestCase
     /**
      * Set up the tests.
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
     }
@@ -19,7 +19,7 @@ class TestCase extends BaseTestCase
     /**
      * @return void
      */
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
         Carbon::setTestNow();

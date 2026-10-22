@@ -6,11 +6,7 @@ use DesignMyNight\Elasticsearch\Console\Mappings\IndexRollbackCommand;
 use Illuminate\Database\Query\Builder;
 use Mockery as m;
 
-/**
- * Class IndexRollbackCommandTest
- * @coversDefaultClass \DesignMyNight\Elasticsearch\Console\Mappings\IndexRollbackCommand
- * @package Tests
- */
+/** Index rollback command tests. */
 class IndexRollbackCommandTest extends TestCase
 {
 
@@ -20,7 +16,7 @@ class IndexRollbackCommandTest extends TestCase
     /**
      * Set up unit tests.
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -29,11 +25,8 @@ class IndexRollbackCommandTest extends TestCase
             ->makePartial();
     }
 
-    /**
-     * It maps the aliases into the migrations.
-     * @test
-     * @covers ::mapAliases()
-     */
+    /** It maps the aliases into the migrations. */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_maps_the_aliases_into_the_migrations()
     {
         $migrations = collect([
@@ -48,12 +41,9 @@ class IndexRollbackCommandTest extends TestCase
         $this->assertEquals('test_mapping_dev', $migration['alias']);
     }
 
-    /**
-     * It rolls back the mapping migration.
-     * @test
-     * @covers ::rollback()
-     * @dataProvider rollback_data_provider
-     */
+    /** It rolls back the mapping migration. */
+    #[\PHPUnit\Framework\Attributes\Test]
+    #[\PHPUnit\Framework\Attributes\DataProvider('rollback_data_provider')]
     public function it_rolls_back_the_mapping_migration($migration, $hasPreviousMisgration)
     {
         $previousMigrations = collect([
@@ -81,7 +71,7 @@ class IndexRollbackCommandTest extends TestCase
     /**
      * @return array
      */
-    public function rollback_data_provider():array
+    public static function rollback_data_provider():array
     {
         return [
             'has previous migration'    => [['alias' => '3_pending_dev', 'mapping' => '3_pending_dev'], true],
@@ -89,21 +79,15 @@ class IndexRollbackCommandTest extends TestCase
         ];
     }
 
-    /**
-     * It strips the timestamp from the given string.
-     * @test
-     * @covers ::stripTimestamp()
-     */
+    /** It strips the timestamp from the given string. */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_strips_the_timestamp_from_the_given_string()
     {
         $this->assertEquals('something', $this->command->stripTimestamp('2018_05_24_123456_something'));
     }
 
-    /**
-     * It handles the console command when there is nothing to rollback.
-     * @test
-     * @covers ::handle()
-     */
+    /** It handles the console command when there is nothing to rollback. */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_handles_the_console_command_when_there_is_nothing_to_rollback()
     {
         $migrations = collect([]);
@@ -119,11 +103,8 @@ class IndexRollbackCommandTest extends TestCase
         $this->command->handle();
     }
 
-    /**
-     * It handles the console command.
-     * @test
-     * @covers ::handle()
-     */
+    /** It handles the console command. */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_handles_the_console_command()
     {
         $migrations = collect([

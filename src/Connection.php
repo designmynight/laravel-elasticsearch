@@ -3,9 +3,6 @@
 namespace DesignMyNight\Elasticsearch;
 
 use Closure;
-use DesignMyNight\Elasticsearch\Database\Schema\Blueprint;
-use DesignMyNight\Elasticsearch\Database\Schema\ElasticsearchBuilder;
-use DesignMyNight\Elasticsearch\Database\Schema\Grammars\ElasticsearchGrammar;
 use DesignMyNight\Elasticsearch\Exceptions\BulkInsertQueryException;
 use DesignMyNight\Elasticsearch\Exceptions\QueryException;
 use Elasticsearch\ClientBuilder;
@@ -13,6 +10,7 @@ use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\Grammar as BaseGrammar;
 use Illuminate\Support\Arr;
+use LogicException;
 
 class Connection extends BaseConnection
 {
@@ -141,7 +139,7 @@ class Connection extends BaseConnection
      *
      * @return \Generator
      */
-    public function cursor($query, $bindings = [], $useReadPdo = false)
+    public function cursor($query, $bindings = [], $useReadPdo = false, array $fetchUsing = [])
     {
         $scrollTimeout = '30s';
         $limit = $query['size'] ?? 0;
@@ -215,7 +213,7 @@ class Connection extends BaseConnection
      */
     public function getSchemaBuilder()
     {
-        return new ElasticsearchBuilder($this);
+        throw new LogicException('Elasticsearch schema builders are not supported.');
     }
 
     /**
@@ -223,7 +221,7 @@ class Connection extends BaseConnection
      */
     public function getSchemaGrammar()
     {
-        return new ElasticsearchGrammar();
+        throw new LogicException('Elasticsearch schema grammars are not supported.');
     }
 
     /**
@@ -369,7 +367,7 @@ class Connection extends BaseConnection
      *
      * @return array
      */
-    public function select($params, $bindings = [], $useReadPdo = true)
+    public function select($params, $bindings = [], $useReadPdo = true, array $fetchUsing = [])
     {
         return $this->run(
             $this->addClientParams($params),
@@ -439,7 +437,7 @@ class Connection extends BaseConnection
      *
      * @return bool
      */
-    public function statement($query, $bindings = [], Blueprint $blueprint = null)
+    public function statement($query, $bindings = [])
     {
         //
     }
@@ -518,6 +516,12 @@ class Connection extends BaseConnection
     public function withIndexSuffix(BaseGrammar $grammar)
     {
         $grammar->setIndexSuffix($this->indexSuffix);
+
+        if (method_exists($grammar, 'setConnection')) {
+            $grammar->setConnection($this);
+        } elseif ($grammar instanceof QueryGrammar) {
+            $grammar->attachConnection($this);
+        }
 
         return $grammar;
     }
@@ -602,7 +606,7 @@ class Connection extends BaseConnection
      */
     protected function getDefaultQueryGrammar()
     {
-        return $this->withIndexSuffix(new QueryGrammar);
+        return $this->withIndexSuffix(new QueryGrammar($this));
     }
 
     /**
@@ -621,7 +625,7 @@ class Connection extends BaseConnection
         try {
             $result = $callback($query, $bindings);
         } catch (\Exception $e) {
-            throw new QueryException($query, $bindings, $e);
+            throw new QueryException($this->getName(), $query, $bindings, $e);
         }
 
         return $result;

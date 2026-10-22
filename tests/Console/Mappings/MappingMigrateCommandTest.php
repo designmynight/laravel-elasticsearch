@@ -24,7 +24,7 @@ class MappingMigrateCommandTest extends TestCase
     /** @var m\CompositeExpectation|MappingMigrateCommand */
     private $command;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -41,12 +41,8 @@ class MappingMigrateCommandTest extends TestCase
         $this->command->files = m::mock(Filesystem::class);
     }
 
-    /**
-     * It returns the mapping migration files.
-     *
-     * @test
-     * @covers MappingMigrateCommand::getMappingFiles()
-     */
+    /** It returns the mapping migration files. */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_returns_the_mapping_migration_files()
     {
         $files = [];
@@ -56,13 +52,9 @@ class MappingMigrateCommandTest extends TestCase
         $this->assertEquals($files, $this->command->getMappingFiles());
     }
 
-    /**
-     * It gets the mapping name.
-     *
-     * @test
-     * @covers       MappingMigrateCommand::getMappingName()
-     * @dataProvider get_mapping_name_data_provider
-     */
+    /** It gets the mapping name. */
+    #[\PHPUnit\Framework\Attributes\Test]
+    #[\PHPUnit\Framework\Attributes\DataProvider('get_mapping_name_data_provider')]
     public function it_gets_the_mapping_name($expected, $filename, $withSuffix = false)
     {
         config(['database.connections.elasticsearch.suffix' => '_dev']);
@@ -73,7 +65,7 @@ class MappingMigrateCommandTest extends TestCase
     /**
      * @return array
      */
-    public function get_mapping_name_data_provider():array
+    public static function get_mapping_name_data_provider():array
     {
         return [
             'removes file extension' => ['mapping_filename', 'mapping_filename.json'],
@@ -81,12 +73,8 @@ class MappingMigrateCommandTest extends TestCase
         ];
     }
 
-    /**
-     * It returns an array of mapping migrations that have not yet been migrated.
-     *
-     * @test
-     * @covers MappingMigrateCommand::pendingMappings()
-     */
+    /** It returns an array of mapping migrations that have not yet been migrated. */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_returns_an_array_of_mapping_migrations_that_have_not_yet_been_migrated()
     {
         $pending1 = new SplFileInfo('pending_file1.json', '', '');
@@ -111,13 +99,9 @@ class MappingMigrateCommandTest extends TestCase
         $this->assertEquals($expected, $this->command->pendingMappings($files, $migrations));
     }
 
-    /**
-     * It puts the new mapping into the Elasticsearch cluster.
-     *
-     * @test
-     * @covers       MappingMigrateCommand::putMapping()
-     * @dataProvider put_mapping_data_provider
-     */
+    /** It puts the new mapping into the Elasticsearch cluster. */
+    #[\PHPUnit\Framework\Attributes\Test]
+    #[\PHPUnit\Framework\Attributes\DataProvider('put_mapping_data_provider')]
     public function it_puts_the_new_mapping_into_the_elasticsearch_cluster(string $method, string $file)
     {
         $contents = json_encode(['mappings' => []]);
@@ -135,7 +119,7 @@ class MappingMigrateCommandTest extends TestCase
     /**
      * putMapping data provider.
      */
-    public function put_mapping_data_provider():array
+    public static function put_mapping_data_provider():array
     {
         return [
             'create index' => ['createIndex', 'pending_mapping.json'],
@@ -143,12 +127,8 @@ class MappingMigrateCommandTest extends TestCase
         ];
     }
 
-    /**
-     * It writes a message to console if there are no mappings to migrate.
-     *
-     * @test
-     * @covers MappingMigrateCommand::runPending()
-     */
+    /** It writes a message to console if there are no mappings to migrate. */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_writes_a_message_to_console_if_there_are_no_mappings_to_migrate()
     {
         $this->command->shouldReceive('info')->once()->with('No new mappings to migrate.');
@@ -160,13 +140,9 @@ class MappingMigrateCommandTest extends TestCase
         $this->command->runPending([]);
     }
 
-    /**
-     * It runs the pending migrations.
-     *
-     * @test
-     * @covers       MappingMigrateCommand::runPending()
-     * @dataProvider run_pending_data_provider
-     */
+    /** It runs the pending migrations. */
+    #[\PHPUnit\Framework\Attributes\Test]
+    #[\PHPUnit\Framework\Attributes\DataProvider('run_pending_data_provider')]
     public function it_runs_the_pending_migrations($options)
     {
         /** @var m\CompositeExpectation|SplFileInfo $mapping */
@@ -216,7 +192,7 @@ class MappingMigrateCommandTest extends TestCase
     /**
      * @return array
      */
-    public function run_pending_data_provider():array
+    public static function run_pending_data_provider():array
     {
         $defaults = [
             'has_artisan_command' => false,
@@ -232,12 +208,8 @@ class MappingMigrateCommandTest extends TestCase
         ];
     }
 
-    /**
-     * It handles the console command call.
-     *
-     * @test
-     * @covers MappingMigrateCommand::handle()
-     */
+    /** It handles the console command call. */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_handles_the_console_command_call()
     {
         $mappings = [

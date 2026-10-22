@@ -3,12 +3,26 @@
 namespace DesignMyNight\Elasticsearch;
 
 use DateTime;
+use Illuminate\Database\Connection as DatabaseConnection;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar as BaseGrammar;
+use Illuminate\Support\Str;
 use MongoDB\BSON\ObjectID;
 
 class QueryGrammar extends BaseGrammar
 {
+    public function __construct(?DatabaseConnection $connection = null)
+    {
+        if ($connection !== null) {
+            parent::__construct($connection);
+        }
+    }
+
+    public function attachConnection(DatabaseConnection $connection): void
+    {
+        $this->connection = $connection;
+    }
+
     /**
      * The index suffix.
      *
@@ -76,7 +90,7 @@ class QueryGrammar extends BaseGrammar
      * @param  Builder  $builder
      * @return array
      */
-    protected function compileWheres(Builder $builder): array
+    public function compileWheres(Builder $builder): array
     {
         $queryParts = [
             'query' => 'wheres',
@@ -257,7 +271,6 @@ class QueryGrammar extends BaseGrammar
 
         $relationshipFilter = 'has_' . $relationship;
         $relationshipType = $relationship . '_type';
-
         $query = [
             $relationshipFilter => [
                 $relationshipType => $where['documentType'],
@@ -702,7 +715,7 @@ class QueryGrammar extends BaseGrammar
         $options        = array_intersect_key($where['options'], array_flip($optionsToApply));
 
         foreach ($options as $option => $value) {
-            $method = 'apply' . studly_case($option) . 'Option';
+            $method = 'apply' . Str::studly($option) . 'Option';
 
             if (method_exists($this, $method)) {
                 $clause = $this->$method($clause, $value, $where);
@@ -787,7 +800,7 @@ class QueryGrammar extends BaseGrammar
     {
         $key = $aggregation['key'];
 
-        $method = 'compile' . ucfirst(camel_case($aggregation['type'])) . 'Aggregation';
+        $method = 'compile' . ucfirst(Str::camel($aggregation['type'])) . 'Aggregation';
 
         $compiled = [
             $key => $this->$method($aggregation)

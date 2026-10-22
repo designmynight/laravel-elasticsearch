@@ -2,6 +2,8 @@
 
 namespace DesignMyNight\Elasticsearch;
 
+use Illuminate\Support\Str;
+
 trait Searchable
 {
     public static function getElasticsearchConnectionName(): string
@@ -39,7 +41,7 @@ trait Searchable
      */
     public function getSearchType()
     {
-        return $this->searchType ?? str_singular($this->getTable());
+        return $this->searchType ?? Str::singular($this->getTable());
     }
 
     /**
@@ -132,7 +134,7 @@ trait Searchable
         $array = $this->toArray();
 
         foreach ($this->getArrayableRelations() as $key => $relation) {
-            $attributeName = snake_case($key);
+            $attributeName = Str::snake($key);
 
             if (isset($array[$attributeName]) && method_exists($relation, 'toSearchableArray')) {
                 $array[$attributeName] = $relation->onSearchConnection(function ($model) {

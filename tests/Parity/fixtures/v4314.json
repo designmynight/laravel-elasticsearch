@@ -1,0 +1,709 @@
+{
+    "queries": {
+        "where_operators": {
+            "index": "bookings_parity",
+            "body": {
+                "_source": true,
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "term": {
+                                    "status": "confirmed"
+                                }
+                            },
+                            {
+                                "bool": {
+                                    "must_not": [
+                                        {
+                                            "term": {
+                                                "covers": 2
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "range": {
+                                    "covers": {
+                                        "lt": 8
+                                    }
+                                }
+                            },
+                            {
+                                "range": {
+                                    "covers": {
+                                        "gt": 1
+                                    }
+                                }
+                            },
+                            {
+                                "range": {
+                                    "covers": {
+                                        "lte": 6
+                                    }
+                                }
+                            },
+                            {
+                                "range": {
+                                    "covers": {
+                                        "gte": 2
+                                    }
+                                }
+                            },
+                            {
+                                "term": {
+                                    "guest_name": "like"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "where_in_null_between_date": {
+            "index": "bookings_parity",
+            "body": {
+                "_source": true,
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "terms": {
+                                    "status": [
+                                        "confirmed",
+                                        "seated"
+                                    ]
+                                }
+                            },
+                            {
+                                "bool": {
+                                    "must_not": [
+                                        {
+                                            "terms": {
+                                                "status": [
+                                                    "cancelled"
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "bool": {
+                                    "must_not": [
+                                        {
+                                            "exists": {
+                                                "field": "deleted_at"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "bool": {
+                                    "must_not": [
+                                        {
+                                            "exists": {
+                                                "field": "guest_name"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "range": {
+                                    "covers": {
+                                        "gte": 2,
+                                        "lte": 8
+                                    }
+                                }
+                            },
+                            {
+                                "range": {
+                                    "created_at": {
+                                        "gte": "2020-01-01T00:00:00",
+                                        "lte": "2020-01-31T23:59:59"
+                                    }
+                                }
+                            },
+                            {
+                                "range": {
+                                    "created_at": {
+                                        "gte": "2020-01-15",
+                                        "lte": "2020-01-15"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "nested_and_or": {
+            "index": "bookings_parity",
+            "body": {
+                "_source": true,
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "bool": {
+                                    "should": [
+                                        {
+                                            "bool": {
+                                                "must": [
+                                                    {
+                                                        "term": {
+                                                            "status": "confirmed"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "term": {
+                                                "status": "seated"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "filter_post_filter_search": {
+            "index": "bookings_parity",
+            "body": {
+                "_source": true,
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "multi_match": {
+                                    "query": "birthday dinner",
+                                    "type": "most_fields",
+                                    "fields": [
+                                        "guest_name^2",
+                                        "notes^1"
+                                    ],
+                                    "fuzziness": "AUTO"
+                                }
+                            }
+                        ],
+                        "filter": {
+                            "bool": {
+                                "must": [
+                                    {
+                                        "terms": {
+                                            "status": [
+                                                "confirmed",
+                                                "seated"
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "post_filter": {
+                    "bool": {
+                        "must": [
+                            {
+                                "term": {
+                                    "venue_id": 17
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "nested_relationships_and_types": {
+            "index": "bookings_parity",
+            "body": {
+                "_source": true,
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "nested": {
+                                    "path": "items",
+                                    "query": {
+                                        "bool": {
+                                            "must": [
+                                                {
+                                                    "term": {
+                                                        "items.name": "cake"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "has_parent": {
+                                    "parent_type": "booking",
+                                    "query": {
+                                        "bool": {
+                                            "must": [
+                                                {
+                                                    "term": {
+                                                        "status": "confirmed"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "has_child": {
+                                    "child_type": "charge",
+                                    "query": {
+                                        "bool": {
+                                            "must": [
+                                                {
+                                                    "range": {
+                                                        "amount": {
+                                                            "gt": 0
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "type": {
+                                    "value": "booking,charge"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "where_not_closure": {
+            "index": "bookings_parity",
+            "body": {
+                "_source": true,
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "bool": {
+                                    "must_not": [
+                                        {
+                                            "bool": {
+                                                "must": [
+                                                    {
+                                                        "term": {
+                                                            "status": "cancelled"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "where_not_closure_or": {
+            "index": "bookings_parity",
+            "body": {
+                "_source": true,
+                "query": {
+                    "bool": {
+                        "should": [
+                            {
+                                "bool": {
+                                    "must_not": [
+                                        {
+                                            "bool": {
+                                                "must": [
+                                                    {
+                                                        "term": {
+                                                            "status": "cancelled"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "sort_pagination_function_score_geo_script": {
+            "index": "bookings_parity",
+            "body": {
+                "_source": true,
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "function_score": {
+                                    "field_value_factor": {
+                                        "field_value_factor": {
+                                            "field": "popularity"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "geo_distance": {
+                                    "distance": "1km",
+                                    "location": {
+                                        "lat": 51.5,
+                                        "lon": -0.12
+                                    }
+                                }
+                            },
+                            {
+                                "script": {
+                                    "script": {
+                                        "params": {
+                                            "limit": 2
+                                        },
+                                        "source": "doc['covers'].value > params.limit"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                "sort": [
+                    {
+                        "created_at": {
+                            "missing": "_last",
+                            "mode": "max",
+                            "order": "desc"
+                        }
+                    },
+                    {
+                        "_geo_distance": {
+                            "location": {
+                                "lat": 51.5,
+                                "lon": -0.12
+                            },
+                            "order": "asc",
+                            "unit": "km",
+                            "distance_type": "plane"
+                        }
+                    }
+                ],
+                "from": 50,
+                "size": 25
+            }
+        },
+        "aggregations": {
+            "index": "bookings_parity",
+            "body": {
+                "_source": true,
+                "aggregations": {
+                    "statuses": {
+                        "terms": {
+                            "field": "status",
+                            "size": 5
+                        }
+                    },
+                    "dates": {
+                        "date_histogram": {
+                            "field": "created_at",
+                            "interval": "day",
+                            "extended_bounds": {
+                                "min": "2020-01-01T00:00:00",
+                                "max": "2020-01-07T23:59:59"
+                            }
+                        }
+                    },
+                    "revenue": {
+                        "sum": {
+                            "field": "amount"
+                        }
+                    },
+                    "average_covers": {
+                        "avg": {
+                            "field": "covers"
+                        }
+                    },
+                    "date_ranges": {
+                        "date_range": {
+                            "field": "created_at",
+                            "ranges": [
+                                {
+                                    "to": "2020-02-01"
+                                }
+                            ]
+                        }
+                    },
+                    "nested_items": {
+                        "nested": {
+                            "path": "items"
+                        },
+                        "aggregations": {
+                            "item_names": {
+                                "terms": {
+                                    "field": "items.name"
+                                }
+                            },
+                            "root": {
+                                "reverse_nested": {}
+                            }
+                        }
+                    },
+                    "filtered": {
+                        "filter": {
+                            "bool": {
+                                "must": [
+                                    {
+                                        "term": {
+                                            "status": "confirmed"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "has_guest_name": {
+                        "exists": {
+                            "field": "guest_name"
+                        }
+                    },
+                    "charges": {
+                        "children": {
+                            "type": "charge"
+                        }
+                    },
+                    "class_terms": {
+                        "terms": {
+                            "field": "status"
+                        }
+                    }
+                }
+            }
+        },
+        "suffix_and_type": {
+            "index": "bookings_parity",
+            "body": {
+                "_source": true,
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "term": {
+                                    "status": "confirmed"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    "inserts": {
+        "single_document": {
+            "body": [
+                {
+                    "index": {
+                        "_index": "bookings_parity",
+                        "_type": "booking",
+                        "_id": "b0"
+                    }
+                },
+                {
+                    "status": "seated"
+                }
+            ]
+        },
+        "multiple_documents": {
+            "body": [
+                {
+                    "index": {
+                        "_index": "bookings_parity",
+                        "_type": "booking",
+                        "_id": "b1"
+                    }
+                },
+                {
+                    "status": "confirmed"
+                },
+                {
+                    "index": {
+                        "_index": "bookings_parity",
+                        "_type": "booking",
+                        "_id": "b2"
+                    }
+                },
+                {
+                    "status": "seated"
+                }
+            ]
+        },
+        "child_documents_parent_and_routing": {
+            "body": [
+                {
+                    "index": {
+                        "_index": "bookings_parity",
+                        "_type": "charge",
+                        "_id": "charge-1",
+                        "parent": "booking-1"
+                    }
+                },
+                {
+                    "amount": 1200
+                },
+                {
+                    "index": {
+                        "_index": "bookings_parity",
+                        "_type": "booking",
+                        "_id": "booking-1",
+                        "routing": "venue-4",
+                        "parent": "group-9"
+                    }
+                },
+                {
+                    "status": "confirmed"
+                }
+            ]
+        }
+    },
+    "deletes": {
+        "simple_id": {
+            "index": "charges_parity",
+            "type": "charge",
+            "id": "charge-1"
+        },
+        "query": {
+            "index": "charges_parity",
+            "body": {
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "term": {
+                                    "status": "refunded"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    "processor": {
+        "documents": [
+            {
+                "status": "confirmed",
+                "covers": 2,
+                "_id": "booking-1",
+                "_parent": "group-9",
+                "inner_hits": {
+                    "charge": [
+                        {
+                            "_id": "charge-1",
+                            "amount": 1200
+                        }
+                    ]
+                }
+            }
+        ],
+        "raw_response": {
+            "took": 3,
+            "hits": {
+                "total": 1,
+                "hits": [
+                    {
+                        "_id": "booking-1",
+                        "_parent": "group-9",
+                        "_routing": "venue-4",
+                        "_source": {
+                            "status": "confirmed",
+                            "covers": 2
+                        },
+                        "inner_hits": {
+                            "charge": {
+                                "hits": {
+                                    "hits": [
+                                        {
+                                            "_id": "charge-1",
+                                            "_source": {
+                                                "amount": 1200
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            "aggregations": {
+                "statuses": {
+                    "buckets": [
+                        {
+                            "key": "confirmed",
+                            "doc_count": 1
+                        }
+                    ]
+                }
+            }
+        },
+        "aggregations": {
+            "statuses": {
+                "buckets": [
+                    {
+                        "key": "confirmed",
+                        "doc_count": 1
+                    }
+                ]
+            }
+        },
+        "hydrated_models": [
+            {
+                "attributes": {
+                    "status": "confirmed",
+                    "covers": 2,
+                    "_id": "booking-1",
+                    "_parent": "group-9",
+                    "inner_hits": {
+                        "charge": [
+                            {
+                                "_id": "charge-1",
+                                "amount": 1200
+                            }
+                        ]
+                    }
+                },
+                "key": null
+            }
+        ],
+        "eloquent_aggregations": {
+            "statuses": {
+                "buckets": [
+                    {
+                        "key": "confirmed",
+                        "doc_count": 1
+                    }
+                ]
+            }
+        }
+    },
+    "grammar": {
+        "suffix": "_parity",
+        "date_format": "Y-m-d\\TH:i:s"
+    }
+}
