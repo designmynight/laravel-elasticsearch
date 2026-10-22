@@ -2,8 +2,12 @@
 
 namespace DesignMyNight\Elasticsearch;
 
+use Illuminate\Support\Str;
+
 trait Searchable
 {
+    private static $searchIndices;
+
     public static function getElasticsearchConnectionName(): string
     {
         return 'elasticsearch';
@@ -16,7 +20,11 @@ trait Searchable
      */
     public function getSearchIndex()
     {
-        return $this->searchIndex ?? $this->getTable();
+        if (property_exists($this, 'searchIndex')) {
+            return $this->searchIndex ?? $this->getTable();
+        }
+
+        return self::$searchIndices[$this] ?? $this->getTable();
     }
 
     /**
@@ -27,7 +35,12 @@ trait Searchable
      */
     public function setSearchIndex(string $index)
     {
-        $this->searchIndex = $index;
+        if (property_exists($this, 'searchIndex')) {
+            $this->searchIndex = $index;
+        } else {
+            self::$searchIndices ??= new \WeakMap();
+            self::$searchIndices[$this] = $index;
+        }
 
         return $this;
     }
@@ -39,7 +52,7 @@ trait Searchable
      */
     public function getSearchType()
     {
-        return $this->searchType ?? str_singular($this->getTable());
+        return $this->searchType ?? Str::singular($this->getTable());
     }
 
     /**
@@ -54,6 +67,10 @@ trait Searchable
 
         $elasticModel = clone $arguments[0];
         $elasticModel->setConnection(static::getElasticsearchConnectionName());
+
+        if (! property_exists($arguments[0], 'searchIndex') && isset(self::$searchIndices[$arguments[0]])) {
+            self::$searchIndices[$elasticModel] = self::$searchIndices[$arguments[0]];
+        }
 
         $arguments[0] = $elasticModel;
 
@@ -132,7 +149,7 @@ trait Searchable
         $array = $this->toArray();
 
         foreach ($this->getArrayableRelations() as $key => $relation) {
-            $attributeName = snake_case($key);
+            $attributeName = Str::snake($key);
 
             if (isset($array[$attributeName]) && method_exists($relation, 'toSearchableArray')) {
                 $array[$attributeName] = $relation->onSearchConnection(function ($model) {

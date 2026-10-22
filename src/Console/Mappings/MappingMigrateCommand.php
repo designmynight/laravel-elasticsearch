@@ -20,6 +20,9 @@ class MappingMigrateCommand extends Command
     use HasConnection;
     use UpdatesAlias;
 
+    /** @var Filesystem */
+    public $files;
+
     /** @var string $description */
     protected $description = 'Index new mapping';
 

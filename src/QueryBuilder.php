@@ -107,8 +107,12 @@ class QueryBuilder extends BaseBuilder
      * @param bool   $not
      * @return self
      */
-    public function whereBetween($column, array $values, $boolean = 'and', $not = false): self
+    public function whereBetween($column, iterable $values, $boolean = 'and', $not = false): self
     {
+        if (! is_array($values)) {
+            $values = iterator_to_array($values);
+        }
+
         $type = 'Between';
 
         $this->wheres[] = compact('column', 'values', 'type', 'boolean', 'not');
@@ -209,15 +213,35 @@ class QueryBuilder extends BaseBuilder
      * @param string                                    $boolean
      * @return self
      */
-    public function whereNot($query, $boolean = 'and'): self
+    public function whereNot($column, $operator = null, $value = null, $boolean = 'and'): self
     {
-        $type = 'Not';
+        $argumentCount = func_num_args();
 
-        call_user_func($query, $query = $this->newQuery());
+        if ($column instanceof Closure) {
+            $type = 'Not';
+            $whereBoolean = $argumentCount === 2 && is_string($operator) ? $operator : $boolean;
+            call_user_func($column, $query = $this->newQuery());
 
-        $this->wheres[] = compact('query', 'type', 'boolean');
+            $this->wheres[] = [
+                'query' => $query,
+                'type' => $type,
+                'boolean' => $whereBoolean,
+            ];
 
-        return $this;
+            return $this;
+        }
+
+        $where = function ($query) use ($column, $operator, $value, $argumentCount) {
+            if ($argumentCount === 1) {
+                $query->where($column);
+            } elseif ($argumentCount === 2) {
+                $query->where($column, $operator);
+            } else {
+                $query->where($column, $operator, $value);
+            }
+        };
+
+        return $this->whereNot($where, $boolean);
     }
 
     /**
@@ -729,6 +753,46 @@ class QueryBuilder extends BaseBuilder
         foreach ($this->connection->cursor($this->toCompiledQuery()) as $document) {
             yield $this->processor->documentFromResult($this, $document);
         }
+    }
+
+    public function chunk($count, callable $callback)
+    {
+        $this->enforceOrderBy();
+
+        $skip = $this->getOffset();
+        $remaining = $this->getLimit();
+        $page = 1;
+
+        do {
+            $offset = (($page - 1) * $count) + (int) $skip;
+            $limit = is_null($remaining) ? $count : min($count, $remaining);
+
+            if ($limit == 0) {
+                break;
+            }
+
+            $query = clone $this;
+            $query->results = null;
+            $results = $query->offset($offset)->limit($limit)->get();
+            $countResults = $results->count();
+
+            if ($countResults == 0) {
+                break;
+            }
+
+            if (! is_null($remaining)) {
+                $remaining = max($remaining - $countResults, 0);
+            }
+
+            if ($callback($results, $page) === false) {
+                return false;
+            }
+
+            unset($results);
+            $page++;
+        } while ($countResults == $count);
+
+        return true;
     }
 
     /**

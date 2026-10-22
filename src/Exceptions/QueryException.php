@@ -9,12 +9,13 @@ class QueryException extends BaseQueryException
      /**
      * Format the error message.
      *
+     * @param  string  $connectionName
      * @param  array  $query
      * @param  array  $bindings
-     * @param  \Exception $previous
+     * @param  \Throwable $previous
      * @return string
      */
-    protected function formatMessage($query, $bindings, $previous)
+    protected function formatMessage($connectionName, $query, $bindings, $previous, $maskBindings = false)
     {
         return $previous->getMessage();
     }

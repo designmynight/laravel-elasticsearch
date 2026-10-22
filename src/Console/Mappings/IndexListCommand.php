@@ -75,7 +75,9 @@ class IndexListCommand extends Command
             $aliases = collect($this->client->cat()->aliases());
 
             return $aliases
-                ->sortBy('alias')
+                ->sortBy(function ($item) {
+                    return $item['alias'] . '|' . $item['index'];
+                })
                 ->when($alias !== '*', function (Collection $aliases) use ($alias) {
                     return $aliases->filter(function ($item) use ($alias) {
                         return str_contains($item['alias'], $alias);

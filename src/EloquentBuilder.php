@@ -126,7 +126,7 @@ class EloquentBuilder extends BaseBuilder
      *
      * @throws \InvalidArgumentException
      */
-    public function paginate($perPage = null, $columns = ['*'], $pageName = 'page', $page = null)
+    public function paginate($perPage = null, $columns = ['*'], $pageName = 'page', $page = null, $total = null)
     {
         $page = $page ?: Paginator::resolveCurrentPage($pageName);
 
@@ -134,7 +134,7 @@ class EloquentBuilder extends BaseBuilder
 
         $results = $this->forPage($page, $perPage)->get($columns);
 
-        $total = $this->toBase()->getCountForPagination($columns);
+        $total = value($total) ?? $this->toBase()->getCountForPagination($columns);
 
         return new LengthAwarePaginator($results, $total, $perPage, $page, [
             'path'     => Paginator::resolveCurrentPath(),
