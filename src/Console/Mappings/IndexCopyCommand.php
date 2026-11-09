@@ -4,7 +4,7 @@ namespace DesignMyNight\Elasticsearch\Console\Mappings;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\Traits\GetsIndices;
 use DesignMyNight\Elasticsearch\Support\ElasticsearchException;
-use Elasticsearch\Common\Exceptions\ElasticsearchException as ElasticsearchExceptionInterface;
+use OpenSearch\Exception\OpenSearchExceptionInterface;
 
 /**
  * Class IndexCopyCommand
@@ -45,7 +45,7 @@ class IndexCopyCommand extends Command
                 $this->report(
                     $this->client->reindex(['body' => json_encode($body)])
                 );
-            } catch (ElasticsearchExceptionInterface $exception) {
+            } catch (OpenSearchExceptionInterface $exception) {
                 $exception = new ElasticsearchException($exception);
 
                 $this->output->error((string) $exception);

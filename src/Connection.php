@@ -8,7 +8,7 @@ use DesignMyNight\Elasticsearch\Database\Schema\Blueprint;
 use DesignMyNight\Elasticsearch\Database\Schema\ElasticsearchBuilder;
 use DesignMyNight\Elasticsearch\Database\Schema\Grammars\ElasticsearchGrammar;
 use DesignMyNight\Elasticsearch\Exceptions\QueryException;
-use Elasticsearch\ClientBuilder;
+use OpenSearch\GuzzleClientFactory;
 use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\Grammar as BaseGrammar;
@@ -19,31 +19,13 @@ class Connection extends BaseConnection
     /**
      * The Elasticsearch client.
      *
-     * @var \Elasticsearch\Client
+     * @var \OpenSearch\Client
      */
     protected $connection;
 
     protected $indexSuffix = '';
 
     protected $requestTimeout;
-
-    /**
-     * Map configuration array keys with ES ClientBuilder setters
-     *
-     * @var array
-     */
-    protected $configMappings = [
-        'sslVerification'    => 'setSSLVerification',
-        'sniffOnStart'       => 'setSniffOnStart',
-        'retries'            => 'setRetries',
-        'httpHandler'        => 'setHandler',
-        'connectionPool'     => 'setConnectionPool',
-        'connectionSelector' => 'setSelector',
-        'serializer'         => 'setSerializer',
-        'connectionFactory'  => 'setConnectionFactory',
-        'endpoint'           => 'setEndpoint',
-        'namespaces'         => 'registerNamespace',
-    ];
 
     /**
      * Create a new Elasticsearch connection instance.
@@ -141,7 +123,7 @@ class Connection extends BaseConnection
      *
      * @return \Generator
      */
-    public function cursor($query, $bindings = [], $useReadPdo = false)
+    public function cursor($query, $bindings = [], $useReadPdo = false, array $fetchUsing = [])
     {
         $scrollTimeout = '30s';
         $limit = $query['size'] ?? 0;
@@ -367,7 +349,7 @@ class Connection extends BaseConnection
      * @param  array   $bindings
      * @return array
      */
-    public function select($params, $bindings = [], $useReadPdo = true)
+    public function select($params, $bindings = [], $useReadPdo = true, array $fetchUsing = [])
     {
         return $this->run(
             $this->addClientParams($params),
@@ -542,45 +524,30 @@ class Connection extends BaseConnection
      * @param array $hosts
      * @param array $config
      *
-     * @return \Elasticsearch\Client
+     * @return \OpenSearch\Client
      */
     protected function createConnection($hosts, array $config, array $options)
     {
-        // apply config to each host
-        $hosts = array_map(function ($host) use ($config) {
-            $port = !empty($config['port']) ? $config['port'] : 9200;
+        $host = trim($hosts[0]);
+        $port = !empty($config['port']) ? $config['port'] : 9200;
+        $scheme = !empty($config['scheme']) ? $config['scheme'] : 'http';
 
-            $scheme = !empty($config['scheme']) ? $config['scheme'] : 'http';
+        // force https for port 443
+        $scheme = (int) $port === 443 ? 'https' : $scheme;
 
-            // force https for port 443
-            $scheme = (int) $port === 443 ? 'https' : $scheme;
+        $options = ['base_uri' => "{$scheme}://{$host}:{$port}"];
 
-            return [
-                'host' => $host,
-                'port' => $port,
-                'scheme' => $scheme,
-                'user' => !empty($config['username']) ? $config['username'] : null,
-                'pass' => !empty($config['password']) ? $config['password'] : null,
-            ];
-        }, $hosts);
-
-        $clientBuilder = ClientBuilder::create()
-            ->setHosts($hosts);
-
-        $elasticConfig = config('elasticsearch.connections.' . config('elasticsearch.defaultConnection', 'default'), []);
-        // Set additional client configuration
-        foreach ($this->configMappings as $key => $method) {
-            $value = Arr::get($elasticConfig, $key);
-            if (is_array($value)) {
-                foreach ($value as $vItem) {
-                    $clientBuilder->$method($vItem);
-                }
-            } elseif ($value !== null) {
-                $clientBuilder->$method($value);
-            }
+        if (!empty($config['username']) && !empty($config['password'])) {
+            $options['auth'] = [$config['username'], $config['password']];
         }
 
-        return $clientBuilder->build();
+        $clientConfig = config('elasticsearch.connections.' . config('elasticsearch.defaultConnection', 'default'), []);
+
+        if (Arr::has($clientConfig, 'sslVerification')) {
+            $options['verify'] = Arr::get($clientConfig, 'sslVerification');
+        }
+
+        return (new GuzzleClientFactory((int) Arr::get($clientConfig, 'retries', 0)))->create($options);
     }
 
     /**
