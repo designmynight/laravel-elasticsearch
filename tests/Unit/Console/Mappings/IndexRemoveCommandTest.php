@@ -3,9 +3,9 @@
 namespace Tests\Unit\Console\Mappings;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\IndexRemoveCommand;
-use Elasticsearch\Client;
-use Elasticsearch\Namespaces\CatNamespace;
-use Elasticsearch\Namespaces\IndicesNamespace;
+use OpenSearch\Client;
+use OpenSearch\Namespaces\CatNamespace;
+use OpenSearch\Namespaces\IndicesNamespace;
 use Mockery as m;
 use Tests\TestCase;
 

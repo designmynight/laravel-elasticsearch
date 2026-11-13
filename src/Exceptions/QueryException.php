@@ -3,6 +3,7 @@
 namespace DesignMyNight\Elasticsearch\Exceptions;
 
 use Illuminate\Database\QueryException as BaseQueryException;
+use Throwable;
 
 class QueryException extends BaseQueryException
 {
@@ -11,10 +12,11 @@ class QueryException extends BaseQueryException
      *
      * @param  array  $query
      * @param  array  $bindings
-     * @param  \Exception $previous
+     * @param  \Throwable $previous
+     * @param  bool  $maskBindings
      * @return string
      */
-    protected function formatMessage($connectionName, $sql, $bindings, $previous)
+    protected function formatMessage($connectionName, $sql, $bindings, Throwable $previous, $maskBindings = false)
     {
         return $previous->getMessage();
     }

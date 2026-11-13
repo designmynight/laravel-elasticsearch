@@ -3,8 +3,8 @@
 namespace Tests\Unit\Console\Mappings;
 
 use DesignMyNight\Elasticsearch\Console\Mappings\IndexListCommand;
-use Elasticsearch\Client;
-use Elasticsearch\Namespaces\CatNamespace;
+use OpenSearch\Client;
+use OpenSearch\Namespaces\CatNamespace;
 use Mockery as m;
 use Tests\TestCase;
 

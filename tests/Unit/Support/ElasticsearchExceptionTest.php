@@ -3,8 +3,8 @@
 namespace Tests\Unit\Support;
 
 use DesignMyNight\Elasticsearch\Support\ElasticsearchException;
-use Elasticsearch\Common\Exceptions\ElasticsearchException as BaseElasticsearchException;
-use Elasticsearch\Common\Exceptions\Missing404Exception;
+use OpenSearch\Exception\OpenSearchExceptionInterface as BaseElasticsearchException;
+use OpenSearch\Exception\NotFoundHttpException;
 
 class ElasticsearchExceptionTest extends \PHPUnit\Framework\TestCase
 {
@@ -91,10 +91,16 @@ class ElasticsearchExceptionTest extends \PHPUnit\Framework\TestCase
 
         return [
             'missing_index' => [
-                new Missing404Exception($missingIndexError),
+                new NotFoundHttpException($missingIndexError),
                 'index_not_found_exception',
                 'no such index [bob]',
                 json_decode($missingIndexError, true),
+            ],
+            'extracted_message' => [
+                new NotFoundHttpException('index_not_found_exception: no such index [bob]'),
+                'index_not_found_exception',
+                'no such index [bob]',
+                ['error' => ['type' => 'index_not_found_exception', 'reason' => 'no such index [bob]']],
             ],
         ];
     }

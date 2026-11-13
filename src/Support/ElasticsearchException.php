@@ -2,7 +2,7 @@
 
 namespace DesignMyNight\Elasticsearch\Support;
 
-use Elasticsearch\Common\Exceptions\ElasticsearchException as BaseElasticsearchException;
+use OpenSearch\Exception\OpenSearchExceptionInterface as BaseElasticsearchException;
 use Exception;
 
 class ElasticsearchException extends Exception
@@ -42,6 +42,11 @@ class ElasticsearchException extends Exception
     private function parseException(BaseElasticsearchException $exception): void
     {
         $body = json_decode($exception->getMessage(), true);
+
+        if (!is_array($body)) {
+            [$type, $reason] = array_pad(explode(': ', $exception->getMessage(), 2), 2, null);
+            $body = ['error' => ['type' => $type, 'reason' => $reason ?? $type]];
+        }
 
         $this->message = $body['error']['reason'];
         $this->code = $body['error']['type'];
